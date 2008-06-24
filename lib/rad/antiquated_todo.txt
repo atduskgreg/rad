@@ -1,0 +1,47 @@
+-framework for translation to C (wrapper for RubyToAnsiC)
+-framework for translation testing (want to test that each Rad method translates to the expected C)
+
+-have to replace symbol & str definitions with "char name[]" ?
+
+-maybe can't build rad.c dynamically? can use as helpers in writing it statically rad.rb and RubyToAnsiC as helpers in writing it. . .
+-maybe there's a way to give RubyToC prototypes for the arduino library methods (or maybe include them directly) so that it will be able to figure out the signatures for my methods (otherwise it breaks because, for example, it can't figure out what read returns).
+-speaking of which: all rad methods need to have a statically typed return value or else they won't be translatable to C. For example, as it stands #read may return a bool (if it calls digitalRead) or an int (if it calls analogRead). This may force me to take away much of the syntactic sugar
+
+-how to handle setting up named pins:
+
+declare the name with an underscore:
+  int _led = 1;
+and define an accessor for it:
+  int led(){
+    _led;
+  }
+Then, calling the method will get you the int.
+
+-drop read and write custom methods (at least for now)? save time, save a whole step. Make it trivial to implement the whole library. . .
+
+======================================================================================================
+-the Arduino DSL is pretty good. Don't try to reinvent it for the board's api, add value on top of it!
+======================================================================================================
+
+-add constants HIGH, LOW, etc.
+
+-design directory structure
+-->where do we put the sketch files
+-->where do the .c files get compiled to?
+
+-design rad lib directory structure
+/sketch
+  my_sketch.rb
+/build
+  my_sketch.c
+  rad.c
+/rad
+  /lib
+  /specs
+  Rakefile
+
+
+-helper methods like blink
+
+-proof of concept of build process
+

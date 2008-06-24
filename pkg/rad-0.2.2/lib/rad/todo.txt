@@ -1,0 +1,13 @@
+TODO:
+=====
+	
+Future:
+	- complete library system: script/install library some_library
+	- bin/rad:
+		- setup and use a ~/.rad for new project defaults
+	- put repository on git
+	- project gallery (examples with movies)
+	- testing framework
+	- implement wire lib
+	- subclasses of ArduinoSketch (should just work, but what are they for?)
+	- simulator

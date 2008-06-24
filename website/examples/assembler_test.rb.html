@@ -1,0 +1,73 @@
+<html>
+  <head>
+    <title>assembler_test.rb.html</title
+    <style type="text/css">
+
+	.ruby .normal {}
+	.ruby .comment { color: #888; font-style: italic; }
+	.ruby .keyword { color: #A00; font-weight: bold; }
+	.ruby .method { color: #077; }
+	.ruby .class { color: #074; }
+	.ruby .module { color: #050; }
+	.ruby .punct { color: #447; font-weight: bold; }
+	.ruby .symbol { color: #099; }
+	.ruby .string { color: #944; }
+	.ruby .char { color: #F07; }
+	.ruby .ident { color: #004; }
+	.ruby .constant { color: #07F; }
+	.ruby .regex { color: #B66; }
+	.ruby .number { color: #D55; }
+	.ruby .attribute { color: #377; }
+	.ruby .global { color: #3B7; }
+	.ruby .expr { color: #227; }
+    </style>
+  </head>
+  <body>
+    <pre class="ruby">
+<pre><span class="comment"># Hardware: Connect to serial output with screen:</span>
+<span class="comment">#           $ screen /dev/tty/path.to.your.usb 9600</span>
+
+<span class="keyword">class </span><span class="class">AssemblerTest</span> <span class="punct">&lt;</span> <span class="constant">ArduinoSketch</span>
+  <span class="ident">vars</span> <span class="symbol">:a</span> <span class="punct">=&gt;</span> <span class="number">10</span><span class="punct">,</span> <span class="symbol">:b</span> <span class="punct">=&gt;</span> <span class="number">4</span>
+  <span class="ident">serial_begin</span>
+  
+  <span class="keyword">def </span><span class="method">loop</span>
+    <span class="ident">serial_println</span> <span class="ident">product</span><span class="punct">(</span><span class="ident">a</span><span class="punct">,</span><span class="ident">b</span><span class="punct">)</span>
+  <span class="keyword">end</span>
+  
+  <span class="ident">assembler</span><span class="punct">(</span> <span class="symbol">:product</span><span class="punct">,</span> <span class="punct">&quot;</span><span class="string">int product(int a, int b);</span><span class="punct">&quot;,</span>
+    <span class="punct">&lt;&lt;-</span><span class="constant">CODE</span><span class="string">
+    product:
+      	mov  r18,r24	; move a to another register
+      	ldi  r24,0		; clear running sum, used to coalesce product
+      	ldi  r25,0		; sum = 0
+      
+      .loop:
+      	tst  r18		  ; is a = 0? if so, we're done
+      	breq .end
+      
+      	mov  r19,r18	; copy a
+      	andi r19,1		; is a % 2 == 0
+      	breq .skip		
+      
+      	add  r24,r22	; add b to sum
+      	adc  r25,r23
+      
+      .skip:
+      	lsr  r18		  ; divide a by 2
+      
+      	clc			
+      	rol  r22		  ; multiply b by 2
+      	rol  r23
+      	rjmp .loop
+      
+      .end:
+      	ret
+      	.size product, .-product
+</span><span class="constant">    CODE</span>
+  <span class="punct">)</span>
+<span class="keyword">end</span>
+</pre>
+    </pre>
+  </body>
+</html>

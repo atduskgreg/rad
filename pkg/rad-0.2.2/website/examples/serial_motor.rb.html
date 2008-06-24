@@ -1,0 +1,41 @@
+<html>
+  <head>
+    <title>serial_motor.rb.html</title
+    <style type="text/css">
+
+	.ruby .normal {}
+	.ruby .comment { color: #888; font-style: italic; }
+	.ruby .keyword { color: #A00; font-weight: bold; }
+	.ruby .method { color: #077; }
+	.ruby .class { color: #074; }
+	.ruby .module { color: #050; }
+	.ruby .punct { color: #447; font-weight: bold; }
+	.ruby .symbol { color: #099; }
+	.ruby .string { color: #944; }
+	.ruby .char { color: #F07; }
+	.ruby .ident { color: #004; }
+	.ruby .constant { color: #07F; }
+	.ruby .regex { color: #B66; }
+	.ruby .number { color: #D55; }
+	.ruby .attribute { color: #377; }
+	.ruby .global { color: #3B7; }
+	.ruby .expr { color: #227; }
+    </style>
+  </head>
+  <body>
+    <pre class="ruby">
+<pre><span class="comment"># Hardware: motor control circuit (i.e. TIP-120 control pin)</span>
+<span class="comment">#           connected at pin 7.</span>
+<span class="comment">#     Demo: http://www.youtube.com/watch?v=7OguEBfdTe0</span>
+
+<span class="keyword">class </span><span class="class">SerialMotor</span> <span class="punct">&lt;</span> <span class="constant">ArduinoSketch</span>
+  <span class="ident">output_pin</span> <span class="number">7</span><span class="punct">,</span> <span class="symbol">:as</span> <span class="punct">=&gt;</span> <span class="symbol">:motor</span>
+  <span class="ident">serial_begin</span>
+  
+  <span class="keyword">def </span><span class="method">loop</span>
+    <span class="ident">digitalWrite</span><span class="punct">(</span><span class="ident">motor</span><span class="punct">,</span> <span class="ident">serial_read</span><span class="punct">)</span> <span class="keyword">if</span> <span class="ident">serial_available</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span></pre>
+    </pre>
+  </body>
+</html>

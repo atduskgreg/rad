@@ -1,0 +1,64 @@
+h1. RAD
+
+h1. &#x2192; 'Ruby Arduino Development'
+
+h2. What?
+
+RAD is a framework for programming the Arduino physcial computing platform using Ruby. RAD converts Ruby scripts written using a set of Rails-like conventions and helpers into C source code which can be compiled and run on the Arduino microcontroller. It also provides a set of Rake tasks for automating the compilation and upload process.
+
+h2. Why?
+
+While duplicating the functionality of the well-designed Arduino software interface in Ruby may seem like an odd or redundant goal, RAD has further ambitions! Bootstrapping the ability to write microcontroller code in a high level dynamic language like Ruby could greatly ease the creation of all the luxurious development aids the users of such a language have come to expect: developer testing, platform independence, easy metaprogramming, etc.
+
+h2. Installing
+
+@$ sudo gem install rad@
+
+You'll also need to have the Arduino environment installed, which you can get from "the Arduino website":http://www.arduino.cc/en/Main/Software.  RAD currently requires Arduino 0010, but we try to keep it up-to-date with new Arduino releases.
+
+h2. The Basics
+
+@$ rad my_sketch@
+
+This command will create a new RAD project directory (my_sketch/) inside of the current directory that contains a blank script in which you can write your own RAD code, as well as a full install of the RAD support infrastructure (in vendor/). A sample 'hello world' script in RAD will look like this:
+
+<pre syntax="ruby">
+class MySketch < ArduinoSketch
+  output_pin 7, :as => :led
+  def loop
+    blink led, 500
+  end
+end
+</pre>
+
+Once your code is written, your relevant local configuration properly setup in @config/hardware.rb@ and @config/software.rb@, and an Arduino with the corresponding circuit (a 220ohm resistor and an LED wired in series between Arduino pin 7 and ground) is connected to your computer via serial, run:
+
+@$ rake make:upload@
+
+This will:
+
+ * generate the correct Arduino C++ code from your sketch
+ * dynamically prepare a localized version of the default Arduino Makefile
+ * compile your sketch
+ * prompt you to hit the reset button on your Arduino (if necessary!)
+ * upload your compiled binary onto your Arduino
+
+h2. The Arduino API
+
+With the exception of the still-experimental Serial interface, most of <a href="http://www.arduino.cc/en/Reference/HomePage">the Arduino software API</a> should be working correctly at this point. Documentation for the Ruby versions of the methods is forthcoming, but it is mostly what you'd expect: methods with identical names and arguments to their Arduino counterparts with the exception of using 'true' and 'false' for HIGH and LOW.
+
+h2. RAD Needs You!
+
+All the many discipline-crossing skills required for a project like RAD make for lots of opportunities to help out: Have you written lots of sketches exploring the obscure depths of the Arduino library? Do you run the Arduino development tool chain on an obscure (i.e., non-OS X) platform? Do you develop for other AVR or PIC microcontrollers? Are you a C/C++ ninja? Or even C/C++ competent?
+
+There's lots to do.
+
+If you're looking for a place to dive in and don't know quite where, "email Greg":mailto:greg@grabb.it. If you want to start by taking a log at the code, the trunk repository is @svn://rubyforge.org/var/svn/rad/trunk@ for anonymous access.
+
+h2. License
+
+This code is free to use under the terms of the GPL 2.0 license, just like the Arduino software library itself.  
+
+h2. Contact
+
+Comments, questions, heckles, attacks, praises, and, (most especially) patches and contributions are welcome! Send email to "Greg Borenstein":mailto:greg@grabb.it.

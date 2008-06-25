@@ -1,6 +1,8 @@
 require File.expand_path(File.dirname(__FILE__) + "/../init.rb")
 require 'ruby_to_ansi_c'
 
+C_VAR_TYPES = "unsigned|int|long|double|str|char"
+
 namespace :make do
   
   desc "compile the sketch and then upload it to your Arduino board"
@@ -31,11 +33,22 @@ end
 namespace :build do
 
   desc "actually build the sketch"
-  task :sketch => [:file_list, :sketch_dir, :setup] do
-    klass = @file_names.first.split(".").first.split("_").collect{|c| c.capitalize}.join("")
+  task :sketch => [:file_list, :sketch_dir, :plugin_setup, :setup] do
+    klass = @file_names.first.split(".").first.split("_").collect{|c| c.capitalize}.join("")    
     eval ArduinoSketch.pre_process(File.read(@file_names.first))
-    @loop = RubyToAnsiC.translate(constantize(klass), "loop")
-    result = "#{@setup}\n#{@loop}\n"
+    c_methods = []
+    sketch_signatures = []
+    $sketch_methods.each {|m| c_methods << RubyToAnsiC.translate(constantize(klass), m) }
+    c_methods.each {|meth| sketch_signatures << "#{meth.scan(/^\w*\n.*\)/)[0].gsub("\n", " ")};" }
+    @clean_c_methods = []
+    c_methods.join("\n").each_with_index do |e,i|
+      if e !~ /^\s*(#{C_VAR_TYPES})(\W{1,6}|\(unsigned\()(#{$external_var_identifiers.join("|")})/ || $external_var_identifiers.empty?
+        # use the list of identifers the external_vars method of the sketch and remove the parens the ruby2c sometime adds to variables
+        e.gsub(/((#{$external_var_identifiers.join("|")})\(\))/, '\2')  unless $external_var_identifiers.empty? 
+      end
+    end
+    @setup.gsub!("// sketch signatures", "// sketch signatures\n#{ sketch_signatures.join("\n")}") unless sketch_signatures.empty?
+    result = "#{@setup}\n#{c_methods.join}\n"
     name = @file_names.first.split(".").first
     File.open("#{name}/#{name}.cpp", "w"){|f| f << result}
   end
@@ -58,9 +71,32 @@ namespace :build do
        end
        CODE
     end
-    
     eval File.read(@file_names.first)
     @setup = @@as.compose_setup
+  end
+  
+  desc "add plugin methods"
+  task :plugin_setup do
+    @plugin_names.each do |name|
+       klass = name.split(".").first.split("_").collect{|c| c.capitalize}.join("")
+       eval "class #{klass} < ArduinoPlugin; end;"
+    
+       @@ps = ArduinoPlugin.new
+       plugin_delegate_methods = @@ps.methods - Object.new.methods
+       plugin_delegate_methods.reject!{|m| m == "compose_setup"}
+    
+       plugin_delegate_methods.each do |meth|
+         constantize(klass).module_eval <<-CODE
+         def self.#{meth}(*args)
+           @@ps.#{meth}(*args)
+         end
+         CODE
+       end
+
+      eval ArduinoPlugin.process(File.read("vendor/plugins/#{name}"))
+      
+    end
+    @@no_plugins = ArduinoPlugin.new if @plugin_names.empty?
   end
   
   desc "setup target directory named after your sketch class"
@@ -70,9 +106,15 @@ namespace :build do
 
   task :file_list do
     @file_names = []
+    @plugin_names = []
     Dir.entries( File.expand_path(RAD_ROOT) ).each do |f|
       if (f =~ /\.rb$/)
         @file_names << f
+      end
+    end
+    Dir.entries( File.expand_path("#{RAD_ROOT}/vendor/plugins/") ).each do |f|
+      if (f =~ /\.rb$/)
+        @plugin_names << f
       end
     end
   end

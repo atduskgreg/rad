@@ -1,7 +1,7 @@
 # ArduinoSketch is the main access point for working with RAD. Sub-classes of ArduinoSketch have access to a wide array of convenient class methods (documented below) for doing the most common kinds of setup needed when programming the Arduino such as configuring input and output pins and establishing serial connections. Here is the canonical 'hello world' example of blinking a single LED in RAD:
 #
 #   class HelloWorld < ArduinoSketch
-#     output_pin 13, :as => led
+#     output_pin 13, :as => :led
 #     
 #     def loop
 #       blink 13, 500
@@ -108,9 +108,60 @@
 #
 #   Documentation: http://www.arduino.cc/en/Serial/Flush
 #
+#   June 25, 2008
+#   Added a new external variable method which keeps track 
+#   external_vars :sensor_position => "int, 0", :feedback => "int", :pulseTime => "unsigned long, 0"
+# 
+#   added ability to write additional methods besides loop in the sketch 
+#   since there is quite a bit of work to do with the c translation, it is easy to write a method that
+#   won't compile or even translate into c, but for basics, it works.  
+#   Note: stay basic and mindful that c is picky about variables and must make a decision
+#   which will not always be what you want
+#   also: for now, don't leave empty methods (something like foo = 1 cures this)
+# 
+#   Example:
+#
+#   class HelloMethods < ArduinoSketch
+#     output_pin 13, :as => :led
+#     
+#     def loop
+#       blink_it
+#     end
+
+#     def blink_it
+#       blink 13, 500
+#     end
+#
+#   end
+#
+#   
+#   added pin methods for servos and latching which generate an array of structs to contain setup and status
+#   input_pin 12, :as => :back_off_button, :latch => :off
+#   input_pin 8, :as => :red_button, :latch => :off # adjust is optional with default set to 200
+#
+#   added add_to_setup method that takes a string of c code and adds it to setup
+#   colons are options and will be added if not present  
+#   no translation from ruby for now
+#
+#   example:
+#   
+#   add_to_setup "call_my_new_method();", "call_another();"  
+#
+#   added some checking to c translation that (hopefully) makes it a bit more predictable
+#   most notably, we keep track of all external variables and let the translator know they exist 
+#   
+#   
+
 class ArduinoSketch
   
   def initialize #:nodoc:
+    @servo_settings = [] # need modular way to add this
+    @debounce_settings = [] # need modular way to add this
+    @@array_vars = [] 
+    @@external_vars =[]
+    $external_var_identifiers = []
+    $sketch_methods = []
+        
     @declarations = []
     @pin_modes = {:output => [], :input => []}
     @pullups = []
@@ -161,6 +212,62 @@ class ArduinoSketch
     end
   end
   
+
+    # a different way to setup external variables outside the loop
+    # 
+    # in addition to being added to the c file as external variables:
+    # we fake ruby2c out by adding them to internal vars for ruby2c processing
+    # but we don't include then in the cpp loop
+    # then, we use the indentiers to remove any parens that ruby2c adds 
+    # this resolves ruby2c's habit of converting variables to methods
+    # need tests and ability to add custom char length
+    def external_vars(opts={})
+      if opts
+          opts.each do |k,v|
+            if v.include? ","
+              if v.split(",")[0] == "char"
+                ## default is 40 characters
+                if v.split(",")[2]
+                    @@external_vars << "#{v.split(",")[0]}* #{k}[#{v.split(",")[2].lstrip}];"
+                else
+                    @@external_vars << "#{v.split(",")[0]} #{k}[40] = \"#{v.split(",")[1].lstrip}\";"
+                end
+              else
+              @@external_vars << "#{v.split(",")[0]} #{k} =#{v.split(",")[1]};"
+              end
+            else
+              if v.split(",")[0] == "char"
+                @@external_vars << "#{v.split(",")[0]} #{k}[40];"
+              else
+
+                @@external_vars << "#{v.split(",")[0]} #{k};"
+              end
+            end
+            # check chars work here
+            $external_var_identifiers << k
+         end
+      end
+    end
+
+
+    def add_to_setup(*args)
+      if args
+         args.each do |arg|
+           $add_to_setup << arg
+         end
+       end
+    end
+
+    # work in progress
+    def external_arrays(*args)
+      if args
+        args.each do |arg|
+          @@array_vars << arg
+        end
+      end
+
+    end
+  
   # Confiugre a single pin for output and setup a method to refer to that pin, i.e.:
   #
   #   output_pin 7, :as => :led
@@ -176,6 +283,13 @@ class ArduinoSketch
     raise ArgumentError, "can only define pin from Fixnum, got #{num.class}" unless num.is_a?(Fixnum)
     @pin_modes[:output] << num
     if opts[:as]
+      # add servo settings to serv servo struct array
+      if opts[:min] && opts[:max] 
+        ArduinoPlugin.add_servo_struct
+        @servo_settings <<  "serv[#{num}].pin = #{num}, serv[#{num}].lastPulse = 0, serv[#{num}].startPulse = 0, serv[#{num}].refreshTime = 20, serv[#{num}].min = #{opts[:min]}, serv[#{num}].max = #{opts[:max]}  "
+      else    
+          raise ArgumentError, "two are required for each servo: min & max" if opts[:min] || opts[:max] 
+      end
       @declarations << "int _#{opts[ :as ]} = #{num};"
       
       accessor = []
@@ -209,6 +323,14 @@ class ArduinoSketch
     raise ArgumentError, "can only define pin from Fixnum, got #{num.class}" unless num.is_a?(Fixnum)
     @pin_modes[:input] << num
     if opts[:as]
+      if opts[:latch] 
+        # add debounce settings to dbce struct array
+        ArduinoPlugin.add_debounce_struct
+        state = opts[:latch] == :on ? 1 : 0
+        prev = opts[:latch] == :on ? 0 : 1
+        adjust = opts[:adjust] ? opts[:adjust] : 200
+        @debounce_settings <<  "dbce[#{num}].pin = #{num}, dbce[#{num}].state = #{state}, dbce[#{num}].read = 0, dbce[#{num}].prev = #{prev}, dbce[#{num}].time = 0, dbce[#{num}].adjust = #{adjust}"
+      end
       @declarations << "int _#{opts[ :as ]} = #{num};"
 
       accessor = []
@@ -271,6 +393,9 @@ class ArduinoSketch
  			accessor << "}"
  			accessor << "void print( SoftwareSerial& s, int i ) {"
  			accessor << "\treturn s.print( i );"
+ 			accessor << "}"
+ 			accessor << "void print( SoftwareSerial& s, long i ) {"
+ 			accessor << "\treturn s.print( long );"
  			accessor << "}"
  			@accessors << accessor.join( "\n" )
  			
@@ -383,15 +508,44 @@ class ArduinoSketch
     result << "#include <SoftwareSerial.h>\n"
     result << "#include <SWSerLCDpa.h>"
 
+    result << comment_box( 'plugin directives' )
+    puts "plugin directives #{$plugin_directives.inspect}"
+    $plugin_directives.each {|dir| result << dir } unless $plugin_directives.nil? ||  $plugin_directives.empty?
     
     result << comment_box( 'method signatures' )
     result << "void loop();"
     result << "void setup();"
+    result << "// sketch signatures"
     @signatures.each {|sig| result << sig}
+    result << "// sketch signatures"
+    result << "// plugin signatures"
+    $plugin_signatures.each {|sig| result << sig } unless $plugin_signatures.nil? || $plugin_signatures.empty?
+    result << "\n" + comment_box( "plugin external variables" )
+    $plugin_external_variables.each { |meth| result << meth } unless $plugin_external_variables.nil? || $plugin_external_variables.empty?
+    
+    result << "\n" + comment_box( "plugin structs" )
+    $plugin_structs.each { |k,v| result << v } unless $plugin_structs.nil? || $plugin_structs.empty?
+
+    result << "\n" + comment_box( "sketch external variables" )
+    
+    @@external_vars.each {|cv| result << "#{cv}"}
+    result << "" 
+    result << "// servo_settings array"
+
+    array_size = @servo_settings.empty? ? 1 : 14 # conserve space if no variables needed
+    result << "struct servo serv[#{array_size}] = { #{@servo_settings.join(", ")} };" if $plugin_structs[:servo]
+    result << "" 
+
+    result << "// debounce array"
+    array_size = @debounce_settings.empty? ? 1 : 14 # conserve space if no variables needed
+    result << "struct debounce dbce[#{array_size}] = { #{@debounce_settings.join(", ")} };" if $plugin_structs[:debounce]
+    result << ""
+    
+    @@array_vars.each { |var| result << var } if @@array_vars
 
     result << "\n" + comment_box( "variable and accessors" )
     @declarations.each {|dec| result << dec}
-    result << "" # blank line    
+    result << ""     
     @accessors.each {|ac| result << ac}
 
     result << "\n" + comment_box( "assembler declarations" )
@@ -417,6 +571,11 @@ class ArduinoSketch
 	    result << "\tdigitalWrite( #{pin}, HIGH ); // enable pull-up resistor for input"
     end
     
+    unless $add_to_setup.nil? || $add_to_setup.empty?
+      result << "\t// setup from plugins via add_to_setup method"
+      $add_to_setup.each {|item| result << "\t#{item}"}
+    end
+    
     unless @other_setup.empty?
       result << "\t// other setup"
       result << @other_setup.join( "\n" )
@@ -427,6 +586,10 @@ class ArduinoSketch
     result << comment_box( "helper methods" )
     result << "\n// RAD built-in helpers"
     result << @helper_methods.lstrip
+    
+    result << "\n" + comment_box( "plugin methods" )  
+    # need to add plugin name to this... 
+    $plugin_methods.each { |meth| result << "#{meth[0][0]}\n" } unless $plugin_methods.nil? || $plugin_methods.empty?
     
     result << "\n// serial helpers"
     result << serial_boilerplate.lstrip
@@ -463,7 +626,13 @@ class ArduinoSketch
   end
   
   def self.pre_process(sketch_string) #:nodoc:
-    result = sketch_string
+    result = sketch_string 
+    # add external vars to each method (needed for better translation, will be removed in make:upload)
+    result.gsub!(/(^\s*def\s.\w*(\(.*\))?)/, '\1' + " \n #{@@external_vars.join("  \n ")}"  )
+    # gather method names
+    sketch_methods = result.scan(/^\s*def\s.\w*/)
+    sketch_methods.each {|m| $sketch_methods << m.gsub(/\s*def\s*/, "") }
+    
     result.gsub!("HIGH", "1")
     result.gsub!("LOW", "0")
     result.gsub!("ON", "1")
@@ -517,6 +686,11 @@ class ArduinoSketch
     
     out << "void serial_println( long i ) {"
     out << "\treturn Serial.println( i );"
+    out << "}"
+    
+    ## added to support millis
+    out << "void serial_print( unsigned long i ) {"
+    out << "\treturn Serial.print( i );"
     out << "}"
 
     return out.join( "\n" )

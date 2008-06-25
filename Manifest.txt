@@ -7,8 +7,15 @@ bin/rad
 lib/libraries/SWSerLCDpa/keywords.txt
 lib/libraries/SWSerLCDpa/SWSerLCDpa.cpp
 lib/libraries/SWSerLCDpa/SWSerLCDpa.h
+lib/plugins/debounce.rb
+lib/plugins/mem_test.rb
+lib/plugins/servo_pulse.rb
+lib/plugins/servo_setup.rb
+lib/plugins/smoother.rb
+lib/plugins/spark_fun_serial_lcd.rb
 lib/rad.rb
 lib/rad/arduino_sketch.rb
+lib/rad/arduion_plugin.rb
 lib/rad/init.rb
 lib/rad/todo.txt
 lib/rad/tasks/build_and_make.rake

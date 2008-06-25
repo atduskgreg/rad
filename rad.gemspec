@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
-  s.name = "RAD"
-  s.version = "0.2.3"
+  s.name = "rad"
+  s.version = "0.2.2"
   s.date = "2008-06-25"
   s.summary = "Fork of the Fab Ruby Arduino Development "
   s.email = "jd@jdbarnhart.com"

@@ -107,6 +107,15 @@ FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/SWSerLCDpa/.", "#{ske
 puts "Installed SWSerLCDpa into #{sketch_name}/vendor/libraries"
 puts
 
+# Build vendor/plugins:  
+
+FileUtils.mkdir_p "#{sketch_name}/vendor/plugins"
+puts "Successfully created your plugins directory."
+
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/plugins/.", "#{sketch_name}/vendor/plugins"
+puts "Installed Default plugins into #{sketch_name}/vendor/plugins"
+puts
+
 # Build sketch files, etc.:  
 
 FileUtils.touch "#{sketch_name}/#{sketch_name}.rb"

@@ -97,12 +97,11 @@ end
   def add_debounce_struct
     $plugin_structs[:debounce] = <<-STR
     struct debounce {
-      int pin;
       int state;
       int read;
       int prev;
       int time;
-      unsigned long adjust;
+      int adjust;
     };
     STR
   end
@@ -124,12 +123,11 @@ end
   def self.add_debounce_struct
     $plugin_structs[:debounce] = <<-STR
     struct debounce {
-      int pin;
       int state;
       int read;
       int prev;
       int time;
-      unsigned long adjust;
+      int adjust;
     };
     STR
   end

@@ -157,6 +157,8 @@ class ArduinoSketch
   def initialize #:nodoc:
     @servo_settings = [] # need modular way to add this
     @debounce_settings = [] # need modular way to add this
+    @servo_pins = [] 
+    @debounce_pins = []
     @@array_vars = [] 
     @@external_vars =[]
     $external_var_identifiers = []
@@ -286,6 +288,7 @@ class ArduinoSketch
       # add servo settings to serv servo struct array
       if opts[:min] && opts[:max] 
         ArduinoPlugin.add_servo_struct
+        @servo_pins << num
         @servo_settings <<  "serv[#{num}].pin = #{num}, serv[#{num}].lastPulse = 0, serv[#{num}].startPulse = 0, serv[#{num}].refreshTime = 20, serv[#{num}].min = #{opts[:min]}, serv[#{num}].max = #{opts[:max]}  "
       else    
           raise ArgumentError, "two are required for each servo: min & max" if opts[:min] || opts[:max] 
@@ -326,10 +329,11 @@ class ArduinoSketch
       if opts[:latch] 
         # add debounce settings to dbce struct array
         ArduinoPlugin.add_debounce_struct
+        @debounce_pins << num
         state = opts[:latch] == :on ? 1 : 0
         prev = opts[:latch] == :on ? 0 : 1
         adjust = opts[:adjust] ? opts[:adjust] : 200
-        @debounce_settings <<  "dbce[#{num}].pin = #{num}, dbce[#{num}].state = #{state}, dbce[#{num}].read = 0, dbce[#{num}].prev = #{prev}, dbce[#{num}].time = 0, dbce[#{num}].adjust = #{adjust}"
+        @debounce_settings <<  "dbce[#{num}].state = #{state}, dbce[#{num}].read = 0, dbce[#{num}].prev = #{prev}, dbce[#{num}].time = 0, dbce[#{num}].adjust = #{adjust}"
       end
       @declarations << "int _#{opts[ :as ]} = #{num};"
 
@@ -532,12 +536,12 @@ class ArduinoSketch
     result << "" 
     result << "// servo_settings array"
 
-    array_size = @servo_settings.empty? ? 1 : 14 # conserve space if no variables needed
+    array_size = @servo_settings.empty? ? 1 : @servo_pins.max + 1 # conserve space if no variables needed
     result << "struct servo serv[#{array_size}] = { #{@servo_settings.join(", ")} };" if $plugin_structs[:servo]
     result << "" 
 
     result << "// debounce array"
-    array_size = @debounce_settings.empty? ? 1 : 14 # conserve space if no variables needed
+    array_size = @debounce_settings.empty? ? 1 : @debounce_pins.max + 1 # conserve space if no variables needed
     result << "struct debounce dbce[#{array_size}] = { #{@debounce_settings.join(", ")} };" if $plugin_structs[:debounce]
     result << ""
     

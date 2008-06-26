@@ -1,9 +1,9 @@
 Gem::Specification.new do |s|
-  s.name = %q{madrona-rad}
+  s.name = %q{rad}
   s.version = "0.2.2"
   
   s.date = %q{2008-06-25}
-  s.default_executable = %q{rad}
+  s.default_executable = %q{madrona-rad}
   s.summary = "Fork of the Fab Ruby Arduino Development "
   s.email = "jd@jdbarnhart.com"
   s.executables = ["rad"]

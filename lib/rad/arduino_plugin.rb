@@ -100,8 +100,8 @@ end
       int state;
       int read;
       int prev;
-      int time;
-      int adjust;
+      unsigned long time;
+      unsigned long adjust;
     };
     STR
   end
@@ -126,8 +126,8 @@ end
       int state;
       int read;
       int prev;
-      int time;
-      int adjust;
+      unsigned long time;
+      unsigned long adjust;
     };
     STR
   end

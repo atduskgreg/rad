@@ -38,7 +38,7 @@ int find_debounce_prev(int input)
 return dbce[input].prev;
 }
 
-int find_debounce_time(int input)
+unsigned long find_debounce_time(int input)
 {
 return dbce[input].time;
 }
@@ -48,18 +48,18 @@ int find_debounce_adjust(int input)
 return dbce[input].adjust;
 }
 
-long unsigned find_servo_last_pulse(int input)
+unsigned long find_servo_last_pulse(int input)
 {
 return serv[input].lastPulse;
 }
 
-long unsigned find_servo_start_pulse(int input)
+unsigned long find_servo_start_pulse(int input)
 {
 return serv[input].startPulse;
 
 }
 
-long unsigned find_servo_refresh_time(int input)
+unsigned long find_servo_refresh_time(int input)
 {
 return serv[input].refreshTime;
 }

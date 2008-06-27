@@ -31,11 +31,21 @@ add_debounce_struct
 # increase the debounce_setting, increase if the output flickers 
 # need docs..
 # and testing
+#
+# remember these are being called from the loop (typically)
+# 
+# NOTE: if two buttons are controlling one output, today, strange
+#       things will happen since each button tries to assert its own state
+#       suggestion: we can fix this with an array of structs for shared outputs
+#       ie: output_pin 5, :as => :yellow_led, :shared => :yes # default no
+#       this would put the state at the output which could be compared to 
+#       the inputs_state and override and set it if different
 
 int debounce_read(int input)
 {
   struct debounce btn = dbce[input];
-  btn.read = digitalRead(input);
+  /* input is HIGH (1) for open and LOW (0) for closed circuit */
+  dbce[input].read = digitalRead(input);
   if (btn.read == LOW && millis() - btn.time > btn.adjust) {
     /* are we sure */
       return HIGH;
@@ -49,14 +59,13 @@ int debounce_read(int input)
 
 int debounce_toggle(int input, int output)
 {
-  struct debounce btn = dbce[input];
-  btn.read = digitalRead(input);
+  dbce[input].read = digitalRead(input);
 
-  /* if we just pressed the button (i.e. the input went from LOW to HIGH), */
+  /* if we just pressed the button  */
   /* and we've waited long enough since the last press to ignore any noise...  */
-  if (btn.read == HIGH && btn.prev == LOW && millis() - btn.time > btn.adjust) {
+  if (dbce[input].read == HIGH && dbce[input].prev == LOW && millis() - dbce[input].time > dbce[input].adjust) {
     // ... invert the output
-    if (btn.state == HIGH)
+    if (dbce[input].state == HIGH)
       dbce[input].state = LOW;
     else
       dbce[input].state = HIGH;
@@ -65,10 +74,11 @@ int debounce_toggle(int input, int output)
     dbce[input].time = millis();    
   }
 
-  digitalWrite(output, btn.state);
+  digitalWrite(output, dbce[input].state);
 
-  dbce[input].prev = btn.read;
-  return btn.state;
+  dbce[input].prev = dbce[input].read;
+  
+  return dbce[input].state; 
 }
 
     

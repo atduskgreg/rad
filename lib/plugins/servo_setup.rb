@@ -57,7 +57,6 @@ void move_servo(int servo_num, int pulse_width)
 
   if (millis() - servo_name.lastPulse >= servo_name.refreshTime)
     {
-      serv[servo_num].pulseWidth = pw;
       pulse_servo(servo_name.pin, pw);
       servo_name.lastPulse = millis();
       if (find_total_loop_time() < 10)
@@ -73,6 +72,7 @@ void pulse_servo(int pin, int us) {
   // pulseWidth
   delayMicroseconds( us );
   digitalWrite( pin, LOW );
+  serv[pin].pulseWidth = us;
 }
 
 

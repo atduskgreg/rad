@@ -18,11 +18,13 @@ class ServoPulse < ArduinoPlugin
   # one or more methods may be added and prototypes are generated automatically with rake make:upload
   
 # call pulse(us) to pulse a servo  
+# this can be eliminate since we have an identical pulse_servo in servo_setup
 
 void pulse(int pin, int us) {
   digitalWrite( pin, HIGH );
   delayMicroseconds( us );
   digitalWrite( pin, LOW );
+  serv[pin].pulseWidth = us;
 }
     
 

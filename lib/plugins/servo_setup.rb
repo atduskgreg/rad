@@ -47,34 +47,33 @@ add_servo_struct
 void move_servo(int servo_num, int pulse_width)
 {
   struct servo servo_name = serv[servo_num];
+
   int pw = pulse_width;
   /* apply the servo limits */
   if (pw > servo_name.max)
     pw = servo_name.max;
   if (pw < servo_name.min)
     pw = servo_name.min;
-  
+
   if (millis() - servo_name.lastPulse >= servo_name.refreshTime)
     {
-
+      serv[servo_num].pulseWidth = pw;
       pulse_servo(servo_name.pin, pw);
       servo_name.lastPulse = millis();
-      delay(40);
-      /* uncomment for debug if sparkfun_lcd plugin avail */
-      /* lcd_second_line(); */
-      /* Serial.print("pulseWidth: "); */
-      /* Serial.print(pw); */
-      /* Serial.print("  "); */     
+      if (find_total_loop_time() < 10)
+      // for debug:
+      // digitalWrite( 5, HIGH );
+      delay(8);
     }
-    
+
 }
 
 void pulse_servo(int pin, int us) {
   digitalWrite( pin, HIGH );
+  // pulseWidth
   delayMicroseconds( us );
   digitalWrite( pin, LOW );
 }
-
 
 
 

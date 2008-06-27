@@ -289,7 +289,8 @@ class ArduinoSketch
       if opts[:min] && opts[:max] 
         ArduinoPlugin.add_servo_struct
         @servo_pins << num
-        @servo_settings <<  "serv[#{num}].pin = #{num}, serv[#{num}].lastPulse = 0, serv[#{num}].startPulse = 0, serv[#{num}].refreshTime = 20, serv[#{num}].min = #{opts[:min]}, serv[#{num}].max = #{opts[:max]}  "
+        refresh = opts[:refresh] ? opts[:refresh] : 200
+        @servo_settings <<  "serv[#{num}].pin = #{num}, serv[#{num}].lastPulse = 0, serv[#{num}].startPulse = 0, serv[#{num}].refreshTime = #{refresh}, serv[#{num}].min = #{opts[:min]}, serv[#{num}].max = #{opts[:max]}  "
       else    
           raise ArgumentError, "two are required for each servo: min & max" if opts[:min] || opts[:max] 
       end

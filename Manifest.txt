@@ -8,6 +8,7 @@ lib/libraries/SWSerLCDpa/keywords.txt
 lib/libraries/SWSerLCDpa/SWSerLCDpa.cpp
 lib/libraries/SWSerLCDpa/SWSerLCDpa.h
 lib/plugins/debounce.rb
+lib/plugins/debug_output_to_lcd.rb
 lib/plugins/input_output_state.rb
 lib/plugins/mem_test.rb
 lib/plugins/servo_pulse.rb

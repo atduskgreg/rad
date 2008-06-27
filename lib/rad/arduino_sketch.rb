@@ -170,7 +170,7 @@ class ArduinoSketch
     @other_setup = [] # specifically, Serial.begin
     @assembler_declarations = []
     @accessors = []
-    @signatures = ["void blink();", "int main();"]
+    @signatures = ["void blink();", "int main();", "void track_total_loop_time(void);", "unsigned long find_total_loop_time(void);"]
 
     helper_methods = []
     helper_methods << "void blink(int pin, int ms) {"
@@ -179,7 +179,19 @@ class ArduinoSketch
     helper_methods << "\tdigitalWrite( pin, LOW );"
     helper_methods << "\tdelay( ms );"
     helper_methods << "}"
+    helper_methods << "void track_total_loop_time(void)"
+    helper_methods << "{"
+    helper_methods << "\ttotal_loop_time = millis() - start_loop_time;"
+    helper_methods << "\tstart_loop_time = millis();"
+    helper_methods << "}"
+    helper_methods << "unsigned long find_total_loop_time(void)"
+    helper_methods << "{"
+    helper_methods << "\nreturn total_loop_time;"
+    helper_methods << "}"
     @helper_methods = helper_methods.join( "\n" )
+    
+    @declarations << "unsigned long start_loop_time = 0;"
+    @declarations << "unsigned long total_loop_time = 0;"
   end
   
   # Setup variables outside of the loop. Does some magic based on type of arguments. Subject to renaming. Use with caution.
@@ -290,9 +302,10 @@ class ArduinoSketch
         ArduinoPlugin.add_servo_struct
         @servo_pins << num
         refresh = opts[:refresh] ? opts[:refresh] : 200
-        @servo_settings <<  "serv[#{num}].pin = #{num}, serv[#{num}].lastPulse = 0, serv[#{num}].startPulse = 0, serv[#{num}].refreshTime = #{refresh}, serv[#{num}].min = #{opts[:min]}, serv[#{num}].max = #{opts[:max]}  "
+        @servo_settings <<  "serv[#{num}].pin = #{num}, serv[#{num}].pulseWidth = 0, serv[#{num}].lastPulse = 0, serv[#{num}].startPulse = 0, serv[#{num}].refreshTime = #{refresh}, serv[#{num}].min = #{opts[:min]}, serv[#{num}].max = #{opts[:max]}  "
       else    
           raise ArgumentError, "two are required for each servo: min & max" if opts[:min] || opts[:max] 
+          raise ArgumentError, "refresh is an optional servo parameter, don't forget min & max" if opts[:refresh] 
       end
       @declarations << "int _#{opts[ :as ]} = #{num};"
       
@@ -514,7 +527,6 @@ class ArduinoSketch
     result << "#include <SWSerLCDpa.h>"
 
     result << comment_box( 'plugin directives' )
-    puts "plugin directives #{$plugin_directives.inspect}"
     $plugin_directives.each {|dir| result << dir } unless $plugin_directives.nil? ||  $plugin_directives.empty?
     
     result << comment_box( 'method signatures' )

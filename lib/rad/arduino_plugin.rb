@@ -111,6 +111,7 @@ end
     $plugin_structs[:servo] = <<-STR
     struct servo {
       int pin;
+      long unsigned pulseWidth;
       long unsigned lastPulse;
       long unsigned startPulse;
       long unsigned refreshTime;
@@ -137,6 +138,7 @@ end
     $plugin_structs[:servo] = <<-STR
     struct servo {
       int pin;
+      long unsigned pulseWidth;
       long unsigned lastPulse;
       long unsigned startPulse;
       long unsigned refreshTime;

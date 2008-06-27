@@ -48,6 +48,11 @@ int find_debounce_adjust(int input)
 return dbce[input].adjust;
 }
 
+long unsigned find_servo_pulse_width(int input)
+{
+return serv[input].pulseWidth;
+}
+
 unsigned long find_servo_last_pulse(int input)
 {
 return serv[input].lastPulse;

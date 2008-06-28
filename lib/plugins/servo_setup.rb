@@ -62,7 +62,8 @@ void move_servo(int servo_num, int pulse_width)
       if (find_total_loop_time() < 10)
       // for debug:
       // digitalWrite( 5, HIGH );
-      delay(8);
+      // 18 seems optimal, but we should let the users adjust with a servo option
+      delay(18);
     }
 
 }

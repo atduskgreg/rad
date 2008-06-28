@@ -40,19 +40,22 @@ namespace :build do
     sketch_signatures = []
     $sketch_methods.each {|m| c_methods << RubyToAnsiC.translate(constantize(klass), m) }
     c_methods.each {|meth| sketch_signatures << "#{meth.scan(/^\w*\n.*\)/)[0].gsub("\n", " ")};" }
+    clean_c_methods = []
     c_methods.join("\n").each_with_index do |e,i|
+      # need to take a look at the \(unsigned in the line below not sure if we are really trying to catch something like that
       if e !~ /^\s*(#{C_VAR_TYPES})(\W{1,6}|\(unsigned\()(#{$external_var_identifiers.join("|")})/ || $external_var_identifiers.empty?
         # use the list of identifers the external_vars method of the sketch and remove the parens the ruby2c sometime adds to variables
         e.gsub(/((#{$external_var_identifiers.join("|")})\(\))/, '\2')  unless $external_var_identifiers.empty? 
+        clean_c_methods << e
       end
     end
-    c_methods_with_timer = c_methods.join.gsub(/loop\(\)\s\{/,"loop() {\ntrack_total_loop_time();")
+    c_methods_with_timer = clean_c_methods.join.gsub(/loop\(\)\s\{/,"loop() {\ntrack_total_loop_time();")
     @setup.gsub!("// sketch signatures", "// sketch signatures\n#{ sketch_signatures.join("\n")}") unless sketch_signatures.empty?
     result = "#{@setup}\n#{c_methods_with_timer}\n"
     name = @file_names.first.split(".").first
     File.open("#{name}/#{name}.cpp", "w"){|f| f << result}
   end
-
+  
   # needs to write the library include and the method signatures
   desc "build setup function"
   task :setup do

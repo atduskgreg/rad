@@ -41,13 +41,21 @@ add_debounce_struct
 #       this would put the state at the output which could be compared to 
 #       the inputs_state and override and set it if different
 
+## Todo: reduce to two methods named read_input and read_and_toggle
+
+int read_input(int input)
+{
+  debounce_read(input);
+}
+
+
 int debounce_read(int input)
 {
   struct debounce btn = dbce[input];
   /* input is HIGH (1) for open and LOW (0) for closed circuit */
   dbce[input].read = digitalRead(input);
   if (btn.read == LOW && millis() - btn.time > btn.adjust) {
-    /* are we sure */
+      dbce[input].time = millis();
       return HIGH;
   }
   else {      
@@ -56,6 +64,12 @@ int debounce_read(int input)
   dbce[input].prev = btn.read;
 }
 
+
+
+int read_and_toggle(int input, int output)
+{
+  debounce_toggle(input, output);
+}
 
 int debounce_toggle(int input, int output)
 {

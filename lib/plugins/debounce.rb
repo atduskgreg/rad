@@ -45,7 +45,7 @@ add_debounce_struct
 
 int read_input(int input)
 {
-  debounce_read(input);
+  return debounce_read(input);
 }
 
 
@@ -68,7 +68,7 @@ int debounce_read(int input)
 
 int read_and_toggle(int input, int output)
 {
-  debounce_toggle(input, output);
+  return debounce_toggle(input, output);
 }
 
 int debounce_toggle(int input, int output)

@@ -24,11 +24,11 @@ To install the madrona fork gem:
 
 To install the original rad:
 
-$ sudo gem install rad
+ $ sudo gem install rad
 
 Run the rad command to create a new project:
 
-$ rad my_project
+ $ rad my_project
 
 Write a sketch that will blink a single LED every 500ms:
 
@@ -42,7 +42,7 @@ Write a sketch that will blink a single LED every 500ms:
 
 Attach your Arduino and use rake to complile and upload your sketch:
 
-$ rake make:upload
+ $ rake make:upload
 
 ==Get Involved
 

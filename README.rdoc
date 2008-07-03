@@ -16,7 +16,13 @@ See the examples directory for lots of examples of RAD in action: http://rad.rub
 
 ==Getting Started
 
-Install the gem:
+To install the madrona fork gem:
+
+$ Update to RubyGems 1.2.0 before proceeding!! 
+$ gem sources -a http://gems.github.com (you only have to do this once)
+$ sudo gem install madrona-rad
+
+To install the original rad:
 
 $ sudo gem install rad
 

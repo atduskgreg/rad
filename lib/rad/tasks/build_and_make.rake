@@ -22,8 +22,7 @@ namespace :make do
   end
   
   task :clean_sketch_dir => ["build:file_list", "build:sketch_dir"] do
-    @sketch_name = @file_names.first.split(".").first
-    
+    @sketch_name = @sketch_class.split(".").first
     FileList.new(Dir.entries("#{RAD_ROOT}/#{@sketch_name}")).exclude("#{@sketch_name}.cpp").exclude(/^\./).each do |f|
       sh %{rm #{RAD_ROOT}/#{@sketch_name}/#{f}}
     end
@@ -34,8 +33,8 @@ namespace :build do
 
   desc "actually build the sketch"
   task :sketch => [:file_list, :sketch_dir, :plugin_setup, :setup] do
-    klass = @file_names.first.split(".").first.split("_").collect{|c| c.capitalize}.join("")    
-    eval ArduinoSketch.pre_process(File.read(@file_names.first))
+    klass = @sketch_class.split(".").first.split("_").collect{|c| c.capitalize}.join("")    
+    eval ArduinoSketch.pre_process(File.read(@sketch_class))
     c_methods = []
     sketch_signatures = []
     $sketch_methods.each {|m| c_methods << RubyToAnsiC.translate(constantize(klass), m) }
@@ -52,14 +51,14 @@ namespace :build do
     c_methods_with_timer = clean_c_methods.join.gsub(/loop\(\)\s\{/,"loop() {\ntrack_total_loop_time();")
     @setup.gsub!("// sketch signatures", "// sketch signatures\n#{ sketch_signatures.join("\n")}") unless sketch_signatures.empty?
     result = "#{@setup}\n#{c_methods_with_timer}\n"
-    name = @file_names.first.split(".").first
+    name = @sketch_class.split(".").first
     File.open("#{name}/#{name}.cpp", "w"){|f| f << result}
   end
-  
+
   # needs to write the library include and the method signatures
   desc "build setup function"
   task :setup do
-    klass = @file_names.first.split(".").first.split("_").collect{|c| c.capitalize}.join("")
+    klass = @sketch_class.split(".").first.split("_").collect{|c| c.capitalize}.join("")
     eval "class #{klass} < ArduinoSketch; end;"
     
     @@as = ArduinoSketch.new
@@ -74,7 +73,7 @@ namespace :build do
        end
        CODE
     end
-    eval File.read(@file_names.first)
+    eval File.read(@sketch_class)
     @setup = @@as.compose_setup
   end
   
@@ -104,10 +103,15 @@ namespace :build do
   
   desc "setup target directory named after your sketch class"
   task :sketch_dir => [:file_list] do
-    mkdir_p "#{@file_names.first.split(".").first}"
+    mkdir_p "#{@sketch_class.split(".").first}"
   end
 
   task :file_list do
+    # take another look at this, since if the root directory name is changed, everything breaks
+    # perhaps we generate a constant when the project is generated an pop it here or in the init file
+    @sketch_directory = File.expand_path("#{File.dirname(__FILE__)}/../../../").split("/").last
+    # multiple sketches are possible with rake make:upload sketch=new_sketch
+    @sketch_class = ENV['sketch'] ? "#{ENV['sketch']}.rb" : "#{@sketch_directory}.rb"
     @file_names = []
     @plugin_names = []
     Dir.entries( File.expand_path(RAD_ROOT) ).each do |f|

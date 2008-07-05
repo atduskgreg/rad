@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
   
   s.date = %q{2008-06-25}
   s.default_executable = %q{rad}
-  s.summary = "Fork of the Ruby Arduino Development - 0.2.4.0"
+  s.summary = "Fork of the Ruby Arduino Development - 0.2.4.1"
   s.email = "jd@jdbarnhart.com"
   s.executables = ["rad"]
   s.homepage = "http://github.com/madrona/rad"
@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.rubyforge_project = %q{rad}
   s.rubygems_version = %q{1.2.0}
-  s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.txt"]
+  s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.rdoc"]
   s.add_dependency("mime-types", ["> 0.0.0"])
   
   if s.respond_to? :specification_version then

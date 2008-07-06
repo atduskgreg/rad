@@ -103,8 +103,17 @@ puts
 FileUtils.mkdir_p "#{sketch_name}/vendor/libraries"
 puts "Successfully created your libraries directory."
 
+
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/Servo/.", "#{sketch_name}/vendor/libraries/Servo"
+puts "Installed Servo into #{sketch_name}/vendor/libraries"
+puts
+
 FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/SWSerLCDpa/.", "#{sketch_name}/vendor/libraries/SWSerLCDpa"
 puts "Installed SWSerLCDpa into #{sketch_name}/vendor/libraries"
+puts
+
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/SWSerLCDsf/.", "#{sketch_name}/vendor/libraries/SWSerLCDsf"
+puts "Installed SWSerLCDsf into #{sketch_name}/vendor/libraries"
 puts
 
 # Build vendor/plugins:  

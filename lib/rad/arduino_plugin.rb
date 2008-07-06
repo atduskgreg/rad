@@ -51,6 +51,8 @@ def initialize #:nodoc:
   $plugin_structs = $plugin_structs || {}
   $plugin_signatures = $plugin_signatures || []
   $plugin_methods = $plugin_methods || []
+ # $plugin_methods_hash = $plugin_methods_hash || {}  ### new
+ # $plugins_to_load = $plugins_to_load || []  ### new
   $add_to_setup = $add_to_setup || []
 
 
@@ -146,6 +148,28 @@ end
       int max;
     };
     STR
+  end
+  
+
+  def self.check_for_plugin_use(sketch_string, plugin_string, file_name) # rename klass to filename
+    $plugin_methods_hash = $plugin_methods_hash || {}  
+    $plugins_to_load = $plugins_to_load || []  
+    plugin_signatures = []
+    plugin_methods = []
+    plugin_signatures << plugin_string.scan(/^\s((int|void|unsigned|long|short).*\(.*\))/)
+    # gather just the method name and then add to #plugin_methods_hash
+    plugin_signatures[0].map {|sig| "#{sig[0]}"}.each {|m| plugin_methods << m.gsub!(/^.*\s(\w*)\(.*\)/, '\1')}
+    # we don't know the methods yet, so... 
+    $plugin_methods_hash[file_name] = plugin_methods
+    $plugin_methods_hash.each do |k,meths|
+      meths.each do |meth|
+        if sketch_string.include?(meth)
+           # load this plugin... 
+           $plugins_to_load << k unless $plugins_to_load.include?(k)
+         end
+      end
+    end
+
   end
 
 

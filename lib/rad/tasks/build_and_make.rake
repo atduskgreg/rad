@@ -32,7 +32,7 @@ end
 namespace :build do
 
   desc "actually build the sketch"
-  task :sketch => [:file_list, :sketch_dir, :plugin_setup, :setup] do
+  task :sketch => [:file_list, :sketch_dir, :gather_required_plugins, :plugin_setup, :setup] do
     klass = @sketch_class.split(".").first.split("_").collect{|c| c.capitalize}.join("")    
     eval ArduinoSketch.pre_process(File.read(@sketch_class))
     c_methods = []
@@ -79,7 +79,7 @@ namespace :build do
   
   desc "add plugin methods"
   task :plugin_setup do
-    @plugin_names.each do |name|
+    $plugins_to_load.each do |name|
        klass = name.split(".").first.split("_").collect{|c| c.capitalize}.join("")
        eval "class #{klass} < ArduinoPlugin; end;"
     
@@ -99,6 +99,14 @@ namespace :build do
       
     end
     @@no_plugins = ArduinoPlugin.new if @plugin_names.empty?
+  end
+  
+  desc "determine which plugins to load based on use of methods in sketch"
+  task :gather_required_plugins do
+    @plugin_names.each do |name|
+       ArduinoPlugin.check_for_plugin_use(File.read(@sketch_class), File.read("vendor/plugins/#{name}"), name )
+    end
+    puts "#{$plugins_to_load.length} of #{$plugin_methods_hash.length} plugins are being loaded:  #{$plugins_to_load.join(", ")}"
   end
   
   desc "setup target directory named after your sketch class"

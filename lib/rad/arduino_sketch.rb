@@ -153,6 +153,10 @@
 #   
 
 class ArduinoSketch
+  @@servo_inc = FALSE	# flag to indicate this library instance has been created at least once - BBR
+  @@slcdpa_inc = FALSE	#  same
+  @@slcdsf_inc = FALSE	#  same
+  @@swser_inc = FALSE	#  same
   
   def initialize #:nodoc:
     @servo_settings = [] # need modular way to add this
@@ -297,12 +301,35 @@ class ArduinoSketch
     raise ArgumentError, "can only define pin from Fixnum, got #{num.class}" unless num.is_a?(Fixnum)
     @pin_modes[:output] << num
     if opts[:as]
-      # add servo settings to serv servo struct array
+      if opts[:device]
+        case opts[:device]
+        when :servo
+          new_servo_setup(num, opts)
+          return # don't use declarations, accessor, signatures below
+        when :orig_servo
+          orig_servo_setup(num, opts)
+        when :lcd || :LCD
+          lcd_setup(num, opts)
+          return 
+        when :pa_lcd || :pa_LCD
+          pa_lcd_setup(num, opts)
+          return 
+        when :sf_lcd || :sf_LCD
+          sf_lcd_setup(num, opts)
+          return 
+      end
+    end
+    
+# remove the next 14 lines as soon as documentation on new :device => :servo option is out
+      
       if opts[:min] && opts[:max] 
         ArduinoPlugin.add_servo_struct
         @servo_pins << num
         refresh = opts[:refresh] ? opts[:refresh] : 200
         @servo_settings <<  "serv[#{num}].pin = #{num}, serv[#{num}].pulseWidth = 0, serv[#{num}].lastPulse = 0, serv[#{num}].startPulse = 0, serv[#{num}].refreshTime = #{refresh}, serv[#{num}].min = #{opts[:min]}, serv[#{num}].max = #{opts[:max]}  "
+        unless opts[:device]
+          puts "#{"*"*80} \n   using :max and :min to instantiate a servo is deprecated\n   use :device => :servo instead\n#{"*"*80}"
+        end
       else    
           raise ArgumentError, "two are required for each servo: min & max" if opts[:min] || opts[:max] 
           raise ArgumentError, "refresh is an optional servo parameter, don't forget min & max" if opts[:refresh] 
@@ -325,6 +352,52 @@ class ArduinoSketch
     ar.each {|n| output_pin(n)} 
   end
   
+  ### tuck the following five methods into private once they are solid 
+  
+  def orig_servo_setup(num, opts)
+    ArduinoPlugin.add_servo_struct
+    @servo_pins << num
+    refresh = opts[:refresh] ? opts[:refresh] : 200
+    min = opts[:min] ? opts[:min] : 700
+    max = opts[:min] ? opts[:max] : 2200
+    @servo_settings <<  "serv[#{num}].pin = #{num}, serv[#{num}].pulseWidth = 0, serv[#{num}].lastPulse = 0, serv[#{num}].startPulse = 0, serv[#{num}].refreshTime = #{refresh}, serv[#{num}].min = #{min}, serv[#{num}].max = #{max}  "
+  end
+  
+  # use the servo library
+  def new_servo_setup(num, opts)
+    opts[:minp] = opts[:min] ? opts[:min] : 544
+    opts[:maxp] = opts[:max] ? opts[:max] : 2400
+    servo(num, opts)  
+  end
+  
+  ## this won't work at all... no pins
+  # need help
+  def lcd_setup(num, opts)
+    # move to plugin and load plugin
+    # what's the default rate?
+    opts[:rate] ||= 9800
+    rate = opts[:rate] ? opts[:rate] : 9800
+    swser_LCD(num, opts)
+  end
+  
+  # use the pa lcd library
+  def pa_lcd_setup(num, opts)
+    # move to plugin and load plugin
+    # what's the default?
+     opts[:rate] ||= 9800
+    rate = opts[:rate] ? opts[:rate] : 9800
+    swser_LCDpa(num, opts)
+  end
+  
+  # use the sf (sparkfun) library
+  def sf_lcd_setup(num, opts)
+    # move to plugin and load plugin
+     opts[:rate] ||= 9800
+    rate = opts[:rate] ? opts[:rate] : 9800
+    swser_LCDsf(num, opts)
+  end
+
+  
   # Confiugre a single pin for input and setup a method to refer to that pin, i.e.:
   #
   #   input_pin 3, :as => :button
@@ -340,7 +413,11 @@ class ArduinoSketch
     raise ArgumentError, "can only define pin from Fixnum, got #{num.class}" unless num.is_a?(Fixnum)
     @pin_modes[:input] << num
     if opts[:as]
-      if opts[:latch] 
+      # transitioning to :device => :button syntax
+      if opts[:latch] || opts[:device] == :button
+        if opts[:device] == :button
+          opts[:latch] ||= :on
+        end
         # add debounce settings to dbce struct array
         ArduinoPlugin.add_debounce_struct
         @debounce_pins << num
@@ -397,24 +474,24 @@ class ArduinoSketch
  			accessor << "SoftwareSerial& #{opts[ :as ]}() {"
  			accessor << "\treturn _#{opts[ :as ]};"
  			accessor << "}"
- 			accessor << "int read(SoftwareSerial& s) {"
- 			accessor << "\treturn s.read();"
- 			accessor << "}"
- 			accessor << "void println( SoftwareSerial& s, char* str ) {"
- 			accessor << "\treturn s.println( str );"
- 			accessor << "}"
- 			accessor << "void print( SoftwareSerial& s, char* str ) {"
- 			accessor << "\treturn s.print( str );"
- 			accessor << "}"
- 			accessor << "void println( SoftwareSerial& s, int i ) {"
- 			accessor << "\treturn s.println( i );"
- 			accessor << "}"
- 			accessor << "void print( SoftwareSerial& s, int i ) {"
- 			accessor << "\treturn s.print( i );"
- 			accessor << "}"
- 			accessor << "void print( SoftwareSerial& s, long i ) {"
- 			accessor << "\treturn s.print( long );"
- 			accessor << "}"
+ 			if (@@swser_inc == FALSE) # on second instance this stuff can't be repeated
+ 				@@swser_inc = TRUE
+	 			accessor << "int read(SoftwareSerial& s) {"
+ 				accessor << "\treturn s.read();"
+ 				accessor << "}"
+ 				accessor << "void println( SoftwareSerial& s, char* str ) {"
+ 				accessor << "\treturn s.println( str );"
+ 				accessor << "}"
+ 				accessor << "void print( SoftwareSerial& s, char* str ) {"
+ 				accessor << "\treturn s.print( str );"
+ 				accessor << "}"
+ 				accessor << "void println( SoftwareSerial& s, int i ) {"
+ 				accessor << "\treturn s.println( i );"
+ 				accessor << "}"
+ 				accessor << "void print( SoftwareSerial& s, int i ) {"
+ 				accessor << "\treturn s.print( i );"
+ 				accessor << "}"
+ 			end
  			@accessors << accessor.join( "\n" )
  			
  			@signatures << "SoftwareSerial& #{opts[ :as ]}();"
@@ -427,88 +504,93 @@ class ArduinoSketch
     raise ArgumentError, "can only define tx from Fixnum, got #{tx.class}" unless tx.is_a?(Fixnum)
     output_pin(tx)
     
+
     rate = opts[:rate] ? opts[:rate] : 9600
- 		if opts[:as]
- 			@declarations << "SWSerLCDpa _#{opts[ :as ]} = SWSerLCDpa(#{tx});"
+    geometry = opts[:geometry] ? opts[:geometry] : 0
+ 		if opts[:as] 
+ 			@declarations << "SWSerLCDpa _#{opts[ :as ]} = SWSerLCDpa(#{tx}, #{geometry});"
  			accessor = []
  			accessor << "SWSerLCDpa& #{opts[ :as ]}() {"
  			accessor << "\treturn _#{opts[ :as ]};"
  			accessor << "}"
- 			accessor << "void print( SWSerLCDpa& s, uint8_t b ) {"
- 			accessor << "\treturn s.print( b );"
- 			accessor << "}"
- 			accessor << "void print( SWSerLCDpa& s, const char *str ) {"
- 			accessor << "\treturn s.print( str );"
- 			accessor << "}"
- 			accessor << "void print( SWSerLCDpa& s, char c ) {"
- 			accessor << "\treturn s.print( c );"
- 			accessor << "}"
- 			accessor << "void print( SWSerLCDpa& s, int i ) {"
- 			accessor << "\treturn s.print( i );"
- 			accessor << "}"
- 			accessor << "void print( SWSerLCDpa& s, unsigned int i ) {"
- 			accessor << "\treturn s.print( i );"
- 			accessor << "}"
- 			accessor << "void print( SWSerLCDpa& s, long i ) {"
- 			accessor << "\treturn s.print( i );"
- 			accessor << "}"
- 			accessor << "void print( SWSerLCDpa& s, unsigned long i ) {"
- 			accessor << "\treturn s.print( i );"
- 			accessor << "}"
- 			accessor << "void print( SWSerLCDpa& s, long i, int b ) {"
- 			accessor << "\treturn s.print( i, b );"
- 			accessor << "}"
- 			accessor << "void println( SWSerLCDpa& s, char* str ) {"
- 			accessor << "\treturn s.println( str );"
- 			accessor << "}"
- 			accessor << "void print( SWSerLCDpa& s, char* str ) {"
- 			accessor << "\treturn s.print( str );"
- 			accessor << "}"
- 			accessor << "void println(SWSerLCDpa& s) {"
- 			accessor << "\treturn s.println();"
- 			accessor << "}"
- 			accessor << "void clearscr(SWSerLCDpa& s) {"
- 			accessor << "\treturn s.clearscr();"
- 			accessor << "}"
- 			accessor << "void home(SWSerLCDpa& s) {"
- 			accessor << "\treturn s.home();"
- 			accessor << "}"
- 			accessor << "void setgeo( SWSerLCDpa& s, int i ) {"
- 			accessor << "\treturn s.setgeo( i );"
- 			accessor << "}"
- 			accessor << "void setintensity( SWSerLCDpa& s, int i ) {"
- 			accessor << "\treturn s.setintensity( i );"
- 			accessor << "}"
- 			accessor << "void intoBignum(SWSerLCDpa& s) {"
- 			accessor << "\treturn s.intoBignum();"
- 			accessor << "}"
- 			accessor << "void outofBignum(SWSerLCDpa& s) {"
- 			accessor << "\treturn s.outofBignum();"
- 			accessor << "}"
- 			accessor << "void setxy( SWSerLCDpa& s, int x, int y) {"
- 			accessor << "\treturn s.setxy( x, y );"
- 			accessor << "}"
- 			accessor << "void println( SWSerLCDpa& s, char c ) {"
- 			accessor << "\treturn s.println( c );"
- 			accessor << "}"
- 			accessor << "void println( SWSerLCDpa& s, const char c[] ) {"
- 			accessor << "\treturn s.println( c );"
- 			accessor << "}"
- 			accessor << "void println( SWSerLCDpa& s, uint8_t b ) {"
- 			accessor << "\treturn s.println( b );"
- 			accessor << "}"
- 			accessor << "void println( SWSerLCDpa& s, int i ) {"
- 			accessor << "\treturn s.println( i );"
- 			accessor << "}"
- 			accessor << "void println( SWSerLCDpa& s, long i ) {"
- 			accessor << "\treturn s.println( i );"
- 			accessor << "}"
- 			accessor << "void println( SWSerLCDpa& s, unsigned long i ) {"
- 			accessor << "\treturn s.println( i );"
- 			accessor << "}"
- 			accessor << "void println( SWSerLCDpa& s, long i, int b ) {"
- 			accessor << "\treturn s.println( i, b );"
- 			accessor << "}"
+ 			if (@@slcdpa_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
+ 				@@slcdpa_inc = TRUE
+ 	 			  accessor << "void print( SWSerLCDpa& s, uint8_t b ) {"
+	  			accessor << "\treturn s.print( b );"
+ 	 			  accessor << "}"
+ 	 			  accessor << "void print( SWSerLCDpa& s, const char *str ) {"
+  				accessor << "\treturn s.print( str );"
+  				accessor << "}"
+  				accessor << "void print( SWSerLCDpa& s, char c ) {"
+  				accessor << "\treturn s.print( c );"
+  				accessor << "}"
+  				accessor << "void print( SWSerLCDpa& s, int i ) {"
+  				accessor << "\treturn s.print( i );"
+  				accessor << "}"
+  				accessor << "void print( SWSerLCDpa& s, unsigned int i ) {"
+  				accessor << "\treturn s.print( i );"
+  				accessor << "}"
+  				accessor << "void print( SWSerLCDpa& s, long i ) {"
+  				accessor << "\treturn s.print( i );"
+  				accessor << "}"
+  				accessor << "void print( SWSerLCDpa& s, unsigned long i ) {"
+  				accessor << "\treturn s.print( i );"
+  				accessor << "}"
+  				accessor << "void print( SWSerLCDpa& s, long i, int b ) {"
+  				accessor << "\treturn s.print( i, b );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, char* str ) {"
+  				accessor << "\treturn s.println( str );"
+ 	 			  accessor << "}"
+  				accessor << "void print( SWSerLCDpa& s, char* str ) {"
+  				accessor << "\treturn s.print( str );"
+  				accessor << "}"
+	  			accessor << "void println(SWSerLCDpa& s) {"
+  				accessor << "\treturn s.println();"
+  				accessor << "}"
+  				accessor << "void clearscr(SWSerLCDpa& s) {"
+ 	 			  accessor << "\treturn s.clearscr();"
+  				accessor << "}"
+  				accessor << "void home(SWSerLCDpa& s) {"
+  				accessor << "\treturn s.home();"
+  				accessor << "}"
+  				accessor << "void setgeo( SWSerLCDpa& s, int i ) {"
+  				accessor << "\treturn s.setgeo( i );"
+ 	 			  accessor << "}"
+  				accessor << "void setintensity( SWSerLCDpa& s, int i ) {"
+  				accessor << "\treturn s.setintensity( i );"
+  				accessor << "}"
+  				accessor << "void intoBignum(SWSerLCDpa& s) {"
+  				accessor << "\treturn s.intoBignum();"
+  				accessor << "}"
+  				accessor << "void outofBignum(SWSerLCDpa& s) {"
+  				accessor << "\treturn s.outofBignum();"
+  				accessor << "}"
+  				accessor << "void setxy( SWSerLCDpa& s, int x, int y) {"
+  				accessor << "\treturn s.setxy( x, y );"
+  				accessor << "}"
+ 	 			  accessor << "void println( SWSerLCDpa& s, char c ) {"
+  				accessor << "\treturn s.println( c );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, const char c[] ) {"
+  				accessor << "\treturn s.println( c );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, uint8_t b ) {"
+  				accessor << "\treturn s.println( b );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, int i ) {"
+  				accessor << "\treturn s.println( i );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, long i ) {"
+  				accessor << "\treturn s.println( i );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, unsigned long i ) {"
+  				accessor << "\treturn s.println( i );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, long i, int b ) {"
+  				accessor << "\treturn s.println( i, b );"
+ 	 			  accessor << "}"
+ 			end
  			@accessors << accessor.join( "\n" )
  			
  			@signatures << "SWSerLCDpa& #{opts[ :as ]}();"
@@ -516,7 +598,130 @@ class ArduinoSketch
  			@other_setup << "_#{opts[ :as ]}.begin(#{rate});"
  		end
  	end 	
-  
+
+
+
+ 	def swser_LCDsf(tx, opts={})
+    raise ArgumentError, "can only define tx from Fixnum, got #{tx.class}" unless tx.is_a?(Fixnum)
+    output_pin(tx)
+    
+
+    rate = opts[:rate] ? opts[:rate] : 9600
+    geometry = opts[:geometry] ? opts[:geometry] : 0
+ 		if opts[:as] 
+ 			@declarations << "SWSerLCDsf _#{opts[ :as ]} = SWSerLCDsf(#{tx}, #{geometry});"
+ 			accessor = []
+ 			accessor << "SWSerLCDsf& #{opts[ :as ]}() {"
+ 			accessor << "\treturn _#{opts[ :as ]};"
+ 			accessor << "}"
+ 			if (@@slcdsf_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
+ 				@@slcdsf_inc = TRUE
+ 	 			accessor << "void print( SWSerLCDsf& s, uint8_t b ) {"
+	  			accessor << "\treturn s.print( b );"
+ 	 			  accessor << "}"
+ 	 			  accessor << "void print( SWSerLCDsf& s, const char *str ) {"
+  				accessor << "\treturn s.print( str );"
+  				accessor << "}"
+  				accessor << "void print( SWSerLCDsf& s, char c ) {"
+  				accessor << "\treturn s.print( c );"
+  				accessor << "}"
+  				accessor << "void print( SWSerLCDsf& s, int i ) {"
+  				accessor << "\treturn s.print( i );"
+  				accessor << "}"
+  				accessor << "void print( SWSerLCDsf& s, unsigned int i ) {"
+  				accessor << "\treturn s.print( i );"
+  				accessor << "}"
+  				accessor << "void print( SWSerLCDsf& s, long i ) {"
+  				accessor << "\treturn s.print( i );"
+  				accessor << "}"
+  				accessor << "void print( SWSerLCDsf& s, unsigned long i ) {"
+  				accessor << "\treturn s.print( i );"
+  				accessor << "}"
+  				accessor << "void print( SWSerLCDsf& s, long i, int b ) {"
+  				accessor << "\treturn s.print( i, b );"
+  				accessor << "}"
+  				accessor << "void print( SWSerLCDsf& s, char* str ) {"
+  				accessor << "\treturn s.print( str );"
+  				accessor << "}"
+  				accessor << "void clearscr(SWSerLCDsf& s) {"
+ 	 			  accessor << "\treturn s.clearscr();"
+  				accessor << "}"
+  				accessor << "void home(SWSerLCDsf& s) {"
+  				accessor << "\treturn s.home();"
+  				accessor << "}"
+  				accessor << "void setgeo( SWSerLCDsf& s, int i ) {"
+  				accessor << "\treturn s.setgeo( i );"
+ 	 			  accessor << "}"
+  				accessor << "void setintensity( SWSerLCDsf& s, int i ) {"
+  				accessor << "\treturn s.setintensity( i );"
+  				accessor << "}"
+  				accessor << "void setxy( SWSerLCDsf& s, int x, int y) {"
+  				accessor << "\treturn s.setxy( x, y );"
+  				accessor << "}"
+  				accessor << "void setcmd( SWSerLCDsf& s, uint8_t a, uint8_t b) {"
+  				accessor << "\treturn s.setcmd( a, b );"
+  				accessor << "}"
+  			end
+ 			@accessors << accessor.join( "\n" )
+ 			
+ 			@signatures << "SWSerLCDsf& #{opts[ :as ]}();"
+ 
+ 			@other_setup << "_#{opts[ :as ]}.begin(#{rate});"
+ 		end
+ 	end 	
+
+
+
+
+ 
+  	def servo(spin, opts={}) # servo motor routines # how about pin instead of spin
+    raise ArgumentError, "can only define spin from Fixnum, got #{spin.class}" unless spin.is_a?(Fixnum)
+        
+    minp = opts[:minp] ? opts[:minp] : 544
+    maxp = opts[:maxp] ? opts[:maxp] : 2400
+
+   		if opts[:as]
+ 			@declarations << "Servo _#{opts[ :as ]} = Servo();"
+ 			accessor = []
+ 			accessor << "Servo& #{opts[ :as ]}() {"
+ 			accessor << "\treturn _#{opts[ :as ]};"
+ 			accessor << "}"
+
+ 			if (@@servo_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
+ 				@@servo_inc = TRUE
+ 				accessor << "void detach( Servo& s ) {"
+ 				accessor << "\treturn s.detach();"
+ 				accessor << "}"
+ 				accessor << "void position( Servo& s, int b ) {"
+	 			accessor << "\treturn s.position( b );"
+ 				accessor << "}"
+ 				accessor << "void speed( Servo& s, int b ) {"
+ 				accessor << "\treturn s.speed( b );"
+ 				accessor << "}"
+ 				accessor << "uint8_t read( Servo& s ) {"
+ 				accessor << "\treturn s.read();"
+ 				accessor << "}"
+ 				accessor << "uint8_t attached( Servo& s ) {"
+ 				accessor << "\treturn s.attached();"
+ 				accessor << "}"
+ 				accessor << "static void refresh( Servo& s ) {"
+ 				accessor << "\treturn s.refresh();"
+ 				accessor << "}"
+ 			end
+ 			
+ 			@accessors << accessor.join( "\n" )
+ 			
+ 			@signatures << "Servo& #{opts[ :as ]}();"
+
+ 			@other_setup << "_#{opts[ :as ]}.attach(#{spin});"
+ 			@other_setup << "_#{opts[ :as ]}.setMinimumPulse(#{minp});"
+ 			@other_setup << "_#{opts[ :as ]}.setMaximumPulse(#{maxp});"
+
+ 		end
+ 	end 	
+
+ 
+ 
   def compose_setup #:nodoc: also composes headers and signatures
     result = []
     
@@ -525,6 +730,8 @@ class ArduinoSketch
     result << "#include <WProgram.h>\n"
     result << "#include <SoftwareSerial.h>\n"
     result << "#include <SWSerLCDpa.h>"
+    result << "#include <SWSerLCDsf.h>"
+    result << "#include <Servo.h>"
 
     result << comment_box( 'plugin directives' )
     $plugin_directives.each {|dir| result << dir } unless $plugin_directives.nil? ||  $plugin_directives.empty?
@@ -721,4 +928,6 @@ class ArduinoSketch
     
     return out.join( "\n" )
   end  
+
+  
 end

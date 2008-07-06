@@ -5,18 +5,9 @@ Servo *Servo::first;
 
 #define NO_ANGLE (0xff)
 
-Servo::Servo() : pin(0),angle(NO_ANGLE),pulse0(0),min16(34),max16(150),next(0)
+Servo::Servo() : pin(0),angle(NO_ANGLE),pulse0(0),next(0)
 {}
 
-void Servo::setMinimumPulse(uint16_t t)
-{
-    min16 = t/16;
-}
-
-void Servo::setMaximumPulse(uint16_t t)
-{
-    max16 = t/16;
-}
 
 uint8_t Servo::attach(int pinArg)
 {
@@ -27,6 +18,23 @@ uint8_t Servo::attach(int pinArg)
     first = this;
     digitalWrite(pin,0);
     pinMode(pin,OUTPUT);
+    min16	= 34;
+    max16	= 150;
+    return 1;
+}
+
+
+uint8_t Servo::attach(int pinArg, uint16_t minp, uint16_t maxp)
+{
+    pin = pinArg;
+    angle = NO_ANGLE;
+    pulse0 = 0;
+    next = first;
+    first = this;
+    digitalWrite(pin,0);
+    pinMode(pin,OUTPUT);
+    min16	= minp/16;
+    max16	= maxp/16;
     return 1;
 }
 
@@ -75,6 +83,10 @@ uint8_t Servo::attached()
     }
     return 0;
 }
+
+/*************************************************
+ * refresh() - the heart of the method
+ *************************************************/
 
 void Servo::refresh()
 {

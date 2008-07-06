@@ -37,7 +37,19 @@ SWSerLCDpa::SWSerLCDpa(uint8_t transmitPin)
 {
   _transmitPin = transmitPin;
   _baudRate = 0;
+  pinMode(_transmitPin, OUTPUT);
+  _geometry = 0;
 }
+
+SWSerLCDpa::SWSerLCDpa(uint8_t transmitPin, int geometry)
+{
+  _transmitPin = transmitPin;
+  _baudRate = 0;
+  pinMode(_transmitPin, OUTPUT); 
+  _geometry = geometry;
+}
+
+
 
 /******************************************************************************
  * User API
@@ -50,6 +62,11 @@ void SWSerLCDpa::begin(long speed)
 
   digitalWrite(_transmitPin, HIGH);
   delayMicroseconds( _bitPeriod); // if we were low this establishes the end
+  delay(20);
+  clearscr();
+  if (_geometry)
+  	setgeo(_geometry);
+  	
 }
 
 void SWSerLCDpa::print(uint8_t b)

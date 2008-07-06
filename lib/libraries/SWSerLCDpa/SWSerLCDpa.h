@@ -29,8 +29,10 @@ class SWSerLCDpa
     uint8_t _transmitPin;
     long _baudRate;
     int _bitPeriod;
+    int _geometry;
     void printNumber(unsigned long, uint8_t);
   public:
+    SWSerLCDpa(uint8_t, int); 
     SWSerLCDpa(uint8_t);
     void begin(long);
     void print(char);

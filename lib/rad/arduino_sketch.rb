@@ -368,6 +368,15 @@ class ArduinoSketch
     opts[:minp] = opts[:min] ? opts[:min] : 544
     opts[:maxp] = opts[:max] ? opts[:max] : 2400
     servo(num, opts)  
+    # move this to better place ... 
+    # should probably go along with servo code into plugin
+    @declarations << "void servo_refresh(void);"
+    helper_methods = []
+    helper_methods << "void servo_refresh(void)"
+    helper_methods << "{"
+    helper_methods <<  "\tServo::refresh();"
+    helper_methods << "}"
+    @helper_methods += "\n#{helper_methods.join("\n")}"
   end
   
   ## this won't work at all... no pins
@@ -375,8 +384,8 @@ class ArduinoSketch
   def lcd_setup(num, opts)
     # move to plugin and load plugin
     # what's the default rate?
-    opts[:rate] ||= 9800
-    rate = opts[:rate] ? opts[:rate] : 9800
+    opts[:rate] ||= 9600
+    rate = opts[:rate] ? opts[:rate] : 9600
     swser_LCD(num, opts)
   end
   
@@ -384,16 +393,16 @@ class ArduinoSketch
   def pa_lcd_setup(num, opts)
     # move to plugin and load plugin
     # what's the default?
-     opts[:rate] ||= 9800
-    rate = opts[:rate] ? opts[:rate] : 9800
+     opts[:rate] ||= 9600
+    rate = opts[:rate] ? opts[:rate] : 9600
     swser_LCDpa(num, opts)
   end
   
   # use the sf (sparkfun) library
   def sf_lcd_setup(num, opts)
     # move to plugin and load plugin
-     opts[:rate] ||= 9800
-    rate = opts[:rate] ? opts[:rate] : 9800
+     opts[:rate] ||= 9600
+    rate = opts[:rate] ? opts[:rate] : 9600
     swser_LCDsf(num, opts)
   end
 
@@ -712,10 +721,7 @@ class ArduinoSketch
  			@accessors << accessor.join( "\n" )
  			
  			@signatures << "Servo& #{opts[ :as ]}();"
-
- 			@other_setup << "_#{opts[ :as ]}.attach(#{spin});"
- 			@other_setup << "_#{opts[ :as ]}.setMinimumPulse(#{minp});"
- 			@other_setup << "_#{opts[ :as ]}.setMaximumPulse(#{maxp});"
+ 			@other_setup << "_#{opts[ :as ]}.attach(#{spin}, #{minp}, #{maxp});"
 
  		end
  	end 	

@@ -48,7 +48,7 @@ def initialize #:nodoc:
   
   $plugin_directives = $plugin_directives || []
   $plugin_external_variables = $plugin_external_variables || []
-  $plugin_structs = $plugin_structs || {}
+  # moved to check_for_plugin_use $plugin_structs = $plugin_structs || {}
   $plugin_signatures = $plugin_signatures || []
   $plugin_methods = $plugin_methods || []
  # $plugin_methods_hash = $plugin_methods_hash || {}  ### new
@@ -152,6 +152,7 @@ end
   
 
   def self.check_for_plugin_use(sketch_string, plugin_string, file_name) # rename klass to filename
+    $plugin_structs = $plugin_structs || {}
     $plugin_methods_hash = $plugin_methods_hash || {}  
     $plugins_to_load = $plugins_to_load || []  
     plugin_signatures = []

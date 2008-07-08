@@ -334,6 +334,18 @@ class ArduinoSketch
           raise ArgumentError, "two are required for each servo: min & max" if opts[:min] || opts[:max] 
           raise ArgumentError, "refresh is an optional servo parameter, don't forget min & max" if opts[:refresh] 
       end
+      
+  # add state variables for outputs with :state => :on or :off -- useful for toggling a light with output_toggle -- need to make this more modular
+      if opts[:state] 
+        # add debounce settings to dbce struct array
+        ArduinoPlugin.add_debounce_struct
+        @debounce_pins << num
+        state = opts[:latch] == :on ? 1 : 0
+        prev = opts[:latch] == :on ? 0 : 1
+        adjust = opts[:adjust] ? opts[:adjust] : 200
+        @debounce_settings <<  "dbce[#{num}].state = #{state}, dbce[#{num}].read = 0, dbce[#{num}].prev = #{prev}, dbce[#{num}].time = 0, dbce[#{num}].adjust = #{adjust}"
+      end
+      
       @declarations << "int _#{opts[ :as ]} = #{num};"
       
       accessor = []
@@ -721,6 +733,7 @@ class ArduinoSketch
  			@accessors << accessor.join( "\n" )
  			
  			@signatures << "Servo& #{opts[ :as ]}();"
+ 			
  			@other_setup << "_#{opts[ :as ]}.attach(#{spin}, #{minp}, #{maxp});"
 
  		end

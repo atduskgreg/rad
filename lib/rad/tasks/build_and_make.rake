@@ -21,6 +21,20 @@ namespace :make do
     sh %{cd #{RAD_ROOT}/#{@sketch_name}; make depend; make}
   end
   
+  desc "generate a makefile and use it to compile the .cpp using the current .cpp file"
+  task :compile_cpp => ["build:sketch_dir", :clean_sketch_dir] do # should also depend on "build:sketch"
+    Makefile.compose_for_sketch( @sketch_name )
+    # not allowed? sh %{export PATH=#{Makefile.software_params[:arduino_root]}/tools/avr/bin:$PATH}
+    sh %{cd #{RAD_ROOT}/#{@sketch_name}; make depend; make}
+  end
+  
+  desc "generate a makefile and use it to compile the .cpp and upload it using current .cpp file"
+  task :upload_cpp => ["build:sketch_dir", :clean_sketch_dir] do # should also depend on "build:sketch"
+    Makefile.compose_for_sketch( @sketch_name )
+    # not allowed? sh %{export PATH=#{Makefile.software_params[:arduino_root]}/tools/avr/bin:$PATH}
+    sh %{cd #{RAD_ROOT}/#{@sketch_name}; make depend; make upload}
+  end
+  
   task :clean_sketch_dir => ["build:file_list", "build:sketch_dir"] do
     @sketch_name = @sketch_class.split(".").first
     FileList.new(Dir.entries("#{RAD_ROOT}/#{@sketch_name}")).exclude("#{@sketch_name}.cpp").exclude(/^\./).each do |f|

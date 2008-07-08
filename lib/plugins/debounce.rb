@@ -43,6 +43,19 @@ add_debounce_struct
 
 ## Todo: reduce to two methods named read_input and read_and_toggle
 
+# consider adding "toggle" method that points to toggle_output
+
+int toggle_output(int output)
+{
+  if (dbce[output].state == HIGH)
+    dbce[output].state = LOW;
+  else
+    dbce[output].state = HIGH;
+    digitalWrite(output, dbce[output].state);
+
+    return dbce[output].state;
+}
+
 int read_input(int input)
 {
   return debounce_read(input);
@@ -63,7 +76,6 @@ int debounce_read(int input)
   }
   dbce[input].prev = btn.read;
 }
-
 
 
 int read_and_toggle(int input, int output)

@@ -13,6 +13,8 @@ See also the Arduino Software reference: http://www.arduino.cc/en/Reference/Home
 ==Examples
 
 See the examples directory for lots of examples of RAD in action: http://rad.rubyforge.org/examples
+Madrona Fork Screencast is here: http://www.vimeo.com/1272402
+Occasional commentary here: http://senplicity.wordpress.com/
 
 ==Getting Started
 

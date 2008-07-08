@@ -157,6 +157,9 @@ end
     $plugins_to_load = $plugins_to_load || []  
     plugin_signatures = []
     plugin_methods = []
+    ## need a test for this
+    ## fails on string interpolation, but since ruby_to_c also currently fails ...
+    sketch_string = sketch_string.gsub!(/#(?!\{.*\}).*/, "")
     plugin_signatures << plugin_string.scan(/^\s((int|void|unsigned|long|short).*\(.*\))/)
     # gather just the method name and then add to #plugin_methods_hash
     plugin_signatures[0].map {|sig| "#{sig[0]}"}.each {|m| plugin_methods << m.gsub!(/^.*\s(\w*)\(.*\)/, '\1')}

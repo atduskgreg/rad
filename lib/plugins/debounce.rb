@@ -45,6 +45,11 @@ add_debounce_struct
 
 # consider adding "toggle" method that points to toggle_output
 
+int toggle(int output)
+{
+  return toggle_output(output);
+}
+
 int toggle_output(int output)
 {
   if (dbce[output].state == HIGH)

@@ -6,7 +6,7 @@ unless defined?(PROJECT_DIR_NAME)
 end
 
 
-%w(generators/makefile/makefile.rb arduino_sketch.rb arduino_plugin.rb tasks/rad.rb).each do |path|
+%w(generators/makefile/makefile.rb rad_processor.rb rad_rewriter.rb arduino_sketch.rb arduino_plugin.rb tasks/rad.rb).each do |path|
   require File.expand_path("#{RAD_ROOT}/vendor/rad/#{path}")
 end
 

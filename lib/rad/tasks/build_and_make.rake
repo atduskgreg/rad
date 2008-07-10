@@ -52,7 +52,7 @@ namespace :build do
     c_methods = []
     sketch_signatures = []
     $sketch_methods.each {|m| c_methods << RubyToAnsiC.translate(constantize(klass), m) }
-    c_methods.each {|meth| sketch_signatures << "#{meth.scan(/^\w*\n.*\)/)[0].gsub("\n", " ")};" }
+    c_methods.each {|meth| sketch_signatures << "#{meth.scan(/^\w*\s?\*?\n.*\)/)[0].gsub("\n", " ")};" }
     clean_c_methods = []
     c_methods.join("\n").each_with_index do |e,i|
       # need to take a look at the \(unsigned in the line below not sure if we are really trying to catch something like that

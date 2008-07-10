@@ -51,7 +51,7 @@ namespace :build do
     eval ArduinoSketch.pre_process(File.read(@sketch_class))
     c_methods = []
     sketch_signatures = []
-    $sketch_methods.each {|m| c_methods << RubyToAnsiC.translate(constantize(klass), m) }
+    $sketch_methods.each {|m| c_methods << RADProcessor.translate(constantize(klass), m) }
     c_methods.each {|meth| sketch_signatures << "#{meth.scan(/^\w*\s?\*?\n.*\)/)[0].gsub("\n", " ")};" }
     clean_c_methods = []
     c_methods.join("\n").each_with_index do |e,i|

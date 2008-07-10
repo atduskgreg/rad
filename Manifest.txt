@@ -22,6 +22,8 @@ lib/plugins/spark_fun_serial_lcd.rb
 lib/rad.rb
 lib/rad/arduino_sketch.rb
 lib/rad/arduino_plugin.rb
+lib/rad/rad_processor.rb
+lib/rad/rad_rewriter.rb
 lib/rad/init.rb
 lib/rad/todo.txt
 lib/rad/tasks/build_and_make.rake

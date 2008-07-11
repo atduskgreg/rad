@@ -167,7 +167,8 @@ class ArduinoSketch
     @@external_vars =[]
     $external_var_identifiers = []
     $sketch_methods = []
-        
+    $load_libraries = []
+
     @declarations = []
     @pin_modes = {:output => [], :input => []}
     @pullups = []
@@ -316,7 +317,10 @@ class ArduinoSketch
           return 
         when :sf_lcd || :sf_LCD
           sf_lcd_setup(num, opts)
-          return 
+          return         
+        when :freq_out || :freq_gen || :frequency_generator
+          frequency_timer(num, opts)
+          return
       end
     end
     
@@ -419,7 +423,6 @@ class ArduinoSketch
     rate = opts[:rate] ? opts[:rate] : 9600
     swser_LCDsf(num, opts)
   end
-
   
   # Confiugre a single pin for input and setup a method to refer to that pin, i.e.:
   #
@@ -533,6 +536,7 @@ class ArduinoSketch
  		if opts[:as] 
  			@declarations << "SWSerLCDpa _#{opts[ :as ]} = SWSerLCDpa(#{tx}, #{geometry});"
  			accessor = []
+ 			$load_libraries << "SWSerLCDpa"
  			accessor << "SWSerLCDpa& #{opts[ :as ]}() {"
  			accessor << "\treturn _#{opts[ :as ]};"
  			accessor << "}"
@@ -634,6 +638,7 @@ class ArduinoSketch
  		if opts[:as] 
  			@declarations << "SWSerLCDsf _#{opts[ :as ]} = SWSerLCDsf(#{tx}, #{geometry});"
  			accessor = []
+ 			$load_libraries << "SWSerLCDsf"
  			accessor << "SWSerLCDsf& #{opts[ :as ]}() {"
  			accessor << "\treturn _#{opts[ :as ]};"
  			accessor << "}"
@@ -706,6 +711,7 @@ class ArduinoSketch
    		if opts[:as]
  			@declarations << "Servo _#{opts[ :as ]} = Servo();"
  			accessor = []
+ 			$load_libraries << "Servo"
  			accessor << "Servo& #{opts[ :as ]}() {"
  			accessor << "\treturn _#{opts[ :as ]};"
  			accessor << "}"
@@ -735,12 +741,30 @@ class ArduinoSketch
  			@accessors << accessor.join( "\n" )
  			
  			@signatures << "Servo& #{opts[ :as ]}();"
- 			puts "position: #{opts[:position]}"
+
  			@other_setup << "\t_#{opts[ :as ]}.attach(#{spin}, #{opts[:position]}, #{minp}, #{maxp});" if opts[:position]
  			@other_setup << "\t_#{opts[ :as ]}.attach(#{spin}, #{minp}, #{maxp});" unless opts[:position]
 
  		end
- 	end 	
+ 	end 
+ 	
+ 		def frequency_timer(pin, opts={}) # frequency timer routines
+ 		
+    raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
+    raise ArgumentError, "only pin 11 may be used for freq_out, got #{pin}" unless pin == 11
+    raise ArgumentError, "the frequency option must be included.  Example: :frequecy => 700" unless opts[:frequency]
+    raise ArgumentError, "the frequency option must be an integer, got #{opts[:frequency].class}" unless opts[:frequency].is_a?(Fixnum)
+    # refer to: http://www.arduino.cc/playground/Code/FrequencyTimer2
+
+   		if opts[:as]
+
+ 			$load_libraries << "FrequencyTimer2"		
+ 			@other_setup << "FrequencyTimer2::setPeriod(1000000L/#{opts[:frequency]});"
+      @other_setup << "FrequencyTimer2::enable();"
+      
+ 		end
+ 	end	
+ 	
 
  
  
@@ -751,9 +775,7 @@ class ArduinoSketch
     
     result << "#include <WProgram.h>\n"
     result << "#include <SoftwareSerial.h>\n"
-    result << "#include <SWSerLCDpa.h>"
-    result << "#include <SWSerLCDsf.h>"
-    result << "#include <Servo.h>"
+    $load_libraries.each { |lib| result << "#include <#{lib}.h>" } unless $load_libraries.nil?
 
     result << comment_box( 'plugin directives' )
     $plugin_directives.each {|dir| result << dir } unless $plugin_directives.nil? ||  $plugin_directives.empty?

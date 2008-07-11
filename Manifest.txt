@@ -4,6 +4,9 @@ Manifest.txt
 README.rdoc
 Rakefile
 bin/rad
+lib/libraries/FrequencyTimer2/keywords.txt
+lib/libraries/FrequencyTimer2/FrequencyTimer2.cpp
+lib/libraries/FrequencyTimer2/FrequencyTimer2.h
 lib/libraries/Servo/keywords.txt
 lib/libraries/Servo/Servo.cpp
 lib/libraries/Servo/Servo.h

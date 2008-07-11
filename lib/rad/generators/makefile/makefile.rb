@@ -10,7 +10,7 @@ class Makefile
       params['target'] = sketch_name
       
       params['libraries_root'] = "#{File.expand_path(RAD_ROOT)}/vendor/libraries"
-      params['libraries'] = libraries
+      params['libraries'] = $load_libraries # load only libraries used 
       
       params['asm_files'] = Dir.entries( File.expand_path(RAD_ROOT) + "/" + PROJECT_DIR_NAME ).select{|e| e =~ /\.S/}            
             
@@ -21,9 +21,9 @@ class Makefile
       end
     end
     
-    def libraries
-      Dir.entries("#{RAD_ROOT}/vendor/libraries").select{|e| !(e =~ /\./)}
-    end
+    # def libraries
+    #   Dir.entries("#{RAD_ROOT}/vendor/libraries").select{|e| !(e =~ /\./)}
+    # end
     
     def hardware_params
       return @hardware_params if @hardware_params

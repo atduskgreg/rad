@@ -157,6 +157,7 @@ class ArduinoSketch
   @@slcdpa_inc = FALSE	#  same
   @@slcdsf_inc = FALSE	#  same
   @@swser_inc = FALSE	#  same
+  @@frequency_inc = FALSE #  same
   
   def initialize #:nodoc:
     @servo_settings = [] # need modular way to add this
@@ -749,19 +750,50 @@ class ArduinoSketch
  	end 
  	
  		def frequency_timer(pin, opts={}) # frequency timer routines
- 		
+ 		  
     raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
     raise ArgumentError, "only pin 11 may be used for freq_out, got #{pin}" unless pin == 11
-    raise ArgumentError, "the frequency option must be included.  Example: :frequecy => 700" unless opts[:frequency]
-    raise ArgumentError, "the frequency option must be an integer, got #{opts[:frequency].class}" unless opts[:frequency].is_a?(Fixnum)
+    raise ArgumentError, "the frequency or period option must be included.  Example: :frequecy => 700" unless opts[:frequency] || opts[:period]
+    if opts[:frequency]
+      raise ArgumentError, "the frequency option must be an integer, got #{opts[:frequency].class}" unless opts[:frequency].is_a?(Fixnum)
+    end
+    if opts[:period]
+      raise ArgumentError, "the frequency option must be an integer, got #{opts[:period].class}" unless opts[:period].is_a?(Fixnum) 
+    end
     # refer to: http://www.arduino.cc/playground/Code/FrequencyTimer2
 
    		if opts[:as]
+   		  
+   		  @declarations << "FrequencyTimer2 _#{opts[ :as ]} = FrequencyTimer2();"
+   			accessor = []
+   			$load_libraries << "FrequencyTimer2"	
+   			accessor << "FrequencyTimer2& #{opts[ :as ]}() {"
+   			accessor << "\treturn _#{opts[ :as ]};"
+   			accessor << "}"
 
- 			$load_libraries << "FrequencyTimer2"		
- 			@other_setup << "FrequencyTimer2::setPeriod(1000000L/#{opts[:frequency]});"
-      @other_setup << "FrequencyTimer2::enable();"
-      
+   			if (@@frequency_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
+   				@@frequency_inc = TRUE
+   				accessor << "void set_frequency( FrequencyTimer2& s, int b ) {"
+   				accessor << "\treturn s.setPeriod( 1000000L/b );"
+   				accessor << "}"
+   				accessor << "void set_period( FrequencyTimer2& s, int b ) {"
+  	 			accessor << "\treturn s.setPeriod( b );"
+   				accessor << "}"
+   				accessor << "void enable( FrequencyTimer2& s ) {"
+   				accessor << "\treturn s.enable();"
+   				accessor << "}"
+   				accessor << "void disable( FrequencyTimer2& s ) {"
+   				accessor << "\treturn s.disable();"
+   				accessor << "}"
+   			end
+
+   			@accessors << accessor.join( "\n" )
+
+   			@signatures << "FrequencyTimer2& #{opts[ :as ]}();"
+	
+ 			  @other_setup << "\tFrequencyTimer2::setPeriod(1000000L/#{opts[:frequency]});" if opts[:frequency]
+ 			  @other_setup << "\tFrequencyTimer2::setPeriod(#{opts[:period]});" if opts[:period]
+ 			  @other_setup << "\tFrequencyTimer2::enable();" if opts[:enable] == :true
  		end
  	end	
  	

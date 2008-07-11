@@ -377,9 +377,11 @@ class ArduinoSketch
   
   # use the servo library
   def new_servo_setup(num, opts)
-    opts[:minp] = opts[:min] ? opts[:min] : 544
-    opts[:maxp] = opts[:max] ? opts[:max] : 2400
-    servo(num, opts)  
+    if opts[:position]
+      raise ArgumentError, "position must be an integer from 0 to 360, got #{opts[:position].class}" unless opts[:position].is_a?(Fixnum)
+      raise ArgumentError, "position must be an integer from 0 to 360---, got #{opts[:position]}" if opts[:position] < 0 || opts[:position] > 360
+    end
+    servo(num, opts)
     # move this to better place ... 
     # should probably go along with servo code into plugin
     @declarations << "void servo_refresh(void);"
@@ -698,8 +700,8 @@ class ArduinoSketch
   	def servo(spin, opts={}) # servo motor routines # how about pin instead of spin
     raise ArgumentError, "can only define spin from Fixnum, got #{spin.class}" unless spin.is_a?(Fixnum)
         
-    minp = opts[:minp] ? opts[:minp] : 544
-    maxp = opts[:maxp] ? opts[:maxp] : 2400
+    minp = opts[:min] ? opts[:min] : 544
+    maxp = opts[:max] ? opts[:max] : 2400
 
    		if opts[:as]
  			@declarations << "Servo _#{opts[ :as ]} = Servo();"
@@ -733,8 +735,9 @@ class ArduinoSketch
  			@accessors << accessor.join( "\n" )
  			
  			@signatures << "Servo& #{opts[ :as ]}();"
- 			
- 			@other_setup << "_#{opts[ :as ]}.attach(#{spin}, #{minp}, #{maxp});"
+ 			puts "position: #{opts[:position]}"
+ 			@other_setup << "\t_#{opts[ :as ]}.attach(#{spin}, #{opts[:position]}, #{minp}, #{maxp});" if opts[:position]
+ 			@other_setup << "\t_#{opts[ :as ]}.attach(#{spin}, #{minp}, #{maxp});" unless opts[:position]
 
  		end
  	end 	

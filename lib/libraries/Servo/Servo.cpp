@@ -1,3 +1,24 @@
+/*
+  Servo.h - Arduino Software Servo Library
+  Author: ????
+  Modified: Brian Riley <brianbr@wulfden.org> Jun/Jul 2008
+  Copyright (c) 2007 David A. Mellis.  All right reserved.
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
 #include "WConstants.h"
 #include <Servo.h>
 
@@ -5,7 +26,7 @@ Servo *Servo::first;
 
 #define NO_ANGLE (0xff)
 
-Servo::Servo() : pin(0),angle(NO_ANGLE),pulse0(0),next(0)
+Servo::Servo() : pin(0),angle(NO_ANGLE),pulse0(0),min16(DEFLT_MINP),max16(DEFLT_MAXP),next(0)
 {}
 
 
@@ -18,23 +39,31 @@ uint8_t Servo::attach(int pinArg)
     first = this;
     digitalWrite(pin,0);
     pinMode(pin,OUTPUT);
-    min16	= 34;
-    max16	= 150;
+    return 1;
+}
+
+uint8_t Servo::attach(int pinArg, int angleArg)
+{
+	attach(pinArg);
+	write(angleArg);
     return 1;
 }
 
 
 uint8_t Servo::attach(int pinArg, uint16_t minp, uint16_t maxp)
 {
-    pin = pinArg;
-    angle = NO_ANGLE;
-    pulse0 = 0;
-    next = first;
-    first = this;
-    digitalWrite(pin,0);
-    pinMode(pin,OUTPUT);
+	attach(pinArg);
     min16	= minp/16;
     max16	= maxp/16;
+    return 1;
+}
+
+uint8_t Servo::attach(int pinArg, int angleArg, uint16_t minp, uint16_t maxp)
+{
+	attach(pinArg);
+    min16	= minp/16;
+    max16	= maxp/16;
+	write(angleArg);
     return 1;
 }
 
@@ -96,37 +125,46 @@ void Servo::refresh()
     static unsigned long lastRefresh = 0;
     unsigned long m = millis();
 
-    // if we haven't wrapped millis, and 20ms have not passed, then don't do anything
+    // if we haven't wrapped millis, and 20ms have not passed,
+    // then don't do anything
+    
     if ( m >= lastRefresh && m < lastRefresh + 20) return;
     lastRefresh = m;
 
     for ( p = first; p != 0; p = p->next ) if ( p->pulse0) count++;
+    
     if ( count == 0) return;
   
     // gather all the servos in an array
+    
     Servo *s[count];
-    for ( p = first; p != 0; p = p->next ) if ( p->pulse0) s[i++] = p;
+ 
+ 	for ( p = first; p != 0; p = p->next ) if ( p->pulse0) s[i++] = p;
 
     // bubblesort the servos by pulse time, ascending order
+    
     for(;;) {
-	uint8_t moved = 0;
-	for ( i = 1; i < count; i++) {
-	    if ( s[i]->pulse0 < s[i-1]->pulse0) {
-		Servo *t = s[i];
-		s[i] = s[i-1];
-		s[i-1] = t;
-		moved = 1;
-	    }
-	}
-	if ( !moved) break;
+		uint8_t moved = 0;
+		for ( i = 1; i < count; i++) {
+	    	if ( s[i]->pulse0 < s[i-1]->pulse0) {
+				Servo *t = s[i];
+				s[i] = s[i-1];
+				s[i-1] = t;
+				moved = 1;
+	    	}
+		}
+		if ( !moved) break;
     }
   
-    // turn on all the pins
-    // Note the timing error here... when you have many servos going, the
-    // ones at the front will get a pulse that is a few microseconds too long.
-    // Figure about 4uS/servo after them. This could be compensated, but I feel
-    // it is within the margin of error of software servos that could catch
-    // an extra interrupt handler at any time.
+    /*********************************************************************
+     * Turn on all the pins
+     * Note the timing error here... when you have many servos going, the
+     * ones at the front will get a pulse that is a few microseconds too long.
+     * Figure about 4uS/servo after them. This could be compensated, but I feel
+     * it is within the margin of error of software servos that could catch
+     * an extra interrupt handler at any time.
+     ********************************************************************/
+
     for ( i = 0; i < count; i++) digitalWrite( s[i]->pin, 1);
 
     uint8_t start = TCNT0;
@@ -134,19 +172,21 @@ void Servo::refresh()
     uint8_t last = now;
   
     // Now wait for each pin's time in turn..
-    for ( i = 0; i < count; i++) {
-	uint16_t go = start + s[i]->pulse0;
     
-	// loop until we reach or pass 'go' time
-	for (;;) {
-	    now = TCNT0;
-	    if ( now < last) base += 256;
-	    last = now;
+    for ( i = 0; i < count; i++) {
+		uint16_t go = start + s[i]->pulse0;
+    
+		// loop until we reach or pass 'go' time
+
+		for (;;) {
+	    	now = TCNT0;
+	    	if ( now < last) base += 256;
+	    	last = now;
   
-	    if ( base+now > go) {
-		digitalWrite( s[i]->pin,0);
-		break;
-	    }
-	}
+	    	if ( base+now > go) {
+				digitalWrite( s[i]->pin,0);
+				break;
+	    	}
+		}
     }
 }

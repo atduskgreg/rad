@@ -104,6 +104,10 @@ FileUtils.mkdir_p "#{sketch_name}/vendor/libraries"
 puts "Successfully created your libraries directory."
 
 
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/FrequencyTimer2/.", "#{sketch_name}/vendor/libraries/FrequencyTimer2"
+puts "Installed Servo into #{sketch_name}/vendor/libraries"
+puts
+
 FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/Servo/.", "#{sketch_name}/vendor/libraries/Servo"
 puts "Installed Servo into #{sketch_name}/vendor/libraries"
 puts

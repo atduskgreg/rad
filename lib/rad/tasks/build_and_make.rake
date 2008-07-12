@@ -85,7 +85,13 @@ namespace :build do
     eval ArduinoSketch.pre_process(File.read(@test_dir + @sketch_class))
     c_methods = []
     sketch_signatures = []
-    $sketch_methods.each {|m| c_methods << RADProcessor.translate(constantize(klass), m) }
+    # until we better understand RubyToC let's see what's happening on errors
+    $sketch_methods.each do |meth| 
+      raw_rtc_meth = RADProcessor.translate(constantize(klass), meth) 
+      puts "Translator Error: #{raw_rtc_meth.inspect}" if raw_rtc_meth[0..8] == "// ERROR:"
+      c_methods << raw_rtc_meth
+    end
+    #$sketch_methods.each {|m| c_methods << RADProcessor.translate(constantize(klass), m) }
     c_methods.each {|meth| sketch_signatures << "#{meth.scan(/^\w*\s?\*?\n.*\)/)[0].gsub("\n", " ")};" }
     clean_c_methods = []
     c_methods.join("\n").each_with_index do |e,i|

@@ -306,6 +306,7 @@ class ArduinoSketch
       if opts[:device]
         case opts[:device]
         when :servo
+          puts "line 309"
           new_servo_setup(num, opts)
           return # don't use declarations, accessor, signatures below
         when :orig_servo
@@ -322,6 +323,8 @@ class ArduinoSketch
         when :freq_out || :freq_gen || :frequency_generator
           frequency_timer(num, opts)
           return
+        else
+        raise ArgumentError, "today's device choices are: :servo, :original_servo_setup, :pa_lcd, :sf_lcd, and :freq_out, got #{opts[:device]}"
       end
     end
     
@@ -410,6 +413,10 @@ class ArduinoSketch
   
   # use the pa lcd library
   def pa_lcd_setup(num, opts)
+    if opts[:geometry]
+      raise ArgumentError, "can only define pin from Fixnum, got #{opts[:geometry]}" unless opts[:geometry].is_a?(Fixnum)
+      raise ArgumentError, "pa_lcd geometry must be 216, 220, 224, 240, 416, 420, got #{opts[:geometry]}" unless opts[:geometry].to_s =~ /(216|220|224|240|416|420)/
+    end
     # move to plugin and load plugin
     # what's the default?
      opts[:rate] ||= 9600
@@ -419,6 +426,10 @@ class ArduinoSketch
   
   # use the sf (sparkfun) library
   def sf_lcd_setup(num, opts)
+    if opts[:geometry]
+      raise ArgumentError, "can only define pin from Fixnum, got #{opts[:geometry]}" unless opts[:geometry].is_a?(Fixnum)
+      raise ArgumentError, "sf_lcd geometry must be 216, 220, 416, 420, got #{opts[:geometry]}" unless opts[:geometry].to_s =~ /(216|220|416|420)/
+    end
     # move to plugin and load plugin
      opts[:rate] ||= 9600
     rate = opts[:rate] ? opts[:rate] : 9600

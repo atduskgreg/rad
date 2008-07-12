@@ -306,7 +306,6 @@ class ArduinoSketch
       if opts[:device]
         case opts[:device]
         when :servo
-          puts "line 309"
           new_servo_setup(num, opts)
           return # don't use declarations, accessor, signatures below
         when :orig_servo
@@ -764,7 +763,9 @@ class ArduinoSketch
  		  
     raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
     raise ArgumentError, "only pin 11 may be used for freq_out, got #{pin}" unless pin == 11
-    raise ArgumentError, "the frequency or period option must be included.  Example: :frequecy => 700" unless opts[:frequency] || opts[:period]
+    if opts[:enable]
+      raise ArgumentError, "enable option must include the frequency or period option" unless opts[:frequency] || opts[:period]
+    end
     if opts[:frequency]
       raise ArgumentError, "the frequency option must be an integer, got #{opts[:frequency].class}" unless opts[:frequency].is_a?(Fixnum)
     end

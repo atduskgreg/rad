@@ -139,6 +139,11 @@ FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/plugins/.", "#{sketch_name}/ven
 puts "Installed Default plugins into #{sketch_name}/vendor/plugins"
 puts
 
+# Add an default sketch directory # needed to run test:compile
+
+FileUtils.mkdir_p "#{sketch_name}/#{sketch_name}"
+puts "Successfully created your default sketch directory."
+
 # Build sketch files, etc.:  
 
 FileUtils.touch "#{sketch_name}/#{sketch_name}.rb"

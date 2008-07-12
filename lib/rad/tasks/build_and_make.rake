@@ -3,6 +3,39 @@ require 'ruby_to_ansi_c'
 
 C_VAR_TYPES = "unsigned|int|long|double|str|char"
 
+# incredibly primitive tests 
+# rake test:compile or rake test:upload
+# runs through all sketches in the example directory
+
+def run_tests(sketch, type)
+  sh %{rake make:#{type} sketch=examples/#{sketch}}
+end
+
+namespace :test do
+  
+  desc "iterate through all the sketches in the example directory"
+  task :upload => :gather do 
+    @examples.each {|e| run_tests(e, "upload")}
+  end
+  
+  task :compile => :gather do 
+    @examples.each {|e| run_tests(e, "compile")}
+    end
+  end
+  
+  desc "gather all tests"
+  task :gather do # => "make:upload" do
+    @examples = []
+    @test_results = []
+    Dir.entries( File.expand_path("#{RAD_ROOT}/examples/") ).each do |f|
+      if (f =~ /\.rb$/)
+        @examples << f.split('.').first
+      end
+  end
+
+end
+
+
 namespace :make do
   
   desc "compile the sketch and then upload it to your Arduino board"
@@ -11,36 +44,37 @@ namespace :make do
       puts "Reset the Arduino and hit enter.\n==If your board doesn't need it, you can turn off this prompt in config/software.yml=="
       STDIN.gets.chomp
     end
-    sh %{cd #{RAD_ROOT}/#{@sketch_name}; make upload}
+    sh %{cd #{RAD_ROOT}/#{@test_dir + @sketch_name}; make upload}
   end
-  
+    
   desc "generate a makefile and use it to compile the .cpp"
   task :compile => [:clean_sketch_dir, "build:sketch"] do # should also depend on "build:sketch"
-    Makefile.compose_for_sketch( @sketch_name )
+    Makefile.compose_for_sketch( @test_dir + @sketch_name )
     # not allowed? sh %{export PATH=#{Makefile.software_params[:arduino_root]}/tools/avr/bin:$PATH}
-    sh %{cd #{RAD_ROOT}/#{@sketch_name}; make depend; make}
+    sh %{cd #{RAD_ROOT}/#{@test_dir + @sketch_name}; make depend; make}
   end
   
   desc "generate a makefile and use it to compile the .cpp using the current .cpp file"
   task :compile_cpp => ["build:sketch_dir", :clean_sketch_dir] do # should also depend on "build:sketch"
-    Makefile.compose_for_sketch( @sketch_name )
+    Makefile.compose_for_sketch( @test_dir + @sketch_name )
     # not allowed? sh %{export PATH=#{Makefile.software_params[:arduino_root]}/tools/avr/bin:$PATH}
-    sh %{cd #{RAD_ROOT}/#{@sketch_name}; make depend; make}
+    sh %{cd #{RAD_ROOT}/#{@test_dir + @sketch_name}; make depend; make}
   end
   
   desc "generate a makefile and use it to compile the .cpp and upload it using current .cpp file"
   task :upload_cpp => ["build:sketch_dir", :clean_sketch_dir] do # should also depend on "build:sketch"
-    Makefile.compose_for_sketch( @sketch_name )
+    Makefile.compose_for_sketch( @test_dir + @sketch_name )
     # not allowed? sh %{export PATH=#{Makefile.software_params[:arduino_root]}/tools/avr/bin:$PATH}
-    sh %{cd #{RAD_ROOT}/#{@sketch_name}; make depend; make upload}
+    sh %{cd #{RAD_ROOT}/#{@test_dir + @sketch_name}; make depend; make upload}
   end
   
   task :clean_sketch_dir => ["build:file_list", "build:sketch_dir"] do
     @sketch_name = @sketch_class.split(".").first
-    FileList.new(Dir.entries("#{RAD_ROOT}/#{@sketch_name}")).exclude("#{@sketch_name}.cpp").exclude(/^\./).each do |f|
-      sh %{rm #{RAD_ROOT}/#{@sketch_name}/#{f}}
+    FileList.new(Dir.entries("#{RAD_ROOT}/#{@test_dir + @sketch_name}")).exclude("#{@test_dir + @sketch_name}.cpp").exclude(/^\./).each do |f|
+      sh %{rm #{RAD_ROOT}/#{@test_dir + @sketch_name}/#{f}}
     end
   end
+  
 end
 
 namespace :build do
@@ -48,7 +82,7 @@ namespace :build do
   desc "actually build the sketch"
   task :sketch => [:file_list, :sketch_dir, :gather_required_plugins, :plugin_setup, :setup] do
     klass = @sketch_class.split(".").first.split("_").collect{|c| c.capitalize}.join("")    
-    eval ArduinoSketch.pre_process(File.read(@sketch_class))
+    eval ArduinoSketch.pre_process(File.read(@test_dir + @sketch_class))
     c_methods = []
     sketch_signatures = []
     $sketch_methods.each {|m| c_methods << RADProcessor.translate(constantize(klass), m) }
@@ -66,7 +100,7 @@ namespace :build do
     @setup.gsub!("// sketch signatures", "// sketch signatures\n#{ sketch_signatures.join("\n")}") unless sketch_signatures.empty?
     result = "#{@setup}\n#{c_methods_with_timer}\n"
     name = @sketch_class.split(".").first
-    File.open("#{name}/#{name}.cpp", "w"){|f| f << result}
+    File.open("#{@test_dir}#{name}/#{name}.cpp", "w"){|f| f << result}
   end
 
   # needs to write the library include and the method signatures
@@ -87,7 +121,7 @@ namespace :build do
        end
        CODE
     end
-    eval File.read(@sketch_class)
+    eval File.read(@test_dir + @sketch_class)
     @setup = @@as.compose_setup
   end
   
@@ -118,14 +152,14 @@ namespace :build do
   desc "determine which plugins to load based on use of methods in sketch"
   task :gather_required_plugins do
     @plugin_names.each do |name|
-       ArduinoPlugin.check_for_plugin_use(File.read(@sketch_class), File.read("vendor/plugins/#{name}"), name )
+       ArduinoPlugin.check_for_plugin_use(File.read(@test_dir + @sketch_class), File.read("vendor/plugins/#{name}"), name )
     end
     puts "#{$plugins_to_load.length} of #{$plugin_methods_hash.length} plugins are being loaded:  #{$plugins_to_load.join(", ")}"
   end
   
   desc "setup target directory named after your sketch class"
   task :sketch_dir => [:file_list] do
-    mkdir_p "#{@sketch_class.split(".").first}"
+    mkdir_p "#{@test_dir + @sketch_class.split(".").first}"
   end
 
   task :file_list do
@@ -133,6 +167,12 @@ namespace :build do
     # perhaps we generate a constant when the project is generated an pop it here or in the init file
     @sketch_directory = File.expand_path("#{File.dirname(__FILE__)}/../../../").split("/").last
     # multiple sketches are possible with rake make:upload sketch=new_sketch
+    @test_dir = ""
+    if ENV['sketch'] =~ /^examples\//
+      # strip the example and set a directory variable
+      ENV['sketch'] = ENV['sketch'].gsub(/^examples\//, "")
+      @test_dir = "examples/"
+    end
     @sketch_class = ENV['sketch'] ? "#{ENV['sketch']}.rb" : "#{@sketch_directory}.rb"
     @file_names = []
     @plugin_names = []

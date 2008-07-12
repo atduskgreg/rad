@@ -4,6 +4,17 @@ Manifest.txt
 README.rdoc
 Rakefile
 bin/rad
+lib/examples/add_hysteresis.rb
+lib/examples/first_sound.rb
+lib/examples/frequency_generator.rb
+lib/examples/hello_servos.rb
+lib/examples/hello_world.rb
+lib/examples/orig_servo_throttle.rb
+lib/examples/servo_buttons.rb
+lib/examples/servo_throttle.rb
+lib/examples/sparkfun_lcd.rb
+lib/examples/times_method.rb
+lib/examples/toggle.rb
 lib/libraries/FrequencyTimer2/keywords.txt
 lib/libraries/FrequencyTimer2/FrequencyTimer2.cpp
 lib/libraries/FrequencyTimer2/FrequencyTimer2.h

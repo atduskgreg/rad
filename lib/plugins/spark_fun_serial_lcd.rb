@@ -79,7 +79,7 @@ void set_splash(){
   selectLineOne();
   Serial.print(" Ruby + Auduino");
   selectLineTwo();
-  Serial.print(" RAD 0.2.3+     ");
+  Serial.print(" RAD 0.2.4+     ");
   Serial.print(0x7C, BYTE);   // decimal 124, command flag for backlight stuff
   Serial.print(10, BYTE);
 }

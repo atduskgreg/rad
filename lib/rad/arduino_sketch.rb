@@ -803,6 +803,7 @@ class ArduinoSketch
 
    			@signatures << "FrequencyTimer2& #{opts[ :as ]}();"
 	
+		    @other_setup << "\tFrequencyTimer2::setPeriod(0L);" unless opts[:frequency] || opts[:period]
  			  @other_setup << "\tFrequencyTimer2::setPeriod(1000000L/#{opts[:frequency]});" if opts[:frequency]
  			  @other_setup << "\tFrequencyTimer2::setPeriod(#{opts[:period]});" if opts[:period]
  			  @other_setup << "\tFrequencyTimer2::enable();" if opts[:enable] == :true

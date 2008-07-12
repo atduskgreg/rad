@@ -120,6 +120,16 @@ FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/SWSerLCDsf/.", "#{ske
 puts "Installed SWSerLCDsf into #{sketch_name}/vendor/libraries"
 puts
 
+# Build examples -- used for basic testing
+
+FileUtils.mkdir_p "#{sketch_name}/vendor/libraries"
+puts "Successfully created your examples directory."
+
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/examples/.", "#{sketch_name}/examples"
+puts "Installed examples into #{sketch_name}/examples"
+puts
+
+
 # Build vendor/plugins:  
 
 FileUtils.mkdir_p "#{sketch_name}/vendor/plugins"

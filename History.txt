@@ -1,3 +1,11 @@
+== 0.2.4 2008-07-12
+* 1ish large update:
+	- added incredibly primitive tests 
+	- added 11 sketch examples which are compiled or compiled/uploaded
+		- use rake test:compile or rake test:upload
+		- can also use the following to run an example (make:compile also works)
+		- make:upload sketch=examples/hello_servos
+
 == 0.2.3 2008-07-10
 * Manyish updates:
 	- updated servo library to support position parameter

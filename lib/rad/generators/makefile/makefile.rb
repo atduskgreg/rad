@@ -7,7 +7,7 @@ class Makefile
     # build the sketch Makefile for the given template based on the values in its software and hardware config files
     def compose_for_sketch(sketch_name)
       params = hardware_params.merge software_params
-      params['target'] = sketch_name
+      params['target'] = sketch_name.split("/").last
       
       params['libraries_root'] = "#{File.expand_path(RAD_ROOT)}/vendor/libraries"
       params['libraries'] = $load_libraries # load only libraries used 

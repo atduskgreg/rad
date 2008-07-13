@@ -9,6 +9,9 @@ class Makefile
       params = hardware_params.merge software_params
       params['target'] = sketch_name.split("/").last
       
+      params['wire_h'] = $include_wire == true ? "-I$#{params['arduino_root']}/hardware/libraries/Wire/Wire.cpp" : ""
+      params['twi_c'] = $include_wire == true ? "#{params['arduino_root']}/hardware/libraries/Wire/utility/twi.c" : ""
+      
       params['libraries_root'] = "#{File.expand_path(RAD_ROOT)}/vendor/libraries"
       params['libraries'] = $load_libraries # load only libraries used 
       

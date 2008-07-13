@@ -68,7 +68,7 @@ LIBRARY_ROOT = <%= params['libraries_root'] %>
 SRC = $(ARDUINO)/pins_arduino.c $(ARDUINO)/wiring.c \
 $(ARDUINO)/wiring_analog.c $(ARDUINO)/wiring_digital.c \
 $(ARDUINO)/wiring_pulse.c $(ARDUINO)/wiring_serial.c \
-$(ARDUINO)/wiring_shift.c $(ARDUINO)/WInterrupts.c
+$(ARDUINO)/wiring_shift.c $(ARDUINO)/WInterrupts.c <%= params['twi_c'] %>
 CXXSRC = $(ARDUINO)/HardwareSerial.cpp $(SOFTWARE_SERIAL)/SoftwareSerial.cpp<%= params['libraries'].collect{|l| " $(LIBRARY_ROOT)/#{ l }/#{l }.cpp"}.join('') %>
 MCU = <%= params['mcu'] %>
 <% if params['asm_files'] %>ASRC = <%= params['asm_files'].join(' ') %><% end %>
@@ -92,8 +92,8 @@ CDEFS = -DF_CPU=$(F_CPU)
 CXXDEFS = -DF_CPU=$(F_CPU)
 
 # Place -I options here
-CINCS = -I$(ARDUINO) -I$(SOFTWARE_SERIAL)<% params['libraries'].each do |l| %> -I$(LIBRARY_ROOT)/<%= l %><% end %>
-+CXXINCS = -I$(ARDUINO) -I$(SOFTWARE_SERIAL)<% params['libraries'].each do |l| %> -I$(LIBRARY_ROOT)/<%= l %><% end %>
+CINCS = -I$(ARDUINO) -I$(SOFTWARE_SERIAL)<% params['libraries'].each do |l| %> -I$(LIBRARY_ROOT)/<%= l %><% end %> <%= params['wire_h'] %>
++CXXINCS = -I$(ARDUINO) -I$(SOFTWARE_SERIAL)<% params['libraries'].each do |l| %> -I$(LIBRARY_ROOT)/<%= l %><% end %> <%= params['wire_h'] %>
 
 # Compiler flag to set the C Standard level.
 # c89   - "ANSI" C

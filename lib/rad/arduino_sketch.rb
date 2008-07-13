@@ -169,6 +169,7 @@ class ArduinoSketch
     $external_var_identifiers = []
     $sketch_methods = []
     $load_libraries = []
+    $include_wire = false
 
     @declarations = []
     @pin_modes = {:output => [], :input => []}

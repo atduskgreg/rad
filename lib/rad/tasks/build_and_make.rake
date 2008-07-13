@@ -1,7 +1,7 @@
 require File.expand_path(File.dirname(__FILE__) + "/../init.rb")
 require 'ruby_to_ansi_c'
 
-C_VAR_TYPES = "unsigned|int|long|double|str|char"
+C_VAR_TYPES = "unsigned|int|long|double|str|char|byte"
 
 # incredibly primitive tests 
 # rake test:compile or rake test:upload

@@ -821,6 +821,7 @@ class ArduinoSketch
     
     result << "#include <WProgram.h>\n"
     result << "#include <SoftwareSerial.h>\n"
+    result << "#include <Wire.h>\n" if $include_wire == true  ## 
     $load_libraries.each { |lib| result << "#include <#{lib}.h>" } unless $load_libraries.nil?
 
     result << comment_box( 'plugin directives' )

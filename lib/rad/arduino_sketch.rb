@@ -158,7 +158,8 @@ class ArduinoSketch
   @@slcdsf_inc = FALSE	#  same
   @@swser_inc = FALSE	#  same
   @@frequency_inc = FALSE #  same
-  
+  @@twowire_inc	= FALSE	#  same
+    
   def initialize #:nodoc:
     @servo_settings = [] # need modular way to add this
     @debounce_settings = [] # need modular way to add this
@@ -168,8 +169,7 @@ class ArduinoSketch
     @@external_vars =[]
     $external_var_identifiers = []
     $sketch_methods = []
-    $load_libraries = []
-    $include_wire = false
+    $load_libraries = $load_libraries || []
 
     @declarations = []
     @pin_modes = {:output => [], :input => []}
@@ -322,11 +322,14 @@ class ArduinoSketch
           return         
         when :freq_out || :freq_gen || :frequency_generator
           frequency_timer(num, opts)
-          return
-        else
-        raise ArgumentError, "today's device choices are: :servo, :original_servo_setup, :pa_lcd, :sf_lcd, and :freq_out, got #{opts[:device]}"
+        return
+          when :i2c
+            two_wire(num, opts)
+            return #
+          else
+          raise ArgumentError, "today's device choices are: :servo, :original_servo_setup, :pa_lcd, :sf_lcd, :freq_out and :i2c, got #{opts[:device]}"
+        end
       end
-    end
     
 # remove the next 14 lines as soon as documentation on new :device => :servo option is out
       
@@ -810,7 +813,77 @@ class ArduinoSketch
  			  @other_setup << "\tFrequencyTimer2::enable();" if opts[:enable] == :true
  		end
  	end	
- 	
+	
+ 	def two_wire (pin, opts={}) # i2c Two-Wire
+
+    raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
+    raise ArgumentError, "only pin 19 may be used for i2c, got #{pin}" unless pin == 19
+
+   		if opts[:as]
+
+   		  @declarations << "TwoWire _#{opts[ :as ]} = TwoWire();"
+   			accessor = []
+   			$load_libraries << "Wire"	
+   			accessor << "TwoWire& #{opts[ :as ]}() {"
+   			accessor << "\treturn _#{opts[ :as ]};"
+   			accessor << "}"
+
+   			if (@@twowire_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
+   				@@twowire_inc = TRUE
+   				accessor << "void begin( TwoWire& s) {"
+   				accessor << "\treturn s.begin();"
+   				accessor << "}"
+   				accessor << "void begin( TwoWire& s, uint8_t a) {"
+   				accessor << "\treturn s.begin(a);"
+   				accessor << "}"
+   				accessor << "void begin( TwoWire& s, int a) {"
+   				accessor << "\treturn s.begin(a);"
+   				accessor << "}"
+    			accessor << "void beginTransmission( TwoWire& s, uint8_t a ) {"
+   				accessor << "\treturn s.beginTransmission( a );"
+   				accessor << "}"
+   				accessor << "void beginTransmission( TwoWire& s, int a ) {"
+   				accessor << "\treturn s.beginTransmission( a );"
+   				accessor << "}"
+   				accessor << "void endTransmission( TwoWire& s ) {"
+   				accessor << "\treturn s.endTransmission();"
+   				accessor << "}"
+  				accessor << "void requestFrom( TwoWire& s, uint8_t a, uint8_t q) {"
+  	 			accessor << "\treturn s.requestFrom( a, q );"
+   				accessor << "}"
+   				accessor << "void requestFrom( TwoWire& s, int a, int q) {"
+  	 			accessor << "\treturn s.requestFrom( a, q );"
+   				accessor << "}"
+   				accessor << "void send( TwoWire& s, uint8_t d) {"
+   				accessor << "\treturn s.send(d);"
+   				accessor << "}"
+   				accessor << "void send( TwoWire& s, int d) {"
+   				accessor << "\treturn s.send(d);"
+   				accessor << "}"
+   				accessor << "void send( TwoWire& s, char* d) {"
+   				accessor << "\treturn s.send(d);"
+   				accessor << "}"
+   				accessor << "void send( TwoWire& s, uint8_t* d, uint8_t q) {"
+   				accessor << "\treturn s.send( d, q );"
+   				accessor << "}"
+   				accessor << "uint8_t available( TwoWire& s) {"
+   				accessor << "\treturn s.available();"
+   				accessor << "}"
+   				accessor << "uint8_t receive( TwoWire& s) {"
+   				accessor << "\treturn s.receive();"
+   				accessor << "}"
+   			end
+
+   			@accessors << accessor.join( "\n" )
+
+   			@signatures << "TwoWire& #{opts[ :as ]}();"
+
+ 			@other_setup << "\t_#{opts[ :as ]}.begin();" if opts[:enable] == :true
+
+ 		end
+ 	end	
+
+
 
  
  
@@ -821,7 +894,6 @@ class ArduinoSketch
     
     result << "#include <WProgram.h>\n"
     result << "#include <SoftwareSerial.h>\n"
-    result << "#include <Wire.h>\n" if $include_wire == true  ## 
     $load_libraries.each { |lib| result << "#include <#{lib}.h>" } unless $load_libraries.nil?
 
     result << comment_box( 'plugin directives' )

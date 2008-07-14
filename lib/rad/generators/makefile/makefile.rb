@@ -8,12 +8,12 @@ class Makefile
     def compose_for_sketch(sketch_name)
       params = hardware_params.merge software_params
       params['target'] = sketch_name.split("/").last
-      
-      params['wire_h'] = $include_wire == true ? "-I#{params['arduino_root']}/hardware/libraries/Wire/" : ""
-      params['twi_c'] = $include_wire == true ? "#{params['arduino_root']}/hardware/libraries/Wire/utility/twi.c" : ""
-      
+           
       params['libraries_root'] = "#{File.expand_path(RAD_ROOT)}/vendor/libraries"
       params['libraries'] = $load_libraries # load only libraries used 
+      
+      # needed along with ugly hack of including another copy of twi.h in wire, when using the Wire.h library
+      params['twi_c'] = $load_libraries.include?("Wire") ? "#{params['arduino_root']}/hardware/libraries/Wire/utility/twi.c" : "" 
       
       params['asm_files'] = Dir.entries( File.expand_path(RAD_ROOT) + "/" + PROJECT_DIR_NAME ).select{|e| e =~ /\.S/}            
             
@@ -23,11 +23,7 @@ class Makefile
         f << e.result(binding)
       end
     end
-    
-    # def libraries
-    #   Dir.entries("#{RAD_ROOT}/vendor/libraries").select{|e| !(e =~ /\./)}
-    # end
-    
+        
     def hardware_params
       return @hardware_params if @hardware_params
       return @hardware_params = YAML.load_file( "#{RAD_ROOT}/config/hardware.yml")

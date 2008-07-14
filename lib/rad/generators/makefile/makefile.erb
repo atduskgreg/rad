@@ -92,8 +92,8 @@ CDEFS = -DF_CPU=$(F_CPU)
 CXXDEFS = -DF_CPU=$(F_CPU)
 
 # Place -I options here
-CINCS = -I$(ARDUINO) -I$(SOFTWARE_SERIAL)<% params['libraries'].each do |l| %> -I$(LIBRARY_ROOT)/<%= l %><% end %> <%= params['wire_h'] %>
-+CXXINCS = -I$(ARDUINO) -I$(SOFTWARE_SERIAL)<% params['libraries'].each do |l| %> -I$(LIBRARY_ROOT)/<%= l %><% end %> <%= params['wire_h'] %>
+CINCS = -I$(ARDUINO) -I$(SOFTWARE_SERIAL)<% params['libraries'].each do |l| %> -I$(LIBRARY_ROOT)/<%= l %><% end %>
++CXXINCS = -I$(ARDUINO) -I$(SOFTWARE_SERIAL)<% params['libraries'].each do |l| %> -I$(LIBRARY_ROOT)/<%= l %><% end %>
 
 # Compiler flag to set the C Standard level.
 # c89   - "ANSI" C

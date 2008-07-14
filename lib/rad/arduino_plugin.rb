@@ -54,6 +54,7 @@ def initialize #:nodoc:
  # $plugin_methods_hash = $plugin_methods_hash || {}  ### new
  # $plugins_to_load = $plugins_to_load || []  ### new
   $add_to_setup = $add_to_setup || []
+  $load_libraries = $load_libraries || []
 
 
 end
@@ -64,6 +65,10 @@ end
 # sketch available plugins...
 # if the sketch has them, we include the plugins in the build...
 # otherwise not..
+
+  def include_wire
+    $load_libraries << "Wire" unless $load_libraries.include?("Wire")
+  end
 
 
   def add_to_setup(*args)

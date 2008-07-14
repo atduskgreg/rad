@@ -5,6 +5,7 @@ README.rdoc
 Rakefile
 bin/rad
 lib/examples/add_hysteresis.rb
+lib/examples/blink_m_hello.rb
 lib/examples/first_sound.rb
 lib/examples/frequency_generator.rb
 lib/examples/hello_servos.rb
@@ -15,6 +16,7 @@ lib/examples/servo_throttle.rb
 lib/examples/sparkfun_lcd.rb
 lib/examples/times_method.rb
 lib/examples/toggle.rb
+lib/examples/two_wire.rb
 lib/libraries/FrequencyTimer2/keywords.txt
 lib/libraries/FrequencyTimer2/FrequencyTimer2.cpp
 lib/libraries/FrequencyTimer2/FrequencyTimer2.h
@@ -25,6 +27,12 @@ lib/libraries/SWSerLCDpa/SWSerLCDpa.cpp
 lib/libraries/SWSerLCDpa/SWSerLCDpa.h
 lib/libraries/SWSerLCDsf/SWSerLCDsf.cpp
 lib/libraries/SWSerLCDsf/SWSerLCDsf.h
+lib/libraries/Wire/Wire.cpp
+lib/libraries/Wire/keywords.txt
+lib/libraries/Wire/Wire.h
+lib/libraries/Wire/twi.h
+lib/libraries/Wire/utilities/twi.c
+lib/libraries/Wire/utilities/twi.h
 lib/plugins/blink_m.rb
 lib/plugins/debounce.rb
 lib/plugins/debug_output_to_lcd.rb

@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = %q{rad}
-  s.version = "0.2.4"
+  s.version = "0.2.5"
   
   s.date = %q{2008-06-25}
   s.default_executable = %q{rad}

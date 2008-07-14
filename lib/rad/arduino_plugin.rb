@@ -160,7 +160,7 @@ end
     ## need a test for this
     ## fails on string interpolation, but since ruby_to_c also currently fails ...
     sketch_string = sketch_string.gsub(/#(?!\{.*\}).*/, "")
-    plugin_signatures << plugin_string.scan(/^\s((int|void|unsigned|long|short|uint8_t).*\(.*\))/)
+    plugin_signatures << plugin_string.scan(/^\s((int|void|unsigned|long|short|uint8_t|static).*\(.*\))/)
     # gather just the method name and then add to #plugin_methods_hash
     plugin_signatures[0].map {|sig| "#{sig[0]}"}.each {|m| plugin_methods << m.gsub!(/^.*\s(\w*)\(.*\)/, '\1')}
     # we don't know the methods yet, so... 
@@ -182,13 +182,13 @@ end
     first_process = plugin_string 
     # todo: need to add plugin names to the methods, so we can add them as comments in the c code
     # gather the c methods
-    $plugin_methods << first_process.scan(/^\s*(((int|void|unsigned|long|short|uint8_t).*\)).*(\n.*)*^\s*\})/)
-    plugin_signatures << first_process.scan(/^\s((int|void|unsigned|long|short|uint8_t).*\(.*\))/)
+    $plugin_methods << first_process.scan(/^\s*(((int|void|unsigned|long|short|uint8_t|static).*\)).*(\n.*)*^\s*\})/)
+    plugin_signatures << first_process.scan(/^\s((int|void|unsigned|long|short|uint8_t|static).*\(.*\))/)
     $plugin_signatures << plugin_signatures[0].map {|sig| "#{sig[0]};"}
     ## strip out the methods and pass it back 
     result = plugin_string
     # strip out the c methods so we have only ruby before eval
-    result.gsub(/^\s*(int|void|unsigned|long|short|uint8_t).*(\n.*)*^\s*\}/, ""  )
+    result.gsub(/^\s*(int|void|unsigned|long|short|uint8_t|static).*(\n.*)*^\s*\}/, ""  )
     
   end
   

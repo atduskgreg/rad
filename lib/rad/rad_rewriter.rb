@@ -61,7 +61,7 @@ class RADRewriter < Rewriter
          result = s(:dummy,
                     s(:lasgn, var_name, start_value),
                     s(:while,
-                      s(:call, s(:lvar, var_name), :<=,
+                      s(:call, s(:lvar, var_name), :<,
                         s(:arglist, finish_value)),
                       s(:block,
                         body,

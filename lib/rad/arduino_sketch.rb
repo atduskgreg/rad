@@ -457,7 +457,7 @@ class ArduinoSketch
       # transitioning to :device => :button syntax
       if opts[:latch] || opts[:device] == :button
         if opts[:device] == :button
-          opts[:latch] ||= :on
+          opts[:latch] ||= :off
         end
         # add debounce settings to dbce struct array
         ArduinoPlugin.add_debounce_struct

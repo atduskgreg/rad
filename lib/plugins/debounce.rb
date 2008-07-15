@@ -25,6 +25,35 @@ class Debounce < ArduinoPlugin
   
 # call pulse(us) to pulse a servo 
 
+#####################
+
+## How this works
+
+##  The cast:
+##   a normally open push button (circuit is closed when button is depressed)
+##    variables [input].
+##    [input]read: or current read -- what we see from the input pin HIGH (1) untouched or LOW (1) depressed
+##    [input]prev: or previous read – assigned to current reading at the end of the method
+##    [input]state: the stored state HIGH (1) or LOW (0)
+##    [input]time: the time when we last had a true
+##    millis: number of milliseconds since the Arduino began running the current program
+
+## So….
+
+##    If HIGH and the [input]read was LOW (button was depressed since the last time we looped) AND If millis() - [input]time  > 200
+##    Flip the state
+##    And assign [input]time millis()
+##    Else Set the pin to [input]state 
+##    Assign [input]prev to [input]read
+
+## abstract summary:
+
+##    So 99%+ of the time, we always see a HIGH (unless the button is pushed)
+##    If the button is pushed, we record this LOW to [input]prev, so the next time we enter the loop and the button is not being pushed we see true as long as millis() minus the [input]time of the last toggle is greater the 200 (adjust, which can be set with an adjust option)
+
+
+######################
+
 
 add_debounce_struct
 
@@ -41,9 +70,7 @@ add_debounce_struct
 #       this would put the state at the output which could be compared to 
 #       the inputs_state and override and set it if different
 
-## Todo: reduce to two methods named read_input and read_and_toggle
 
-# consider adding "toggle" method that points to toggle_output
 
 int toggle(int output)
 {
@@ -61,41 +88,36 @@ int toggle_output(int output)
     return dbce[output].state;
 }
 
+
 int read_input(int input)
 {
-  return debounce_read(input);
-}
-
-
-int debounce_read(int input)
-{
-  struct debounce btn = dbce[input];
-  /* input is HIGH (1) for open and LOW (0) for closed circuit */
+  int state = LOW;
   dbce[input].read = digitalRead(input);
-  if (btn.read == LOW && millis() - btn.time > btn.adjust) {
+
+  if (dbce[input].read == HIGH && dbce[input].prev == LOW && millis() - dbce[input].time > dbce[input].adjust)
+     {
       dbce[input].time = millis();
-      return HIGH;
-  }
-  else {      
-      return LOW;
-  }
-  dbce[input].prev = btn.read;
+      state = HIGH;
+    }
+  else 
+    state = LOW;
+    
+      dbce[input].prev = dbce[input].read;
+      return state;
 }
 
+
+int toggle(int input, int output)
+{
+  return read_and_toggle(input, output);
+}
 
 int read_and_toggle(int input, int output)
 {
-  return debounce_toggle(input, output);
-}
-
-int debounce_toggle(int input, int output)
-{
   dbce[input].read = digitalRead(input);
-
-  /* if we just pressed the button  */
-  /* and we've waited long enough since the last press to ignore any noise...  */
+  // did we just release a button which was depressed the last time we checked and over 200 millseconds has passed since this statement was last true?
   if (dbce[input].read == HIGH && dbce[input].prev == LOW && millis() - dbce[input].time > dbce[input].adjust) {
-    // ... invert the output
+    // ... flip the output
     if (dbce[input].state == HIGH)
       dbce[input].state = LOW;
     else

@@ -153,6 +153,9 @@
 #   
 
 class ArduinoSketch
+  
+  include ExternalVariableProcessing
+  
   @@servo_inc = FALSE	# flag to indicate this library instance has been created at least once - BBR
   @@slcdpa_inc = FALSE	#  same
   @@slcdsf_inc = FALSE	#  same
@@ -166,7 +169,7 @@ class ArduinoSketch
     @servo_pins = [] 
     @debounce_pins = []
     @@array_vars = [] 
-    @@external_vars =[]
+    $external_vars =[]
     $external_var_identifiers = []
     $sketch_methods = []
     $load_libraries = $load_libraries || []
@@ -249,19 +252,19 @@ class ArduinoSketch
               if v.split(",")[0] == "char"
                 ## default is 40 characters
                 if v.split(",")[2]
-                    @@external_vars << "#{v.split(",")[0]}* #{k}[#{v.split(",")[2].lstrip}];"
+                    $external_vars << "#{v.split(",")[0]}* #{k}[#{v.split(",")[2].lstrip}];"
                 else
-                    @@external_vars << "#{v.split(",")[0]} #{k}[40] = \"#{v.split(",")[1].lstrip}\";"
+                    $external_vars << "#{v.split(",")[0]} #{k}[40] = \"#{v.split(",")[1].lstrip}\";"
                 end
               else
-              @@external_vars << "#{v.split(",")[0]} #{k} =#{v.split(",")[1]};"
+              $external_vars << "#{v.split(",")[0]} #{k} =#{v.split(",")[1]};"
               end
             else
               if v.split(",")[0] == "char"
-                @@external_vars << "#{v.split(",")[0]} #{k}[40];"
+                $external_vars << "#{v.split(",")[0]} #{k}[40];"
               else
 
-                @@external_vars << "#{v.split(",")[0]} #{k};"
+                $external_vars << "#{v.split(",")[0]} #{k};"
               end
             end
             # check chars work here
@@ -915,7 +918,7 @@ class ArduinoSketch
 
     result << "\n" + comment_box( "sketch external variables" )
     
-    @@external_vars.each {|cv| result << "#{cv}"}
+    $external_vars.each {|cv| result << "#{cv}"}
     result << "" 
     result << "// servo_settings array"
 
@@ -1015,7 +1018,7 @@ class ArduinoSketch
   def self.pre_process(sketch_string) #:nodoc:
     result = sketch_string 
     # add external vars to each method (needed for better translation, will be removed in make:upload)
-    result.gsub!(/(^\s*def\s.\w*(\(.*\))?)/, '\1' + " \n #{@@external_vars.join("  \n ")}"  )
+    result.gsub!(/(^\s*def\s.\w*(\(.*\))?)/, '\1' + " \n #{$external_vars.join("  \n ")}"  )
     # gather method names
     sketch_methods = result.scan(/^\s*def\s.\w*/)
     sketch_methods.each {|m| $sketch_methods << m.gsub(/\s*def\s*/, "") }

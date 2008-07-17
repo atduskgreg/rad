@@ -24,6 +24,12 @@ class RADProcessor < RubyToAnsiC
     end
     @translator
   end
+  
+  def process_iasgn(exp)
+    name = exp.shift
+    val = process exp.shift
+    "__#{name.to_s.sub(/^@/, '')} = #{val}"
+  end
     
   def process_lasgn(exp)
     out = ""

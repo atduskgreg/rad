@@ -128,6 +128,7 @@ namespace :build do
        CODE
     end
     eval File.read(@test_dir + @sketch_class)
+    @@as.process_external_vars(constantize(klass))
     @setup = @@as.compose_setup
   end
   

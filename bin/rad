@@ -120,6 +120,10 @@ FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/SWSerLCDsf/.", "#{ske
 puts "Installed SWSerLCDsf into #{sketch_name}/vendor/libraries"
 puts
 
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/Wire/.", "#{sketch_name}/vendor/libraries/Wire"
+puts "Installed Wire into #{sketch_name}/vendor/libraries"
+puts
+
 # Build examples -- used for basic testing
 
 FileUtils.mkdir_p "#{sketch_name}/vendor/libraries"

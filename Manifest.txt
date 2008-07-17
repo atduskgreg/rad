@@ -7,6 +7,7 @@ bin/rad
 lib/examples/add_hysteresis.rb
 lib/examples/blink_m_hello.rb
 lib/examples/debounce_methods.rb
+lib/examples/external_variables.rb
 lib/examples/first_sound.rb
 lib/examples/frequency_generator.rb
 lib/examples/hello_servos.rb
@@ -48,6 +49,7 @@ lib/rad/arduino_sketch.rb
 lib/rad/arduino_plugin.rb
 lib/rad/rad_processor.rb
 lib/rad/rad_rewriter.rb
+lib/rad/variable_processing.rb
 lib/rad/init.rb
 lib/rad/todo.txt
 lib/rad/tasks/build_and_make.rake

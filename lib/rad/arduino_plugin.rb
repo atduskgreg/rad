@@ -101,6 +101,24 @@ end
      end
   end
   
+  def add_blink_m_struct
+    $plugin_structs[:blink_m] = <<-STR
+    typedef struct _blinkm_script_line {
+        uint8_t dur;
+        uint8_t cmd[4];    // cmd,arg1,arg2,arg3
+    } blinkm_script_line;
+    STR
+  end
+  
+  def self.add_blink_m_struct
+    $plugin_structs[:blink_m] = <<-STR
+    typedef struct _blinkm_script_line {
+        uint8_t dur;
+        uint8_t cmd[4];    // cmd,arg1,arg2,arg3
+    } blinkm_script_line;
+    STR
+  end
+  
   def add_debounce_struct
     $plugin_structs[:debounce] = <<-STR
     struct debounce {
@@ -165,7 +183,7 @@ end
     ## need a test for this
     ## fails on string interpolation, but since ruby_to_c also currently fails ...
     sketch_string = sketch_string.gsub(/#(?!\{.*\}).*/, "")
-    plugin_signatures << plugin_string.scan(/^\s((int|void|unsigned|long|short|uint8_t|static|byte).*\(.*\))/)
+    plugin_signatures << plugin_string.scan(/^\s((PLUGIN_C_VAR_TYPES).*\(.*\))/)
     # gather just the method name and then add to #plugin_methods_hash
     plugin_signatures[0].map {|sig| "#{sig[0]}"}.each {|m| plugin_methods << m.gsub!(/^.*\s(\w*)\(.*\)/, '\1')}
     # we don't know the methods yet, so... 
@@ -187,13 +205,13 @@ end
     first_process = plugin_string 
     # todo: need to add plugin names to the methods, so we can add them as comments in the c code
     # gather the c methods
-    $plugin_methods << first_process.scan(/^\s*(((int|void|unsigned|long|short|uint8_t|static|byte).*\)).*(\n.*)*^\s*\})/)
-    plugin_signatures << first_process.scan(/^\s((int|void|unsigned|long|short|uint8_t|static|byte).*\(.*\))/)
+    $plugin_methods << first_process.scan(/^\s*(((PLUGIN_C_VAR_TYPES).*\)).*(\n.*)*^\s*\})/)
+    plugin_signatures << first_process.scan(/^\s((PLUGIN_C_VAR_TYPES).*\(.*\))/)
     $plugin_signatures << plugin_signatures[0].map {|sig| "#{sig[0]};"}
     ## strip out the methods and pass it back 
     result = plugin_string
     # strip out the c methods so we have only ruby before eval
-    result.gsub(/^\s*(int|void|unsigned|long|short|uint8_t|static|byte).*(\n.*)*^\s*\}/, ""  )
+    result.gsub(/^\s*(PLUGIN_C_VAR_TYPES).*(\n.*)*^\s*\}/, ""  )
     
   end
   

@@ -180,6 +180,7 @@ namespace :build do
       @test_dir = "examples/"
     end
     @sketch_class = ENV['sketch'] ? "#{ENV['sketch']}.rb" : "#{@sketch_directory}.rb"
+    $sketch_file_location = @test_dir + @sketch_class
     @file_names = []
     @plugin_names = []
     Dir.entries( File.expand_path(RAD_ROOT) ).each do |f|

@@ -30,6 +30,11 @@ class RADProcessor < RubyToAnsiC
     val = process exp.shift
     "__#{name.to_s.sub(/^@/, '')} = #{val}"
   end
+  
+  def process_ivar(exp)
+    name = exp.shift
+    "__#{name.to_s.sub(/^@/, '')}"
+  end
     
   def process_lasgn(exp)
     out = ""

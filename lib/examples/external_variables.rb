@@ -13,6 +13,13 @@ class ExternalVariables < ArduinoSketch
 	  @foo = 2
   
   end
+  
+  def setup # special one time only method
+    delay 100
+    delay 100
+    @foo = 10
+    5.times { delay 200 }
+  end
     
 
 end

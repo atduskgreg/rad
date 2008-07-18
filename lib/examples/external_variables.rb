@@ -1,5 +1,11 @@
 class ExternalVariables < ArduinoSketch
 
+  define "DS1307_CTRL 7"
+  define "DS1308_CTRL 7"
+  array "char buffer[32];"
+  array "char bufferz[32];"
+
+
   @foo = 1
   @bidda = "badda"
   @boom = "1, int"

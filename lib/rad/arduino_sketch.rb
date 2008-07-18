@@ -166,6 +166,7 @@ class ArduinoSketch
     $external_var_identifiers = []
     $sketch_methods = []
     $load_libraries ||= []
+    $defines  ||= []
 
     @declarations = []
     @pin_modes = {:output => [], :input => []}
@@ -266,7 +267,7 @@ class ArduinoSketch
       end
     end
 
-
+    # phasing this out
     def add_to_setup(*args)
       if args
          args.each do |arg|
@@ -275,7 +276,7 @@ class ArduinoSketch
        end
     end
 
-    # work in progress
+    # phasing this out
     def external_arrays(*args)
       if args
         args.each do |arg|
@@ -285,7 +286,8 @@ class ArduinoSketch
 
     end
     
-    # style #array char buffer[32]
+    # array "char buffer[32]"
+    # result: char buffer[32];
     def array(arg)
       if arg
           arg = arg.chomp.rstrip.lstrip
@@ -294,12 +296,13 @@ class ArduinoSketch
       end
     end
     
-    # style: #define DS1307_SEC 0
+    # define "DS1307_SEC 0"
+    # result: #define DS1307_SEC 0
     def define(arg)
       if arg
           arg = arg.chomp.rstrip.lstrip
-          "#{arg};" unless arg[-1,1] == ";"
-          $plugin_directives << arg
+          arg = "#define #{arg};"
+          $defines << arg
       end
     end
     
@@ -938,6 +941,7 @@ class ArduinoSketch
     declarations << "#include <WProgram.h>\n"
     declarations << "#include <SoftwareSerial.h>\n"
     $load_libraries.each { |lib| declarations << "#include <#{lib}.h>" } unless $load_libraries.nil?
+    $defines.each { |d| declarations << d }
 
     plugin_directives << comment_box( 'plugin directives' )
     $plugin_directives.each {|dir| plugin_directives << dir } unless $plugin_directives.nil? ||  $plugin_directives.empty?

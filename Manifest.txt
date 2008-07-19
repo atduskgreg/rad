@@ -19,9 +19,16 @@ lib/examples/sparkfun_lcd.rb
 lib/examples/times_method.rb
 lib/examples/toggle.rb
 lib/examples/two_wire.rb
+lib/libraries/DS1307/DS1307.cpp
+lib/libraries/DS1307/DS1307.h
+lib/libraries/DS1307/keywords.txt
 lib/libraries/FrequencyTimer2/keywords.txt
 lib/libraries/FrequencyTimer2/FrequencyTimer2.cpp
 lib/libraries/FrequencyTimer2/FrequencyTimer2.h
+lib/libraries/OneWire/keywords.txt
+lib/libraries/OneWire/OneWire.cpp
+lib/libraries/OneWire/OneWire.h
+lib/libraries/OneWire/readme.txt
 lib/libraries/Servo/keywords.txt
 lib/libraries/Servo/Servo.cpp
 lib/libraries/Servo/Servo.h

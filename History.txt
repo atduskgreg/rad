@@ -1,3 +1,13 @@
+== 0.2.5 2008-07-21
+* 1ish large post Bastille Day update:
+	- added i2c capability
+	- added actual Wire library until workaround for os_x file caching is found
+	- added DS1307 and OneWire libraries
+	- added cool instance variable style global variables
+	- added array and define methods
+	- added def setup method, which added to setup
+	- added numerous examples
+
 == 0.2.4 2008-07-12
 * 1ish large update:
 	- added incredibly primitive tests 

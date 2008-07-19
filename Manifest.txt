@@ -10,6 +10,7 @@ lib/examples/debounce_methods.rb
 lib/examples/external_variables.rb
 lib/examples/first_sound.rb
 lib/examples/frequency_generator.rb
+lib/examples/hello_eeprom.rb
 lib/examples/hello_servos.rb
 lib/examples/hello_world.rb
 lib/examples/orig_servo_throttle.rb
@@ -45,6 +46,7 @@ lib/libraries/Wire/utilities/twi.h
 lib/plugins/blink_m.rb
 lib/plugins/debounce.rb
 lib/plugins/debug_output_to_lcd.rb
+lib/plugins/i2c_eeprom.rb
 lib/plugins/input_output_state.rb
 lib/plugins/mem_test.rb
 lib/plugins/servo_pulse.rb

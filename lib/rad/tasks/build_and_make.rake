@@ -130,6 +130,14 @@ namespace :build do
        end
        CODE
     end
+    # allow variable declaration without quotes: @foo = int 
+    ["long","unsigned","int","byte","short"].each do |type|
+      constantize(klass).module_eval <<-CODE
+       def self.#{type}
+        return "#{type}"
+       end
+       CODE
+    end   
     eval File.read(@test_dir + @sketch_class)
     @@as.process_external_vars(constantize(klass))
     @setup = @@as.compose_setup

@@ -5,7 +5,7 @@
 	- added DS1307 and OneWire libraries
 	- added cool instance variable style global variables
 	- added array and define methods
-	- added def setup method, which added to setup
+	- added def setup method, which added to setup 
 	- added numerous examples
 
 == 0.2.4 2008-07-12

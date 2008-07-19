@@ -140,6 +140,14 @@ FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/examples/.", "#{sketch_name}/ex
 puts "Installed examples into #{sketch_name}/examples"
 puts
 
+# Build test -- used testing
+
+FileUtils.mkdir_p "#{sketch_name}/test"
+puts "Successfully created your test directory."
+
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/test/.", "#{sketch_name}/test"
+puts "Installed tests into #{sketch_name}/test"
+puts
 
 # Build vendor/plugins:  
 

@@ -66,6 +66,7 @@ lib/rad/tasks/rad.rb
 lib/rad/version.rb
 lib/rad/generators/makefile/makefile.erb
 lib/rad/generators/makefile/makefile.rb
+lib/test/test_variable_processing.rb
 scripts/txt2html
 setup.rb
 spec/models/spec_helper.rb

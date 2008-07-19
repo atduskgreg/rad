@@ -155,7 +155,11 @@
 class ArduinoSketch
   
   include ExternalVariableProcessing
-    
+  
+  # find another way to do this
+  @@frequency_inc = FALSE
+  @@twowire_inc	= FALSE
+  
   def initialize #:nodoc:
     @servo_settings = [] # need modular way to add this
     @debounce_settings = [] # need modular way to add this
@@ -323,7 +327,7 @@ class ArduinoSketch
         return clean_c_methods.join( "\n" )
     end
   
-  # Confiugre a single pin for output and setup a method to refer to that pin, i.e.:
+  # Configure a single pin for output and setup a method to refer to that pin, i.e.:
   #
   #   output_pin 7, :as => :led
   #
@@ -357,11 +361,25 @@ class ArduinoSketch
         when :freq_out || :freq_gen || :frequency_generator
           frequency_timer(num, opts)
         return
-          when :i2c
-            two_wire(num, opts)
-            return #
-          else
-          raise ArgumentError, "today's device choices are: :servo, :original_servo_setup, :pa_lcd, :sf_lcd, :freq_out and :i2c, got #{opts[:device]}"
+        when :i2c
+          two_wire(num, opts) unless @@twowire_inc
+          return #
+        when :i2c_eeprom
+          two_wire(num, opts) unless @@twowire_inc
+          return #
+        when :i2c_ds1307
+          two_wire(num, opts) unless @@twowire_inc
+          ds1307(num, opts) 
+          return #
+        when :i2c_blinkm
+          two_wire(num, opts) unless @@twowire_inc
+          blinkm
+          return #
+        when :onewire
+          one_wire(num, opts)
+          return #
+        else
+          raise ArgumentError, "today's device choices are: :servo, :original_servo_setup, :pa_lcd, :sf_lcd, :freq_out,:i2c, :i2c_eeprom, :i2c_ds1307, and :i2c_blinkm  got #{opts[:device]}"
         end
       end
     
@@ -536,7 +554,7 @@ class ArduinoSketch
   end
   
   # Treat a pair of digital I/O pins as a serial line. See: http://www.arduino.cc/en/Tutorial/SoftwareSerial
- 	def software_serial(rx, tx, opts={})
+  def software_serial(rx, tx, opts={})
     raise ArgumentError, "can only define rx from Fixnum, got #{rx.class}" unless rx.is_a?(Fixnum)
     raise ArgumentError, "can only define tx from Fixnum, got #{tx.class}" unless tx.is_a?(Fixnum)
     
@@ -673,7 +691,7 @@ class ArduinoSketch
  			
  			@signatures << "SWSerLCDpa& #{opts[ :as ]}();"
  
- 			@other_setup << "_#{opts[ :as ]}.begin(#{rate});"
+ 			@other_setup << "\t_#{opts[ :as ]}.begin(#{rate});"
  		end
  	end 	
 
@@ -746,16 +764,14 @@ class ArduinoSketch
  			
  			@signatures << "SWSerLCDsf& #{opts[ :as ]}();"
  
- 			@other_setup << "_#{opts[ :as ]}.begin(#{rate});"
+ 			@other_setup << "\t_#{opts[ :as ]}.begin(#{rate});"
  		end
  	end 	
 
 
 
-
- 
-  	def servo(spin, opts={}) # servo motor routines # how about pin instead of spin
-    raise ArgumentError, "can only define spin from Fixnum, got #{spin.class}" unless spin.is_a?(Fixnum)
+  def servo(pin, opts={}) # servo motor routines #
+    raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
         
     minp = opts[:min] ? opts[:min] : 544
     maxp = opts[:max] ? opts[:max] : 2400
@@ -794,16 +810,17 @@ class ArduinoSketch
  			
  			@signatures << "Servo& #{opts[ :as ]}();"
 
- 			@other_setup << "\t_#{opts[ :as ]}.attach(#{spin}, #{opts[:position]}, #{minp}, #{maxp});" if opts[:position]
- 			@other_setup << "\t_#{opts[ :as ]}.attach(#{spin}, #{minp}, #{maxp});" unless opts[:position]
+ 			@other_setup << "\t_#{opts[ :as ]}.attach(#{pin}, #{opts[:position]}, #{minp}, #{maxp});" if opts[:position]
+ 			@other_setup << "\t_#{opts[ :as ]}.attach(#{pin}, #{minp}, #{maxp});" unless opts[:position]
 
  		end
  	end 
  	
- 		def frequency_timer(pin, opts={}) # frequency timer routines
- 		  
+ 	def frequency_timer(pin, opts={}) # frequency timer routines
+
     raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
     raise ArgumentError, "only pin 11 may be used for freq_out, got #{pin}" unless pin == 11
+    
     if opts[:enable]
       raise ArgumentError, "enable option must include the frequency or period option" unless opts[:frequency] || opts[:period]
     end
@@ -817,28 +834,29 @@ class ArduinoSketch
 
    		if opts[:as]
    		  
+   		  @@frequency_inc = TRUE
    		  @declarations << "FrequencyTimer2 _#{opts[ :as ]} = FrequencyTimer2();"
    			accessor = []
    			$load_libraries << "FrequencyTimer2"	
    			accessor << "FrequencyTimer2& #{opts[ :as ]}() {"
    			accessor << "\treturn _#{opts[ :as ]};"
    			accessor << "}"
-        @@frequency_inc ||= FALSE
-   			if (@@frequency_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
-   				@@frequency_inc = TRUE
-   				accessor << "void set_frequency( FrequencyTimer2& s, int b ) {"
-   				accessor << "\treturn s.setPeriod( 1000000L/b );"
-   				accessor << "}"
-   				accessor << "void set_period( FrequencyTimer2& s, int b ) {"
-  	 			accessor << "\treturn s.setPeriod( b );"
-   				accessor << "}"
-   				accessor << "void enable( FrequencyTimer2& s ) {"
-   				accessor << "\treturn s.enable();"
-   				accessor << "}"
-   				accessor << "void disable( FrequencyTimer2& s ) {"
-   				accessor << "\treturn s.disable();"
-   				accessor << "}"
-   			end
+   			# add ||=
+#   		if (@@frequency_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
+   			# @@frequency_inc = TRUE
+   			accessor << "void set_frequency( FrequencyTimer2& s, int b ) {"
+   			accessor << "\treturn s.setPeriod( 1000000L/b );"
+   			accessor << "}"
+   			accessor << "void set_period( FrequencyTimer2& s, int b ) {"
+  	 		accessor << "\treturn s.setPeriod( b );"
+   			accessor << "}"
+   			accessor << "void enable( FrequencyTimer2& s ) {"
+   			accessor << "\treturn s.enable();"
+   			accessor << "}"
+   			accessor << "void disable( FrequencyTimer2& s ) {"
+   			accessor << "\treturn s.disable();"
+   			accessor << "}"
+#   		end
 
    			@accessors << accessor.join( "\n" )
 
@@ -850,80 +868,178 @@ class ArduinoSketch
  			  @other_setup << "\tFrequencyTimer2::enable();" if opts[:enable] == :true
  		end
  	end	
-	
+
+  def one_wire(pin, opts={})
+    raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
+
+ 		if opts[:as] 
+ 			@declarations << "OneWire _#{opts[ :as ]} = OneWire(#{pin});"
+ 			accessor = []
+ 			$load_libraries << "OneWire"
+ 			accessor << "OneWire& #{opts[ :as ]}() {"
+ 			accessor << "\treturn _#{opts[ :as ]};"
+ 			accessor << "}"
+ 			@@onewire_inc ||= FALSE
+ 			if (@@onewire_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
+ 				@@onewire_inc = TRUE
+  				accessor << "uint8_t reset(OneWire& s) {"
+  				accessor << "\treturn s.reset();"
+  				accessor << "}"
+  				accessor << "void select( OneWire& s, uint8_t rom[8] ) {"
+  				accessor << "\treturn s.select( rom );"
+  				accessor << "}"
+  				accessor << "void skip(OneWire& s) {"
+  				accessor << "\treturn s.skip();"
+  				accessor << "}"
+  				accessor << "void write(OneWire& s, uint8_t v, uint8_t p ) {" # "power = 0"  ?????
+  				accessor << "\treturn s.write( v, p );"
+  				accessor << "}"
+  				accessor << "uint8_t read(OneWire& s) {"
+  				accessor << "\treturn s.read();"
+  				accessor << "}"
+  				accessor << "void write_bit( OneWire& s, uint8_t b ) {"
+  				accessor << "\treturn s.write_bit( b );"
+  				accessor << "}"
+  				accessor << "uint8_t read_bit(OneWire& s) {"
+  				accessor << "\treturn s.read_bit();"
+  				accessor << "}"
+  				accessor << "void depower(OneWire& s) {"
+  				accessor << "\treturn s.depower();"
+  				accessor << "}"
+  				accessor << "void reset_search(OneWire& s) {"
+  				accessor << "\treturn s.reset_search();"
+  				accessor << "}"
+  				accessor << "uint8_t search(OneWire& s, uint8_t *newAddr) {"
+  				accessor << "\treturn s.search( newAddr);"
+  				accessor << "}"
+  				accessor << "static uint8_t crc8(OneWire& s, uint8_t *addr, uint8_t len) {"
+  				accessor << "\treturn s.search( addr, len);"
+  				accessor << "}"
+# Not implemented yet
+#   			accessor << "static unsigned short crc16(OneWire& s, unsigned short *data, unsigned short len) {"
+#  				accessor << "\treturn s.search( data, len);"
+#  				accessor << "}"
+  			end
+ 			@accessors << accessor.join( "\n" )
+
+ 			@signatures << "OneWire& #{opts[ :as ]}();"
+  		end
+ 	end
+
  	def two_wire (pin, opts={}) # i2c Two-Wire
 
-    raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
-    raise ArgumentError, "only pin 19 may be used for i2c, got #{pin}" unless pin == 19
+    	raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
+    	raise ArgumentError, "only pin 19 may be used for i2c, got #{pin}" unless pin == 19
 
    		if opts[:as]
 
-   		  @declarations << "TwoWire _#{opts[ :as ]} = TwoWire();"
+   			@@twowire_inc = TRUE
+   		    @declarations << "TwoWire _wire = TwoWire();"
+#   		    @declarations << "TwoWire _#{opts[ :as ]} = TwoWire();"
    			accessor = []
    			$load_libraries << "Wire"	
-   			accessor << "TwoWire& #{opts[ :as ]}() {"
-   			accessor << "\treturn _#{opts[ :as ]};"
+   			accessor << "TwoWire& wire() {"
+   			accessor << "\treturn _wire;"
+#   			accessor << "TwoWire& #{opts[ :as ]}() {"
+#   			accessor << "\treturn _#{opts[ :as ]};"
    			accessor << "}"
-        @@twowire_inc ||= FALSE
-   			if (@@twowire_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
-   				@@twowire_inc = TRUE
-   				accessor << "void begin( TwoWire& s) {"
-   				accessor << "\treturn s.begin();"
-   				accessor << "}"
-   				accessor << "void begin( TwoWire& s, uint8_t a) {"
-   				accessor << "\treturn s.begin(a);"
-   				accessor << "}"
-   				accessor << "void begin( TwoWire& s, int a) {"
-   				accessor << "\treturn s.begin(a);"
-   				accessor << "}"
-    			accessor << "void beginTransmission( TwoWire& s, uint8_t a ) {"
-   				accessor << "\treturn s.beginTransmission( a );"
-   				accessor << "}"
-   				accessor << "void beginTransmission( TwoWire& s, int a ) {"
-   				accessor << "\treturn s.beginTransmission( a );"
-   				accessor << "}"
-   				accessor << "void endTransmission( TwoWire& s ) {"
-   				accessor << "\treturn s.endTransmission();"
-   				accessor << "}"
-  				accessor << "void requestFrom( TwoWire& s, uint8_t a, uint8_t q) {"
-  	 			accessor << "\treturn s.requestFrom( a, q );"
-   				accessor << "}"
-   				accessor << "void requestFrom( TwoWire& s, int a, int q) {"
-  	 			accessor << "\treturn s.requestFrom( a, q );"
-   				accessor << "}"
-   				accessor << "void send( TwoWire& s, uint8_t d) {"
-   				accessor << "\treturn s.send(d);"
-   				accessor << "}"
-   				accessor << "void send( TwoWire& s, int d) {"
-   				accessor << "\treturn s.send(d);"
-   				accessor << "}"
-   				accessor << "void send( TwoWire& s, char* d) {"
-   				accessor << "\treturn s.send(d);"
-   				accessor << "}"
-   				accessor << "void send( TwoWire& s, uint8_t* d, uint8_t q) {"
-   				accessor << "\treturn s.send( d, q );"
-   				accessor << "}"
-   				accessor << "uint8_t available( TwoWire& s) {"
-   				accessor << "\treturn s.available();"
-   				accessor << "}"
-   				accessor << "uint8_t receive( TwoWire& s) {"
-   				accessor << "\treturn s.receive();"
-   				accessor << "}"
-   			end
+   			accessor << "void begin( TwoWire& s) {"
+   			accessor << "\treturn s.begin();"
+   			accessor << "}"
+   			accessor << "void begin( TwoWire& s, uint8_t a) {"
+   			accessor << "\treturn s.begin(a);"
+   			accessor << "}"
+   			accessor << "void begin( TwoWire& s, int a) {"
+   			accessor << "\treturn s.begin(a);"
+   			accessor << "}"
+   			accessor << "void beginTransmission( TwoWire& s, uint8_t a ) {"
+   			accessor << "\treturn s.beginTransmission( a );"
+   			accessor << "}"
+   			accessor << "void beginTransmission( TwoWire& s, int a ) {"
+   			accessor << "\treturn s.beginTransmission( a );"
+   			accessor << "}"
+   			accessor << "void endTransmission( TwoWire& s ) {"
+   			accessor << "\treturn s.endTransmission();"
+   			accessor << "}"
+   			accessor << "void requestFrom( TwoWire& s, uint8_t a, uint8_t q) {"
+   			accessor << "\treturn s.requestFrom( a, q );"
+   			accessor << "}"
+   			accessor << "void requestFrom( TwoWire& s, int a, int q) {"
+   			accessor << "\treturn s.requestFrom( a, q );"
+   			accessor << "}"
+   			accessor << "void send( TwoWire& s, uint8_t d) {"
+   			accessor << "\treturn s.send(d);"
+   			accessor << "}"
+   			accessor << "void send( TwoWire& s, int d) {"
+   			accessor << "\treturn s.send(d);"
+   			accessor << "}"
+   			accessor << "void send( TwoWire& s, char* d) {"
+   			accessor << "\treturn s.send(d);"
+   			accessor << "}"
+   			accessor << "void send( TwoWire& s, uint8_t* d, uint8_t q) {"
+   			accessor << "\treturn s.send( d, q );"
+   			accessor << "}"
+   			accessor << "uint8_t available( TwoWire& s) {"
+   			accessor << "\treturn s.available();"
+   			accessor << "}"
+   			accessor << "uint8_t receive( TwoWire& s) {"
+   			accessor << "\treturn s.receive();"
+   			accessor << "}"
 
    			@accessors << accessor.join( "\n" )
 
-   			@signatures << "TwoWire& #{opts[ :as ]}();"
+   			@signatures << "TwoWire& wire();"
+#   			@signatures << "TwoWire& #{opts[ :as ]}();"
 
- 			@other_setup << "\t_#{opts[ :as ]}.begin();" if opts[:enable] == :true
+ 			@other_setup << "\t_wire.begin();" if opts[:enable] == :true
+# 			@other_setup << "\t_#{opts[ :as ]}.begin();" if opts[:enable] == :true
 
  		end
  	end	
 
+	def ds1307(pin, opts={}) # DS1307 motor routines
+    	raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
+        raise ArgumentError, "only pin 19 may be used for i2c, got #{pin}" unless pin == 19
+#		raise ArgumentError, "only one DS1307  may be used for i2c" if @@ds1307_inc == :true
+
+   		if opts[:as]
+ 			@@ds1307_inc = TRUE
+ 			@declarations << "DS1307 _#{opts[ :as ]} = DS1307();"
+ 			accessor = []
+ 			$load_libraries << "DS1307"
+ 			accessor << "DS1307& #{opts[ :as ]}() {"
+ 			accessor << "\treturn _#{opts[ :as ]};"
+ 			accessor << "}"
+ 			accessor << "int get( DS1307& s, int b, boolean r ) {"
+ 			accessor << "\treturn s.get( b, r );"
+ 			accessor << "}"
+ 			accessor << "void set( DS1307& s, int b, int r ) {"
+ 			accessor << "\treturn s.set( b, r );"
+ 			accessor << "}"
+ 			accessor << "void start( DS1307& s ) {"
+ 			accessor << "\treturn s.start();"
+ 			accessor << "}"
+ 			accessor << "void stop( DS1307& s ) {"
+ 			accessor << "\treturn s.stop();"
+ 			accessor << "}"
+
+ 			@accessors << accessor.join( "\n" )
+
+ 			@signatures << "DS1307& #{opts[ :as ]}();"
+ 			@other_setup << "\t_#{opts[ :as ]}.start();" if opts[:rtcstart]
+
+ 		end
+ 	end 
 
 
- 
- 
+
+	def blinkm
+
+	end
+
+
+
+
   def compose_setup #:nodoc: also composes headers and signatures
 
     declarations = []

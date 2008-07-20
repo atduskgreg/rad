@@ -170,42 +170,12 @@ File.open("#{sketch_name}/#{sketch_name}.rb", "w") do |file|
   file << <<-EOS
 class #{sketch_name.split("_").collect{|c| c.capitalize}.join("")} < ArduinoSketch
   
-  # quick overview:
-  # external variables can be added.. use a comma separation, colons are added automatically
-  # 
-  #external_vars :foo => "long unsigned, 0", :bar => "int"
-  # result "long unsigned foo = 0" and "int bar;"
-  # note while this is ruby, many methods and some operators you take for granted are not implemented
-  # some examples: blocks, case statements, +=
-  # keep it simple and remember that the arduino uses a simple loop 
-  # you can branch out with your other methods here or use 
-  # add_to_setup to call a method once (todo: look at signatures)
-  # since all the methods are converted to C, assumptions are made regarding variable types
-  # for example if we need integers to call serial_print hack = input + output + 1
-  # pin examples
-  # input_pin 10, :as => :back_on_button, :latch => :off
-  # input_pin 12, :as => :back_off_button, :latch => :off
-  # output_pin 5, :as => :red_led
-  # input_pin 8, :as => :red_button, :latch => :off, :adjust => 250
-  # output_pin 4, :as => :top_servo, :min => 700, :max => 2200
+  # looking for hints?  check out the examples directory
   
-  # three line servo (don't forget do declare servo_amount')
-  # sensor_position = analogRead(sensor)
-  # servo_amount = (sensor_position*2 + 500)
-  # move_servo top_servo, servo_amount
-  # one line debounce:
-  # debounce_toggle(button, led)
-  # debounce a read (returns high)
-  # do_something if debounce_read(button, led)
-  
-  
-  
-  # hello world (uncomment to run)
-  
-  #output_pin 13, :as => :led
-  #  def loop
-  #    blink led, 100 
-  #  end
+    def loop
+     # your code here
+    end
+    
 end
   EOS
 end

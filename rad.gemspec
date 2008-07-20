@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
   
   s.date = %q{2008-06-25}
   s.default_executable = %q{rad}
-  s.summary = "Fork of the Ruby Arduino Development - 0.2.4.8.1"
+  s.summary = "Fork of the Ruby Arduino Development - 0.2.4.8.2"
   s.email = "jd@jdbarnhart.com"
   s.executables = ["rad"]
   s.homepage = "http://github.com/madrona/rad"

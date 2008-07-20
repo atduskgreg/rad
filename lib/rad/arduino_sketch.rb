@@ -165,7 +165,7 @@ class ArduinoSketch
     @debounce_settings = [] # need modular way to add this
     @servo_pins = [] 
     @debounce_pins = []
-    @@array_vars = [] 
+    $external_array_vars = [] 
     $external_vars =[]
     $external_var_identifiers = []
     $sketch_methods = []
@@ -284,7 +284,7 @@ class ArduinoSketch
     def external_arrays(*args)
       if args
         args.each do |arg|
-          @@array_vars << arg
+          $external_array_vars << arg
         end
       end
 
@@ -292,11 +292,26 @@ class ArduinoSketch
     
     # array "char buffer[32]"
     # result: char buffer[32];
+    # array "char buffer[32]"
+    # result: char buffer[32];
+    # todo 
+    # need to feed array external array identifiers to rtc if they are in plugins or libraries
     def array(arg)
       if arg
           arg = arg.chomp.rstrip.lstrip
-          "#{arg};" unless arg[-1,1] == ";"
-          @@array_vars << arg
+          name = arg.scan(/\s*(\w*)\[\d*\]?/).first.first
+          if /\w*\[\d*\]\s*\=\s*\{(.*)\}/ =~ arg
+            assignment = arg.scan(/\w*\[\d*\]\s*\=\s*\{(.*)\}/).first.first
+            array_size = assignment.split(",").length
+            if /\[(\s*)\]/ =~ arg
+              arg.gsub!(/(\[\d*\])/, "[#{array_size}]")
+            end
+          end
+          arg = arg.scan(/^((\s*|\w*)*\s*\w*\[\d*\])?/).first.first
+          arg = "#{arg};" unless arg[-1,1] == ";"
+          $external_var_identifiers << name unless $external_var_identifiers.include?(name)
+          # add array_name declaration
+          $external_array_vars << arg unless $external_array_vars.include?(arg)
       end
     end
     
@@ -1076,7 +1091,7 @@ class ArduinoSketch
     external_vars << "struct debounce dbce[#{array_size}] = { #{@debounce_settings.join(", ")} };" if $plugin_structs[:debounce]
     external_vars << ""
     
-    @@array_vars.each { |var| external_vars << var } if @@array_vars
+    $external_array_vars.each { |var| external_vars << var } if $external_array_vars
 
     external_vars << "\n" + comment_box( "variable and accessors" )
     @declarations.each {|dec| external_vars << dec}

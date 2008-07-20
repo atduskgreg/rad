@@ -183,7 +183,7 @@ end
     ## need a test for this
     ## fails on string interpolation, but since ruby_to_c also currently fails ...
     sketch_string = sketch_string.gsub(/#(?!\{.*\}).*/, "")
-    plugin_signatures << plugin_string.scan(/^\s((#{PLUGIN_C_VAR_TYPES}).*\(.*\))/)
+    plugin_signatures << plugin_string.scan(/^\s*(((#{PLUGIN_C_VAR_TYPES})\s*)+\w*\(.*\))/)
     # gather just the method name and then add to #plugin_methods_hash
     plugin_signatures[0].map {|sig| "#{sig[0]}"}.each {|m| plugin_methods << m.gsub!(/^.*\s(\w*)\(.*\)/, '\1')}
     # we don't know the methods yet, so... 

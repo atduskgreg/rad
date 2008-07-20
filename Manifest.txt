@@ -8,6 +8,7 @@ lib/examples/add_hysteresis.rb
 lib/examples/blink_m_hello.rb
 lib/examples/debounce_methods.rb
 lib/examples/external_variables.rb
+lib/examples/external_variable_fu.rb
 lib/examples/first_sound.rb
 lib/examples/frequency_generator.rb
 lib/examples/hello_eeprom.rb

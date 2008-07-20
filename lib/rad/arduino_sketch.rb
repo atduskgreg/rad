@@ -872,59 +872,43 @@ class ArduinoSketch
   def one_wire(pin, opts={})
     raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
 
- 		if opts[:as] 
- 			@declarations << "OneWire _#{opts[ :as ]} = OneWire(#{pin});"
- 			accessor = []
- 			$load_libraries << "OneWire"
- 			accessor << "OneWire& #{opts[ :as ]}() {"
- 			accessor << "\treturn _#{opts[ :as ]};"
- 			accessor << "}"
- 			@@onewire_inc ||= FALSE
- 			if (@@onewire_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
- 				@@onewire_inc = TRUE
-  				accessor << "uint8_t reset(OneWire& s) {"
-  				accessor << "\treturn s.reset();"
-  				accessor << "}"
-  				accessor << "void select( OneWire& s, uint8_t rom[8] ) {"
-  				accessor << "\treturn s.select( rom );"
-  				accessor << "}"
-  				accessor << "void skip(OneWire& s) {"
-  				accessor << "\treturn s.skip();"
-  				accessor << "}"
-  				accessor << "void write(OneWire& s, uint8_t v, uint8_t p ) {" # "power = 0"  ?????
-  				accessor << "\treturn s.write( v, p );"
-  				accessor << "}"
-  				accessor << "uint8_t read(OneWire& s) {"
-  				accessor << "\treturn s.read();"
-  				accessor << "}"
-  				accessor << "void write_bit( OneWire& s, uint8_t b ) {"
-  				accessor << "\treturn s.write_bit( b );"
-  				accessor << "}"
-  				accessor << "uint8_t read_bit(OneWire& s) {"
-  				accessor << "\treturn s.read_bit();"
-  				accessor << "}"
-  				accessor << "void depower(OneWire& s) {"
-  				accessor << "\treturn s.depower();"
-  				accessor << "}"
-  				accessor << "void reset_search(OneWire& s) {"
-  				accessor << "\treturn s.reset_search();"
-  				accessor << "}"
-  				accessor << "uint8_t search(OneWire& s, uint8_t *newAddr) {"
-  				accessor << "\treturn s.search( newAddr);"
-  				accessor << "}"
-  				accessor << "static uint8_t crc8(OneWire& s, uint8_t *addr, uint8_t len) {"
-  				accessor << "\treturn s.search( addr, len);"
-  				accessor << "}"
-# Not implemented yet
-#   			accessor << "static unsigned short crc16(OneWire& s, unsigned short *data, unsigned short len) {"
-#  				accessor << "\treturn s.search( data, len);"
-#  				accessor << "}"
-  			end
- 			@accessors << accessor.join( "\n" )
+    if opts[:as]
+      @declarations << "OneWire _#{opts[ :as ]} = OneWire(#{pin});"
+      accessor = []
+      $load_libraries << "OneWire"
+      accessor << "OneWire& #{opts[ :as ]}() {"
+      accessor << "\treturn _#{opts[ :as ]};"
+      accessor << "}"
+      @@onewire_inc ||= FALSE
+      if (@@onewire_inc == FALSE)     # on second instance this stuff can't be repeated - BBR
+        @@onewire_inc = TRUE
+        accessor << "uint8_t reset(OneWire& s) {"
+        accessor << "\treturn s.reset();"
+        accessor << "}"
+        accessor << "void skip(OneWire& s) {"
+        accessor << "\treturn s.skip();"
+        accessor << "}"
+        accessor << "void write(OneWire& s, uint8_t v, uint8_t p = 0) {" # "power = 0"  ?????
+        accessor << "\treturn s.write( v, p );"
+        accessor << "}"
+        accessor << "uint8_t read(OneWire& s) {"
+        accessor << "\treturn s.read();"
+        accessor << "}"
+        accessor << "void write_bit( OneWire& s, uint8_t b ) {"
+        accessor << "\treturn s.write_bit( b );"
+        accessor << "}"
+        accessor << "uint8_t read_bit(OneWire& s) {"
+        accessor << "\treturn s.read_bit();"
+        accessor << "}"
+        accessor << "void depower(OneWire& s) {"
+        accessor << "\treturn s.depower();"
+        accessor << "}"
+      end
+      @accessors << accessor.join( "\n" )
 
- 			@signatures << "OneWire& #{opts[ :as ]}();"
-  		end
- 	end
+      @signatures << "OneWire& #{opts[ :as ]}();"
+    end
+  end
 
  	def two_wire (pin, opts={}) # i2c Two-Wire
 

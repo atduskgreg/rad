@@ -5,7 +5,7 @@
 
 // you can exclude onewire_search by defining that to 0
 #ifndef ONEWIRE_SEARCH
-#define ONEWIRE_SEARCH 1
+#define ONEWIRE_SEARCH 0
 #endif
 
 // You can exclude onewire_crc16 by defining that to 0
@@ -16,11 +16,6 @@
 class OneWire
 {
   private:
-#if ONEWIRE_SEARCH
-    uint8_t address[8];
-    char searchJunction;
-    uint8_t searchExhausted;
-#endif
     uint8_t pin;
     uint8_t port;
     uint8_t bitmask;
@@ -35,9 +30,6 @@ class OneWire
     // with a presence pulse.  Returns 0 if there is no device or the
     // bus is shorted or otherwise held low for more than 250uS
     uint8_t reset();
-
-    // Issue a 1-Wire rom select command, you do the reset first.
-    void select( uint8_t rom[8]);
 
     // Issue a 1-Wire rom skip command, to address all on bus.
     void skip();
@@ -65,28 +57,6 @@ class OneWire
     // someone shorts your bus.
     void depower();
 
-#if ONEWIRE_SEARCH
-    // Clear the search state so that if will start from the beginning again.
-    void reset_search();
-
-    // Look for the next device. Returns 1 if a new address has been
-    // returned. A zero might mean that the bus is shorted, there are
-    // no devices, or you have already retrieved all of them.  It
-    // might be a good idea to check the CRC to make sure you didn't
-    // get garbage.  The order is deterministic. You will always get
-    // the same devices in the same order.
-    uint8_t search(uint8_t *newAddr);
-#endif
-
-    // Compute a Dallas Semiconductor 8 bit CRC, these are used in the
-    // ROM and scratchpad registers.
-    static uint8_t crc8( uint8_t *addr, uint8_t len);
-#if ONEWIRE_CRC16
-    // Compute a Dallas Semiconductor 16 bit CRC. Maybe. I don't have
-    // any devices that use this so this might be wrong. I just copied
-    // it from their sample code.
-    static unsigned short crc16(unsigned short *data, unsigned short len);
-#endif
 
 };
 

@@ -44,6 +44,7 @@ lib/libraries/Wire/Wire.h
 lib/libraries/Wire/twi.h
 lib/libraries/Wire/utilities/twi.c
 lib/libraries/Wire/utilities/twi.h
+lib/plugins/bitwise_ops.rb
 lib/plugins/blink_m.rb
 lib/plugins/debounce.rb
 lib/plugins/debug_output_to_lcd.rb

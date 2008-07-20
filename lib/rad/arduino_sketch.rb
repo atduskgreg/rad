@@ -320,7 +320,7 @@ class ArduinoSketch
     def define(arg)
       if arg
           arg = arg.chomp.rstrip.lstrip
-          arg = "#define #{arg};"
+          arg = "#define #{arg}"
           $defines << arg
       end
     end
@@ -1077,8 +1077,7 @@ class ArduinoSketch
 
     external_vars << "\n" + comment_box( "sketch external variables" )
     
-    #$external_vars.each {|cv| result << "#{cv}"}
-    $external_vars.each {|v| external_vars << "#{v};"}
+    $external_vars.each {|v| external_vars << v }
     external_vars << "" 
     external_vars << "// servo_settings array"
 

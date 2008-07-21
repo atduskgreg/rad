@@ -1,3 +1,32 @@
+== 0.2.5 2008-07-21
+* 1ish large post Bastille Day update:
+	- added i2c capability
+	- added actual Wire library until workaround for os_x file caching is found
+	- added DS1307 and OneWire libraries
+	- added cool instance variable style global variables
+	- added array and define methods
+	- added def setup method, which added to setup 
+	- added numerous examples
+
+== 0.2.4 2008-07-12
+* 1ish large update:
+	- added incredibly primitive tests 
+	- added 11 sketch examples which are compiled or compiled/uploaded
+		- use rake test:compile or rake test:upload
+		- can also use the following to run an example (make:compile also works)
+		- make:upload sketch=examples/hello_servos
+
+== 0.2.3 2008-07-10
+* Manyish updates:
+	- updated servo library to support position parameter
+	- plus:
+	- addition of plugins
+	- latest and greatest lcd libraries for pa and sf
+	- multiple methods 
+	- addition of rad_process and rad_rewrite methods methods
+	- options for :device => servo, button, lcd, 
+	- and many more
+
 == 0.2.2 2008-04-27
 * 2ish updates:
 	- updated makefile template and cli to expect arduino-0011

@@ -1,7 +1,7 @@
 /*
-  SWSerLCDpa.h - Software serial to Peter Anderson controller chip based
+  SWSerLCDsf.h - Software serial to SparkFun controller chip based
   LCD display library Adapted from SoftwareSerial.cpp (c) 2006 David A. Mellis
-  by Brian B. Riley, Underhill Center, Vermont, USA, July 2007
+  by Brian B. Riley, Underhill Center, Vermont, USA, July 2008
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -18,22 +18,24 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef SWSerLCDpa_h
-#define SWSerLCDpa_h
+#ifndef SWSerLCDsf_h
+#define SWSerLCDsf_h
 
 #include <inttypes.h>
  
-class SWSerLCDpa
+class SWSerLCDsf
 {
   private:
     uint8_t _transmitPin;
     long _baudRate;
     int _bitPeriod;
+    byte _rows;
+    byte _cols;
     int _geometry;
     void printNumber(unsigned long, uint8_t);
   public:
-    SWSerLCDpa(uint8_t, int); 
-    SWSerLCDpa(uint8_t);
+    SWSerLCDsf(uint8_t);
+    SWSerLCDsf(uint8_t, int);
     void begin(long);
     void print(char);
     void print(const char[]);
@@ -43,21 +45,12 @@ class SWSerLCDpa
     void print(long);
     void print(unsigned long);
     void print(long, int);
-    void println(void);
 	void clearscr(void);
 	void home(void);
 	void setgeo(int);
 	void setintensity(int);
-	void intoBignum(void);
-	void outofBignum(void);
-	void setxy(int, int);
-    void println(char);
-    void println(const char[]);
-    void println(uint8_t);
-    void println(int);
-    void println(long);
-    void println(unsigned long);
-    void println(long, int);
+	void setxy(byte, byte);
+	void setcmd(byte, byte);
 };
 
 #endif

@@ -1,0 +1,51 @@
+=Welcome to RAD (Ruby Arduino Development)
+
+RAD is a framework for programming the Arduino physcial computing platform using Ruby. RAD converts Ruby scripts written using a set of Rails-like conventions and helpers into C source code which can be compiled and run on the Arduino microcontroller. It also provides a set of Rake tasks for automating the compilation and upload process.
+
+For a full introduction see http://rad.rubyforge.org
+
+==Documentation
+
+The main documentation is here: ArduinoSketch.
+
+See also the Arduino Software reference: http://www.arduino.cc/en/Reference/HomePage
+
+==Examples
+
+See the examples directory for lots of examples of RAD in action: http://rad.rubyforge.org/examples
+Madrona Fork Screencast is here: http://www.vimeo.com/1272402
+Occasional commentary here: http://senplicity.wordpress.com/
+
+==Getting Started
+
+To install the madrona fork gem:
+
+ $ Update to RubyGems 1.2.0 before proceeding!! 
+ $ gem sources -a http://gems.github.com (you only have to do this once)
+ $ sudo gem install madrona-rad
+
+To install the original rad:
+
+ $ sudo gem install rad
+
+Run the rad command to create a new project:
+
+ $ rad my_project
+
+Write a sketch that will blink a single LED every 500ms:
+
+  class MyProject < ArduinoSketch
+  	output_pin 13, :as => led
+  	
+  	def loop
+  		blink led, 500
+  	end
+  end
+
+Attach your Arduino and use rake to complile and upload your sketch:
+
+ $ rake make:upload
+
+==Get Involved
+
+Cheers? Jeers? Wanna help out? Contact Greg Borenstein: greg [dot] borenstein [at] gmail [dot] com

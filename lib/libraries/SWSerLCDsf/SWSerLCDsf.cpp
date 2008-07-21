@@ -1,7 +1,7 @@
 /*
-  SWSerLCDpa.cpp - Software serial to Peter Anderson controller chip based
+  SWSerLCDsf.cpp - Software serial to SparkFun controller chip based
   LCD display library Adapted from SoftwareSerial.cpp (c) 2006 David A. Mellis
-  by Brian B. Riley, Underhill Center, Vermont, USA, July 2007
+  by Brian B. Riley, Underhill Center, Vermont, USA, July 2008
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@
  ******************************************************************************/
 
 #include "WConstants.h"
-#include "SWSerLCDpa.h"
+#include "SWSerLCDsf.h"
 
 /******************************************************************************
  * Definitions
@@ -33,29 +33,31 @@
  * Constructors
  ******************************************************************************/
 
-SWSerLCDpa::SWSerLCDpa(uint8_t transmitPin)
+SWSerLCDsf::SWSerLCDsf(uint8_t transmitPin)
 {
   _transmitPin = transmitPin;
   _baudRate = 0;
-  pinMode(_transmitPin, OUTPUT);
+  _rows = 2;
+  _cols = 16;
   _geometry = 0;
 }
 
-SWSerLCDpa::SWSerLCDpa(uint8_t transmitPin, int geometry)
+SWSerLCDsf::SWSerLCDsf(uint8_t transmitPin, int geometry)
 {
   _transmitPin = transmitPin;
   _baudRate = 0;
   pinMode(_transmitPin, OUTPUT); 
+  _rows = 2;
+  _cols = 16;
   _geometry = geometry;
 }
-
 
 
 /******************************************************************************
  * User API
  ******************************************************************************/
 
-void SWSerLCDpa::begin(long speed)
+void SWSerLCDsf::begin(long speed)
 {
   _baudRate = speed;
   _bitPeriod = 1000000 / _baudRate;
@@ -66,10 +68,9 @@ void SWSerLCDpa::begin(long speed)
   clearscr();
   if (_geometry)
   	setgeo(_geometry);
-  	
 }
 
-void SWSerLCDpa::print(uint8_t b)
+void SWSerLCDsf::print(uint8_t b)
 {
   if (_baudRate == 0)
     return;
@@ -94,7 +95,7 @@ void SWSerLCDpa::print(uint8_t b)
   delayMicroseconds(bitDelay);
 }
 
-void SWSerLCDpa::print(const char *s)
+void SWSerLCDsf::print(const char *s)
 {
   while (*s) {
     print(*s++);
@@ -102,22 +103,22 @@ void SWSerLCDpa::print(const char *s)
   }
 }
 
-void SWSerLCDpa::print(char c)
+void SWSerLCDsf::print(char c)
 {
   print((uint8_t) c);
 }
 
-void SWSerLCDpa::print(int n)
+void SWSerLCDsf::print(int n)
 {
   print((long) n);
 }
 
-void SWSerLCDpa::print(unsigned int n)
+void SWSerLCDsf::print(unsigned int n)
 {
   print((unsigned long) n);
 }
 
-void SWSerLCDpa::print(long n)
+void SWSerLCDsf::print(long n)
 {
   if (n < 0) {
     print('-');
@@ -126,12 +127,12 @@ void SWSerLCDpa::print(long n)
   printNumber(n, 10);
 }
 
-void SWSerLCDpa::print(unsigned long n)
+void SWSerLCDsf::print(unsigned long n)
 {
   printNumber(n, 10);
 }
 
-void SWSerLCDpa::print(long n, int base)
+void SWSerLCDsf::print(long n, int base)
 {
   if (base == 0)
     print((char) n);
@@ -142,109 +143,95 @@ void SWSerLCDpa::print(long n, int base)
 }
 
 // -------- PHA unique codes -------------------------
-void SWSerLCDpa::println(void)
-{
-  print("?n");
-  delay(10);
-}
 
-void SWSerLCDpa::clearscr(void)
+void SWSerLCDsf::clearscr(void)
 {
-  print("?f");
+  print((uint8_t) 0xFE);
+  print((uint8_t) 0x01);
   delay(100);
 }
 
-void SWSerLCDpa::home(void)
+void SWSerLCDsf::home(void)
 {
-  print("?a");
+  print((uint8_t) 0xFE);
+  print((uint8_t) 0x80);
   delay(10);
 }
 
-
-void SWSerLCDpa::setgeo(int geometry)
+void SWSerLCDsf::setcmd(byte code, byte cmd)
 {
-  print("?G");
-  print(geometry);
+  print((uint8_t) code);
+  print((uint8_t) cmd);	
+}
+
+
+void SWSerLCDsf::setgeo(int geometry)
+{
+  byte	rows=6, cols=4;
+  switch (geometry) {
+    case 216:
+  	  break;
+    case 220:
+	    _cols = 20;
+  		cols = 3;
+  		break;
+    case 416:
+    	rows = 5;
+  		_rows = 4;
+  		break;
+  	case 420:
+	    _rows = 4;
+    	_cols = 20;
+  		cols = 3;
+  		rows = 5;
+  		break;
+  	default:
+	  	return;
+	  	break;
+  }
+  print((uint8_t) 0x7C);
+  print((uint8_t) rows);
+  print((uint8_t) 0x7C);
+  print((uint8_t) cols);
   delay(200);
 }
 
-void SWSerLCDpa::setintensity(int intensity)
+void SWSerLCDsf::setintensity(int intensity)
 {
-  print("?B");
-  if (intensity < 16)
-  	print('0');
-  print(intensity, 16);
-  delay(200);
+  if (intensity > 29)
+  	intensity = 29;
+  print((uint8_t) 0x7C);
+  print((uint8_t) (0x80 + intensity));
+  delay(100);
 }
 
-void SWSerLCDpa::intoBignum(void)
+void SWSerLCDsf::setxy(byte x, byte y)
 {
-  print("?>3");
+  byte posvar;
+  
+  switch (y) {
+    case 0:
+  		posvar = 128 + x;
+  		break;
+  	case 1:
+  		posvar = 192+ x;
+  		break;
+  	case 2:
+  		posvar = ((_cols == 16) ? 144 : 148) + x;
+  		break;
+  	case 3:
+  		posvar = ((_cols == 16) ? 208 : 212) + x;
+  		break;
+  }			
+  print((uint8_t) 0xFE);
+  print((uint8_t) posvar);	
 }
 
-void SWSerLCDpa::outofBignum(void)
-{
-  print("?<");
-}
 
-
-void SWSerLCDpa::setxy(int x, int y)
-{
-  print("?y");
-  print(y);	
-  print("?x");
-  if (x < 10)
-    print('0');
-  print(x);
-  delay(10);
-}
-
-
-void SWSerLCDpa::println(char c)
-{
-  print(c);
-  println();  
-}
-
-void SWSerLCDpa::println(const char c[])
-{
-  print(c);
-  println();
-}
-
-void SWSerLCDpa::println(uint8_t b)
-{
-  print(b);
-  println();
-}
-
-void SWSerLCDpa::println(int n)
-{
-  print(n);
-  println();
-}
-
-void SWSerLCDpa::println(long n)
-{
-  print(n);
-  println();  
-}
-
-void SWSerLCDpa::println(unsigned long n)
-{
-  print(n);
-  println();  
-}
-
-void SWSerLCDpa::println(long n, int base)
-{
-  print(n, base);
-  println();
-}
 
 // Private Methods /////////////////////////////////////////////////////////////
 
-void SWSerLCDpa::printNumber(unsigned long n, uint8_t base)
+void SWSerLCDsf::printNumber(unsigned long n, uint8_t base)
 {
   unsigned char buf[8 * sizeof(long)]; // Assumes 8-bit chars. 
   unsigned long i = 0;  	

@@ -103,9 +103,65 @@ puts
 FileUtils.mkdir_p "#{sketch_name}/vendor/libraries"
 puts "Successfully created your libraries directory."
 
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/DS1307/.", "#{sketch_name}/vendor/libraries/DS1307"
+puts "Installed DS1307 into #{sketch_name}/vendor/libraries"
+puts
+
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/FrequencyTimer2/.", "#{sketch_name}/vendor/libraries/FrequencyTimer2"
+puts "Installed FrequencyTimer2 into #{sketch_name}/vendor/libraries"
+puts
+
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/OneWire/.", "#{sketch_name}/vendor/libraries/OneWire"
+puts "Installed OneWire into #{sketch_name}/vendor/libraries"
+puts
+
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/Servo/.", "#{sketch_name}/vendor/libraries/Servo"
+puts "Installed Servo into #{sketch_name}/vendor/libraries"
+puts
+
 FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/SWSerLCDpa/.", "#{sketch_name}/vendor/libraries/SWSerLCDpa"
 puts "Installed SWSerLCDpa into #{sketch_name}/vendor/libraries"
 puts
+
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/SWSerLCDsf/.", "#{sketch_name}/vendor/libraries/SWSerLCDsf"
+puts "Installed SWSerLCDsf into #{sketch_name}/vendor/libraries"
+puts
+
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/Wire/.", "#{sketch_name}/vendor/libraries/Wire"
+puts "Installed Wire into #{sketch_name}/vendor/libraries"
+puts
+
+# Build examples -- used for basic testing
+
+FileUtils.mkdir_p "#{sketch_name}/vendor/libraries"
+puts "Successfully created your examples directory."
+
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/examples/.", "#{sketch_name}/examples"
+puts "Installed examples into #{sketch_name}/examples"
+puts
+
+# Build test -- used testing
+
+FileUtils.mkdir_p "#{sketch_name}/test"
+puts "Successfully created your test directory."
+
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/test/.", "#{sketch_name}/test"
+puts "Installed tests into #{sketch_name}/test"
+puts
+
+# Build vendor/plugins:  
+
+FileUtils.mkdir_p "#{sketch_name}/vendor/plugins"
+puts "Successfully created your plugins directory."
+
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/plugins/.", "#{sketch_name}/vendor/plugins"
+puts "Installed Default plugins into #{sketch_name}/vendor/plugins"
+puts
+
+# Add an default sketch directory # needed to run test:compile
+
+FileUtils.mkdir_p "#{sketch_name}/#{sketch_name}"
+puts "Successfully created your default sketch directory."
 
 # Build sketch files, etc.:  
 
@@ -113,6 +169,16 @@ FileUtils.touch "#{sketch_name}/#{sketch_name}.rb"
 File.open("#{sketch_name}/#{sketch_name}.rb", "w") do |file|
   file << <<-EOS
 class #{sketch_name.split("_").collect{|c| c.capitalize}.join("")} < ArduinoSketch
+  
+  # looking for hints?  check out the examples directory
+  # example sketches can be uploaded to your arduino with
+  # rake make:upload sketch=examples/hello_world
+  # just replace hello_world with other examples
+  
+    def loop
+     # your code here
+    end
+    
 end
   EOS
 end

@@ -13,6 +13,7 @@ lib/examples/external_variable_fu.rb
 lib/examples/first_sound.rb
 lib/examples/frequency_generator.rb
 lib/examples/hello_eeprom.rb
+lib/examples/hello_pa_lcd.rb
 lib/examples/hello_servos.rb
 lib/examples/hello_world.rb
 lib/examples/i2c_with_clock_chip.rb

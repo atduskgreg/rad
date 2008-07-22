@@ -1,14 +1,11 @@
-#!/usr/local/bin/ruby -w
-
 $TESTING = true
 
 # need to tell it where we are
 # lets review these
 C_VAR_TYPES = "int|void|unsigned|long|short|uint8_t|static|byte|float"
-require 'vendor/rad/variable_processing'
-require 'vendor/rad/arduino_sketch'
+require "#{File.expand_path(File.dirname(__FILE__))}/../lib/rad/variable_processing"
+require "#{File.expand_path(File.dirname(__FILE__))}/../lib/rad/arduino_sketch"
 require 'test/unit'
-
 
 
 class TestArrayProcessing < Test::Unit::TestCase

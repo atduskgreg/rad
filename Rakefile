@@ -8,6 +8,11 @@ require 'rake/rdoctask'
 require 'rake/contrib/rubyforgepublisher'
 require 'fileutils'
 require 'hoe'
+
+RAD_ROOT = File.expand_path(File.dirname(__FILE__))
+
+load "#{RAD_ROOT}/project_dev.rake"
+
 begin
   require 'spec/rake/spectask'
 rescue LoadError

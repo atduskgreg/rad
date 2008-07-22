@@ -4,6 +4,14 @@ end
 
 namespace :test do
   
+  desc "run the framework unit tests"
+  task :units do
+    FileList['test/test_*.rb'].each do |test|
+      sh %{ ruby #{RAD_ROOT}/#{test} }
+    end
+  end
+  
+  
   desc "iterate through all the sketches in the example directory"
   task :upload => :gather do 
     @examples.each {|e| run_tests(e, "upload")}

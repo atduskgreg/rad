@@ -47,9 +47,12 @@ class SWSerLCDsf
     void print(long, int);
 	void clearscr(void);
 	void home(void);
+	void setxy(byte, byte);
+	void clearscr(const char[]);
+	void home(const char[]);
+	void setxy(byte, byte, const char[]);
 	void setgeo(int);
 	void setintensity(int);
-	void setxy(byte, byte);
 	void setcmd(byte, byte);
 };
 

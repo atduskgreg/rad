@@ -6,6 +6,7 @@ Rakefile
 bin/rad
 lib/examples/add_hysteresis.rb
 lib/examples/blink_m_hello.rb
+lib/examples/configure_pa_lcd_boot.rb
 lib/examples/debounce_methods.rb
 lib/examples/external_variables.rb
 lib/examples/external_variable_fu.rb

@@ -154,10 +154,47 @@ void SWSerLCDpa::clearscr(void)
   delay(100);
 }
 
+void SWSerLCDpa::clearscr(const char *s)
+{
+  print("?f");
+  delay(100);
+  print(s);
+}
+
 void SWSerLCDpa::home(void)
 {
   print("?a");
   delay(10);
+}
+
+void SWSerLCDpa::home(const char *s)
+{
+  print("?a");
+  delay(10);
+  print(s);
+}
+
+void SWSerLCDpa::setxy(int x, int y)
+{
+  print("?y");
+  print(y);	
+  print("?x");
+  if (x < 10)
+    print('0');
+  print(x);
+  delay(10);
+}
+
+void SWSerLCDpa::setxy(int x, int y, const char *s)
+{
+  print("?y");
+  print(y);	
+  print("?x");
+  if (x < 10)
+    print('0');
+  print(x);
+  delay(10);
+  print(s);
 }
 
 
@@ -187,17 +224,6 @@ void SWSerLCDpa::outofBignum(void)
   print("?<");
 }
 
-
-void SWSerLCDpa::setxy(int x, int y)
-{
-  print("?y");
-  print(y);	
-  print("?x");
-  if (x < 10)
-    print('0');
-  print(x);
-  delay(10);
-}
 
 
 void SWSerLCDpa::println(char c)

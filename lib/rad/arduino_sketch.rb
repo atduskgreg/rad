@@ -180,23 +180,24 @@ class ArduinoSketch
     @accessors = []
     @signatures = ["void blink();", "int main();", "void track_total_loop_time(void);", "unsigned long find_total_loop_time(void);"]
 
-    helper_methods = []
-    helper_methods << "void blink(int pin, int ms) {"
-    helper_methods << "\tdigitalWrite( pin, HIGH );"
-    helper_methods << "\tdelay( ms );"
-    helper_methods << "\tdigitalWrite( pin, LOW );"
-    helper_methods << "\tdelay( ms );"
-    helper_methods << "}"
-    helper_methods << "void track_total_loop_time(void)"
-    helper_methods << "{"
-    helper_methods << "\ttotal_loop_time = millis() - start_loop_time;"
-    helper_methods << "\tstart_loop_time = millis();"
-    helper_methods << "}"
-    helper_methods << "unsigned long find_total_loop_time(void)"
-    helper_methods << "{"
-    helper_methods << "\nreturn total_loop_time;"
-    helper_methods << "}"
-    @helper_methods = helper_methods.join( "\n" )
+    @helper_methods = <<-INLINEC
+    void blink(int pin, int ms) {
+      digitalWrite( pin, HIGH );
+      delay( ms );
+      digitalWrite( pin, LOW );
+      delay( ms );
+    }
+    
+    void track_total_loop_time(void) {
+      total_loop_time = millis() - start_loop_time;
+      start_loop_time = millis();
+    }
+    
+    unsigned long find_total_loop_time(void) {
+      return total_loop_time;
+    }
+    INLINEC
+
     
     @declarations << "unsigned long start_loop_time = 0;"
     @declarations << "unsigned long total_loop_time = 0;"

@@ -75,6 +75,16 @@ module ExternalVariableProcessing
         # puts "translate_variables: #{name}, #{value}, #{type} is a fixnum, got #{value.class} on 74"
       elsif value.class == Float 
         # puts "translate_variables: #{name}, #{value}, #{type} is a float, got #{value.class} on 76"
+      elsif value =~ /^-(\d|x)*$/ 
+        value = value.to_i
+        type = "int" if type.nil?
+      elsif value =~ /^-(\d|\.|x)*$/ 
+        value = value.to_f
+        unless type.nil?
+          raise ArgumentError, "#{value} should be a float got  #{type}" unless type == "float"
+        end
+        type = "float" if type.nil?   
+
       elsif value[0,1] !~ /\d/
         # puts value[0,1]
         # puts "translate_variables: #{name}, #{value}, #{type} is a number of some type, got #{value.class} on 79"

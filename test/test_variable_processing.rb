@@ -182,6 +182,62 @@ class TestVariableProcessing < Test::Unit::TestCase
     assert_equal(expected, result[0])
   end
   
+  def test_negative_int_string
+    name = "foo_w"
+    value_string = "-1, int"
+    expected = "int __foo_w = -1;"
+    result = @t.pre_process_vars(name, value_string)
+    assert_equal(expected, result[0])
+  end
+  
+  def test_negative_float_string
+    name = "foo_x"
+    value_string = "-0.1, float"
+    expected = "float __foo_x = -0.1;"
+    result = @t.pre_process_vars(name, value_string)
+    assert_equal(expected, result[0])
+  end
+  
+  def test_negative_larger_float_string
+    name = "foo_y"
+    value_string = "-1000.01, float"
+    expected = "float __foo_y = -1000.01;"
+    result = @t.pre_process_vars(name, value_string)
+    assert_equal(expected, result[0])
+  end
+  
+  def test_negative_long_string
+    name = "foo_z"
+    value_string = "-.0991, float"
+    expected = "float __foo_z = -0.0991;"
+    result = @t.pre_process_vars(name, value_string)
+    assert_equal(expected, result[0])
+  end
+  
+  def test_negative_float_strin_two
+    name = "foo_aa"
+    value_string = "-.01, float"
+    expected = "float __foo_aa = -0.01;"
+    result = @t.pre_process_vars(name, value_string)
+    assert_equal(expected, result[0])
+  end
+  
+  def test_negative_interter_string
+    name = "foo_bb"
+    value_string = "-.01, float"
+    expected = "float __foo_bb = -0.01;"
+    result = @t.pre_process_vars(name, value_string)
+    assert_equal(expected, result[0])
+  end
+  
+  def test_dash_string
+    name = "foo_cc"
+    value_string = "-hmmm"
+    expected = "char* __foo_cc = \"-hmmm\";"
+    result = @t.pre_process_vars(name, value_string)
+    assert_equal(expected, result[0])
+  end
+  
   
 
   

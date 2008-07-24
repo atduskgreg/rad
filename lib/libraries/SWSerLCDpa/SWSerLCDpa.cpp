@@ -156,9 +156,8 @@ void SWSerLCDpa::clearscr(void)
 
 void SWSerLCDpa::clearscr(const char *s)
 {
-  print("?f");
-  delay(100);
-  print(s);
+	clearscr();
+    print(s);
 }
 
 void SWSerLCDpa::home(void)
@@ -169,9 +168,8 @@ void SWSerLCDpa::home(void)
 
 void SWSerLCDpa::home(const char *s)
 {
-  print("?a");
-  delay(10);
-  print(s);
+	home();
+    print(s);
 }
 
 void SWSerLCDpa::setxy(int x, int y)
@@ -187,14 +185,8 @@ void SWSerLCDpa::setxy(int x, int y)
 
 void SWSerLCDpa::setxy(int x, int y, const char *s)
 {
-  print("?y");
-  print(y);	
-  print("?x");
-  if (x < 10)
-    print('0');
-  print(x);
-  delay(10);
-  print(s);
+	setxy(x,y);
+	print(s);
 }
 
 

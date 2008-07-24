@@ -142,7 +142,7 @@ void SWSerLCDsf::print(long n, int base)
     printNumber(n, base);
 }
 
-// -------- PHA unique codes -------------------------
+// -------- Spark Fun unique codes -------------------------
 
 void SWSerLCDsf::clearscr(void)
 {
@@ -157,6 +157,47 @@ void SWSerLCDsf::home(void)
   print((uint8_t) 0x80);
   delay(10);
 }
+
+void SWSerLCDsf::setxy(byte x, byte y)
+{
+  byte posvar;
+  
+  switch (y) {
+    case 0:
+  		posvar = 128 + x;
+  		break;
+  	case 1:
+  		posvar = 192+ x;
+  		break;
+  	case 2:
+  		posvar = ((_cols == 16) ? 144 : 148) + x;
+  		break;
+  	case 3:
+  		posvar = ((_cols == 16) ? 208 : 212) + x;
+  		break;
+  }			
+  print((uint8_t) 0xFE);
+  print((uint8_t) posvar);
+}
+
+void SWSerLCDsf::clearscr(const char *s)
+{
+	clearscr();
+	print(s);
+}
+
+void SWSerLCDsf::home(const char *s)
+{
+	home();
+	print(s);
+}
+
+void SWSerLCDsf::setxy(byte x, byte y, const char *s)
+{
+	setxy(x,y);
+	print(s);
+}
+
 
 void SWSerLCDsf::setcmd(byte code, byte cmd)
 {
@@ -205,27 +246,7 @@ void SWSerLCDsf::setintensity(int intensity)
   delay(100);
 }
 
-void SWSerLCDsf::setxy(byte x, byte y)
-{
-  byte posvar;
-  
-  switch (y) {
-    case 0:
-  		posvar = 128 + x;
-  		break;
-  	case 1:
-  		posvar = 192+ x;
-  		break;
-  	case 2:
-  		posvar = ((_cols == 16) ? 144 : 148) + x;
-  		break;
-  	case 3:
-  		posvar = ((_cols == 16) ? 208 : 212) + x;
-  		break;
-  }			
-  print((uint8_t) 0xFE);
-  print((uint8_t) posvar);	
-}
+
 
 
 

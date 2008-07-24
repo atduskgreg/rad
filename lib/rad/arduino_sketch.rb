@@ -376,7 +376,7 @@ class ArduinoSketch
           return         
         when :freq_out || :freq_gen || :frequency_generator
           frequency_timer(num, opts)
-        return
+          return
         when :i2c
           two_wire(num, opts) unless @@twowire_inc
           return #
@@ -802,6 +802,83 @@ class ArduinoSketch
  		end
  	end 	
 
+
+  def twowire_stepper(pin1, pin2, opts={}) # servo motor routines #
+    raise ArgumentError, "can only define pin1 from Fixnum, got #{pin1.class}" unless pin1.is_a?(Fixnum)
+    raise ArgumentError, "can only define pin2 from Fixnum, got #{pin2.class}" unless pin2.is_a?(Fixnum)
+        
+    st_speed = opts[:speed] ? opts[:speed] : 30
+    st_steps = opts[:steps] ? opts[:steps] : 100
+    
+   		if opts[:as]
+ 			@declarations << "Stepper _#{opts[ :as ]} = Stepper(#{st_steps},#{pin1},#{pin2});"
+ 			accessor = []
+ 			$load_libraries << "Stepper"
+ 			accessor << "Stepper& #{opts[ :as ]}() {"
+ 			accessor << "\treturn _#{opts[ :as ]};"
+ 			accessor << "}"
+      @@stepr_inc ||= FALSE
+ 			if (@@stepr_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
+ 				@@stepr_inc = TRUE
+ 				accessor << "void set_speed( Stepper& s, long sp ) {"
+ 				accessor << "\treturn s.set_speed( sp );"
+ 				accessor << "}"
+ 				accessor << "void set_steps( Stepper& s, int b ) {"
+	 			accessor << "\treturn s.set_steps( b );"
+ 				accessor << "}"
+ 				accessor << "int version( Stepper& s ) {"
+ 				accessor << "\treturn s.version();"
+ 				accessor << "}"
+			end
+ 			
+ 			@accessors << accessor.join( "\n" )
+ 			
+ 			@signatures << "Stepper& #{opts[ :as ]}();"
+
+ 			@other_setup << "\t_#{opts[ :as ]}.set_speed(#{st_speed});" if opts[:speed]
+
+ 		end
+ 	end 
+ 	
+
+  def fourwire_stepper( pin1, pin2, pin3, pin4, opts={}) # servo motor routines #
+    raise ArgumentError, "can only define pin1 from Fixnum, got #{pin1.class}" unless pin1.is_a?(Fixnum)
+    raise ArgumentError, "can only define pin2 from Fixnum, got #{pin2.class}" unless pin2.is_a?(Fixnum)
+    raise ArgumentError, "can only define pin3 from Fixnum, got #{pin3.class}" unless pin3.is_a?(Fixnum)
+    raise ArgumentError, "can only define pin4 from Fixnum, got #{pin4.class}" unless pin4.is_a?(Fixnum)
+        
+    st_speed = opts[:speed] ? opts[:speed] : 30
+    st_steps = opts[:steps] ? opts[:steps] : 100
+    
+   		if opts[:as]
+ 			@declarations << "Stepper _#{opts[ :as ]} = Stepper(#{st_steps},#{pin1},#{pin2},#{pin3},#{pin4});"
+ 			accessor = []
+ 			$load_libraries << "Stepper"
+ 			accessor << "Stepper& #{opts[ :as ]}() {"
+ 			accessor << "\treturn _#{opts[ :as ]};"
+ 			accessor << "}"
+      @@stepr_inc ||= FALSE
+ 			if (@@stepr_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
+ 				@@stepr_inc = TRUE
+ 				accessor << "void set_speed( Stepper& s, long sp ) {"
+ 				accessor << "\treturn s.set_speed( sp );"
+ 				accessor << "}"
+ 				accessor << "void set_steps( Stepper& s, int b ) {"
+	 			accessor << "\treturn s.set_steps( b );"
+ 				accessor << "}"
+ 				accessor << "int version( Stepper& s ) {"
+ 				accessor << "\treturn s.version();"
+ 				accessor << "}"
+			end
+ 			
+ 			@accessors << accessor.join( "\n" )
+ 			
+ 			@signatures << "Stepper& #{opts[ :as ]}();"
+
+ 			@other_setup << "\t_#{opts[ :as ]}.set_speed(#{st_speed});" if opts[:speed]
+
+ 		end
+ 	end 
 
 
   def servo(pin, opts={}) # servo motor routines #

@@ -4,7 +4,8 @@ $TESTING = true
 
 # need to tell it where we are
 # lets review these
-C_VAR_TYPES = "int|void|unsigned|long|short|uint8_t|static|byte|float"
+# neee to remove this constant from tests and pull it from rad
+C_VAR_TYPES = "unsigned|int|long|double|str|char|byte|float|bool"
 require "#{File.expand_path(File.dirname(__FILE__))}/../lib/rad/variable_processing"
 require "#{File.expand_path(File.dirname(__FILE__))}/../lib/rad/arduino_sketch"
 require 'test/unit'

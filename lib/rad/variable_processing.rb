@@ -42,11 +42,11 @@ module ExternalVariableProcessing
             type = var
             value = nil
             post_process_vars(name, type, value)
-            return
+          else
+            value = var.split(",").first.lstrip
+            type = var.split(",")[1].nil? ?  nil : var.split(",")[1].lstrip
+            translate_variables( name , type, value )
           end
-          value = var.split(",").first.lstrip
-          type = var.split(",")[1].nil? ?  nil : var.split(",")[1].lstrip
-          translate_variables( name , type, value )
         when TrueClass
           # puts "pre_process: #{name}, #{var}, #{var.inspect} got #{var.class} on 50"
           value = 1

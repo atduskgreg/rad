@@ -295,19 +295,26 @@ class ArduinoSketch
     # array "char buffer[32]"
     # result: char buffer[32];
     # todo 
-    # need to feed array external array identifiers to rtc if they are in plugins or libraries
+    # need to feed array external array identifiers to rtc if they are in plugins or libraries, (not so sure about this will do more testing)
     def array(arg)
       if arg
           arg = arg.chomp.rstrip.lstrip
           name = arg.scan(/\s*(\w*)\[\d*\]?/).first.first
-          if /\w*\[\d*\]\s*\=\s*\{(.*)\}/ =~ arg
-            assignment = arg.scan(/\w*\[\d*\]\s*\=\s*\{(.*)\}/).first.first
-            array_size = assignment.split(",").length
-            if /\[(\s*)\]/ =~ arg
-              arg.gsub!(/(\[\d*\])/, "[#{array_size}]")
-            end
-          end
-          arg = arg.scan(/^((\s*|\w*)*\s*\w*\[\d*\])?/).first.first
+          
+    # following 10 lines seem to be unnecessary
+    # and are left over from early array work
+    # but they are still here for a bit
+    # determine if there is an array assignement, and how many
+    # then eliminate the assignment and update the array size
+    #      if /\w*\[\d*\]\s*\=\s*\{(.*)\}/ =~ arg
+    #        assignment = arg.scan(/\w*\[\d*\]\s*\=\s*\{(.*)\}/).first.first
+    #        array_size = assignment.split(",").length
+    #        if /\[(\s*)\]/ =~ arg
+    #          arg.gsub!(/(\[\d*\])/, "[#{array_size}]")
+    #        end
+    #      end
+    #      arg = arg.scan(/^((\s*|\w*)*\s*\w*\[\d*\])?/).first.first
+
           arg = "#{arg};" unless arg[-1,1] == ";"
           $external_var_identifiers << name unless $external_var_identifiers.include?(name)
           # add array_name declaration

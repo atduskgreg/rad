@@ -127,8 +127,8 @@ FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/SWSerLCDsf/.", "#{ske
 puts "Installed SWSerLCDsf into #{sketch_name}/vendor/libraries"
 puts
 
-FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/Stepper/.", "#{sketch_name}/vendor/libraries/Stepper"
-puts "Installed Stepper into #{sketch_name}/vendor/libraries"
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/Stepper/.", "#{sketch_name}/vendor/libraries/Stepper" 
+puts "Installed Stepper into #{sketch_name}/vendor/libraries" 
 puts
 
 FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/Wire/.", "#{sketch_name}/vendor/libraries/Wire"

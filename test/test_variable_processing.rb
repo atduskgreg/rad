@@ -82,7 +82,7 @@ class TestVariableProcessing < Test::Unit::TestCase
   def test_int_with_type
     name = "foo_i"
     value_string = "int"
-    expected = "long __foo_i;"
+    expected = "int __foo_i;"
     result = @t.pre_process_vars(name, value_string)
     assert_equal(expected, result[0])
   end
@@ -95,7 +95,7 @@ class TestVariableProcessing < Test::Unit::TestCase
     assert_equal(expected, result[0])
   end
   
-  def test_int_with_type
+  def test_int_with_type_two
     name = "foo_k"
     value_string = "2, int"
     expected = "int __foo_k = 2;"

@@ -324,24 +324,6 @@ class ArduinoSketch
           $defines << arg
       end
     end
-    
-    # need better location.. module?
-    def self.add_to_setup(meth) 
-      meth = meth.gsub("setup", "additional_setup")
-      post_process_ruby_to_c_methods(meth)
-    end
-    
-    def self.post_process_ruby_to_c_methods(e)      
-      clean_c_methods = []
-        # need to take a look at the \(unsigned in the line below not sure if we are really trying to catch something like that
-        if e !~ /^\s*(#{C_VAR_TYPES})(\W{1,6}|\(unsigned\()(#{$external_var_identifiers.join("|")})/ || $external_var_identifiers.empty?
-          # use the list of identifers the external_vars method of the sketch and remove the parens the ruby2c sometime adds to variables
-          # keep an eye on the gsub!.. are we getting nil errors
-          e.gsub!(/((#{$external_var_identifiers.join("|")})\(\))/, '\2')  unless $external_var_identifiers.empty? 
-          clean_c_methods << e
-        end
-        return clean_c_methods.join( "\n" )
-    end
   
   # Configure a single pin for output and setup a method to refer to that pin, i.e.:
   #
@@ -1287,6 +1269,23 @@ class ArduinoSketch
     result.gsub!("ON", "1")
     result.gsub!("OFF", "0")
     result
+  end
+  
+  def self.add_to_setup(meth) 
+    meth = meth.gsub("setup", "additional_setup")
+    post_process_ruby_to_c_methods(meth)
+  end
+  
+  def self.post_process_ruby_to_c_methods(e)      
+    clean_c_methods = []
+      # need to take a look at the \(unsigned in the line below not sure if we are really trying to catch something like that
+      if e !~ /^\s*(#{C_VAR_TYPES})(\W{1,6}|\(unsigned\()(#{$external_var_identifiers.join("|")})/ || $external_var_identifiers.empty?
+        # use the list of identifers the external_vars method of the sketch and remove the parens the ruby2c sometime adds to variables
+        # keep an eye on the gsub!.. are we getting nil errors
+        e.gsub!(/((#{$external_var_identifiers.join("|")})\(\))/, '\2')  unless $external_var_identifiers.empty? 
+        clean_c_methods << e
+      end
+      return clean_c_methods.join( "\n" )
   end
   
   private

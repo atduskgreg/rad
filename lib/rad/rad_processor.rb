@@ -6,7 +6,7 @@ class RADProcessor < RubyToAnsiC
     unless defined? @translator then
       @translator = CompositeSexpProcessor.new
       @translator << RADRewriter.new
-      @translator << TypeChecker.new
+      @translator << RADTypeChecker.new
       @translator << R2CRewriter.new
       @translator << self.new
       @translator.on_error_in(:defn) do |processor, exp, err|

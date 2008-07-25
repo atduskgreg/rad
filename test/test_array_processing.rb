@@ -35,7 +35,7 @@ class TestArrayProcessing < Test::Unit::TestCase
   def test_int_array_with_assignment
     name = "foo_a"
     value_string = 1
-    expected = "int tomatoes[4];"
+    expected = "int tomatoes[] = {1,2,3,4};"
     result = @t.array("int tomatoes[] = {1,2,3,4}")
     assert_equal(expected, result[0])
   end
@@ -43,7 +43,7 @@ class TestArrayProcessing < Test::Unit::TestCase
   def test_int_array_with_assignment_and_semi
     name = "foo_a"
     value_string = 1
-    expected = "int tomatoes[3];"
+    expected = "int tomatoes[] = {1,2,3};"
     result = @t.array("int tomatoes[] = {1,2,3};")
     assert_equal(expected, result[0])
   end
@@ -59,7 +59,7 @@ class TestArrayProcessing < Test::Unit::TestCase
   def test_unsigned_int_array_with_assignment
     name = "foo_a"
     value_string = 1
-    expected = "unsigned int tomatoes[3];"
+    expected = "unsigned int tomatoes[] = {1,2,3};"
     result = @t.array("unsigned int tomatoes[] = {1,2,3};")
     assert_equal(expected, result[0])
   end

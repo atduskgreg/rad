@@ -70,7 +70,7 @@ namespace :make do
   
   task :clean_sketch_dir => ["build:file_list", "build:sketch_dir"] do
     @sketch_name = @sketch_class.split(".").first
-    FileList.new(Dir.entries("#{RAD_ROOT}/#{@test_dir + @sketch_name}")).exclude("#{@test_dir + @sketch_name}.cpp").exclude(/^\./).each do |f|
+    FileList.new(Dir.entries("#{RAD_ROOT}/#{@test_dir + @sketch_name}")).exclude("#{@sketch_name}.cpp").exclude(/^\./).each do |f|
       sh %{rm #{RAD_ROOT}/#{@test_dir + @sketch_name}/#{f}}
     end
   end

@@ -119,6 +119,10 @@ FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/Servo/.", "#{sketch_n
 puts "Installed Servo into #{sketch_name}/vendor/libraries"
 puts
 
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/Stepper/.", "#{sketch_name}/vendor/libraries/Stepper"
+puts "Installed Stepper into #{sketch_name}/vendor/libraries"
+puts
+
 FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/SWSerLCDpa/.", "#{sketch_name}/vendor/libraries/SWSerLCDpa"
 puts "Installed SWSerLCDpa into #{sketch_name}/vendor/libraries"
 puts

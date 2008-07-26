@@ -58,6 +58,12 @@ class TranslationTesting < ArduinoSketch
     a = ZAK + str
   end
   
+  def nine
+    @my_array.each do |a|
+      delay a
+    end
+  end
+  
 
 end
 
@@ -71,6 +77,8 @@ class TestTranslationPostProcessing < Test::Unit::TestCase
   def setup
     $external_var_identifiers = ["__foo", "__toggle", "wiggle"]   
     $define_types = { "KOOL" => "long", "ZAK" => "str"}
+    $array_types = { "my_array" => "int"}
+    
     
   end
   
@@ -158,6 +166,13 @@ class TestTranslationPostProcessing < Test::Unit::TestCase
     name = "foo_f"
     expected = "void\neight(long str) {\nvoid * a;\na = ZAK + str;\n}"
     result = raw_rtc_meth = RADProcessor.translate(TranslationTesting, "eight")
+    assert_equal(expected, result)
+  end
+  
+  def test_trans_nine
+    name = "foo_f"
+    expected = "void\nnine() {\nunsigned int index_a;\nfor (index_a = 0; index_a < (int) (sizeof(__my_array) / sizeof(__my_array[0])); index_a++) {\nint a = __my_array[index_a];\ndelay(a);\n}\n}"
+    result = raw_rtc_meth = RADProcessor.translate(TranslationTesting, "nine")
     assert_equal(expected, result)
   end
   

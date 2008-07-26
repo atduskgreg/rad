@@ -172,6 +172,8 @@ class ArduinoSketch
     $load_libraries ||= []
     $defines  ||= []
     $define_types = {}
+    $array_types = {}
+    $array_index_helpers = ('a'..'zz').to_a
 
     @declarations = []
     @pin_modes = {:output => [], :input => []}
@@ -316,7 +318,16 @@ class ArduinoSketch
     #      end
     #      arg = arg.scan(/^((\s*|\w*)*\s*\w*\[\d*\])?/).first.first
 
+          # help rad_processor do a better job with array types
+          types = ["int", "long", "char*", "unsigned int", "unsigned long", "byte", "bool", "float" ]
+          types.each_with_index do |type, i|
+            @type = types[i] if /#{type}/ =~ arg
+          end
+          raise ArgumentError, "type not currently supported.. got: #{arg}.  Currently supporting #{types.join(", ")}" unless @type
+
           arg = "#{arg};" unless arg[-1,1] == ";"
+          $array_types[name] = @type
+          @type = nil
           $external_var_identifiers << name unless $external_var_identifiers.include?(name)
           # add array_name declaration
           $external_array_vars << arg unless $external_array_vars.include?(arg)

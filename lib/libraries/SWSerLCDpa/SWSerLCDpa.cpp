@@ -98,7 +98,7 @@ void SWSerLCDpa::print(const char *s)
 {
   while (*s) {
     print(*s++);
-    delay(1);
+    delay(2);
   }
 }
 
@@ -151,13 +151,26 @@ void SWSerLCDpa::println(void)
 void SWSerLCDpa::clearscr(void)
 {
   print("?f");
-  delay(100);
+  delay(30);
 }
 
 void SWSerLCDpa::clearscr(const char *s)
 {
 	clearscr();
     print(s);
+}
+
+void SWSerLCDpa::clearline(int line)
+{
+  setxy(0,line);
+  print("?l");
+  delay(20);
+}
+
+void SWSerLCDpa::clearline(int line, const char *s)
+{
+  clearline(line);
+  print(s);
 }
 
 void SWSerLCDpa::home(void)
@@ -277,9 +290,9 @@ void SWSerLCDpa::printNumber(unsigned long n, uint8_t base)
     n /= base;
   }
 
-  for (; i > 0; i--)
+  for (; i > 0; i--) {
     print((char) (buf[i - 1] < 10 ? '0' + buf[i - 1] : 'A' + buf[i - 1] - 10));
-  
-  delay(8);
+	delay(2);
+  }
   
 }

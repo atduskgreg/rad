@@ -45,9 +45,11 @@ class SWSerLCDpa
     void print(long, int);
     void println(void);
 	void clearscr(void);
+	void clearline(int);
 	void home(void);
 	void setxy(int, int);
 	void clearscr(const char[]);
+	void clearline(int, const char[]);
 	void home(const char[]);
 	void setxy(int, int, const char[]);
 	void setgeo(int);

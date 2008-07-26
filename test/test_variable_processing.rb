@@ -207,7 +207,7 @@ class TestVariableProcessing < Test::Unit::TestCase
     assert_equal(expected, result[0])
   end
   
-  def test_negative_float_strin_two
+  def test_negative_float_string_two
     name = "foo_aa"
     value_string = "-.01, float"
     expected = "float __foo_aa = -0.01;"
@@ -230,6 +230,7 @@ class TestVariableProcessing < Test::Unit::TestCase
     result = @t.pre_process_vars(name, value_string)
     assert_equal(expected, result[0])
   end
+  
   
   
 

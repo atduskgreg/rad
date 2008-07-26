@@ -171,6 +171,7 @@ class ArduinoSketch
     $sketch_methods = []
     $load_libraries ||= []
     $defines  ||= []
+    $define_types = {}
 
     @declarations = []
     @pin_modes = {:output => [], :input => []}
@@ -324,11 +325,37 @@ class ArduinoSketch
     
     # define "DS1307_SEC 0"
     # result: #define DS1307_SEC 0
+    # note we send the constant identifiers and type to our rad_type_checker
+    # however, it only knows about long, float, str....
+    # so we don't send ints ...yet..
+    # need more testing
     def define(arg)
       if arg
           arg = arg.chomp.rstrip.lstrip
-          arg = "#define #{arg}"
+          name = arg.split(" ").first
+          value = arg.gsub!("#{name} ","")
+          # negative
+          if value =~ /^-(\d|x)*$/ 
+             type = "long"
+           # negative float
+           elsif value =~ /^-(\d|\.|x)*$/ 
+             type = "float" 
+           elsif value =~ /[a-zA-Z]/
+             type = "str"
+             value = "\"#{value}\""
+           elsif value !~ /(\.|x)/
+             type = "long"
+           elsif value =~ /(\d*\.\d*)/ # and no 
+             type = "float"
+           elsif value =~ /0x\d\d/
+             type = "byte"
+           else 
+             raise ArgumentError, "opps, could not determine the define type, got #{value}"
+           end
+          $define_types[name] = type
+          arg = "#define #{name} #{value}"
           $defines << arg
+          dummy_for_testing = arg, type
       end
     end
   

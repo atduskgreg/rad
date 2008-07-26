@@ -54,7 +54,7 @@ class TestTranslationPostProcessing < Test::Unit::TestCase
 
   def setup
     $external_var_identifiers = ["__foo", "__toggle", "wiggle"]   
-
+    $define_types = { "KOOL" => "long"}
     
   end
   
@@ -119,7 +119,7 @@ class TestTranslationPostProcessing < Test::Unit::TestCase
   
   def test_trans_five
     name = "foo_f"
-    expected = "void\nfive() {\nstr f;\n__foo = 1;\nf = KOOL;\n}"
+    expected = "void\nfive() {\nlong f;\n__foo = 1;\nf = KOOL;\n}"
     result = raw_rtc_meth = RADProcessor.translate(TranslationTesting, "five")
     assert_equal(expected, result)
   end

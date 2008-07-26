@@ -1,5 +1,8 @@
 class ExternalVariables < ArduinoSketch
 
+  define "KOOL 10"
+  define "TRUE 1"
+  define "COMMENT true"
   define "DS1307_CTRL 7"
   define "DS1308_CTRL 7"
   array "char buffer[32];"
@@ -17,7 +20,7 @@ class ExternalVariables < ArduinoSketch
 
 	  delay 1
 	  @foo = 2
-  
+    @foo = KOOL
   end
   
   def setup # special one time only method
@@ -25,6 +28,7 @@ class ExternalVariables < ArduinoSketch
     delay 100
     @foo = 10
     5.times { delay 200 }
+
   end
     
 

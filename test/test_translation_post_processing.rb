@@ -42,6 +42,22 @@ class TranslationTesting < ArduinoSketch
     @foo = 1
     f = KOOL
   end
+  
+  def six
+    a = ZAK
+    
+  end
+  
+  def seven(int)
+    # coerce int to long int
+    a = int * 2
+  end
+  
+  def eight(str)
+    # coerce str to string
+    a = ZAK + str
+  end
+  
 
 end
 
@@ -54,7 +70,7 @@ class TestTranslationPostProcessing < Test::Unit::TestCase
 
   def setup
     $external_var_identifiers = ["__foo", "__toggle", "wiggle"]   
-    $define_types = { "KOOL" => "long"}
+    $define_types = { "KOOL" => "long", "ZAK" => "str"}
     
   end
   
@@ -123,6 +139,28 @@ class TestTranslationPostProcessing < Test::Unit::TestCase
     result = raw_rtc_meth = RADProcessor.translate(TranslationTesting, "five")
     assert_equal(expected, result)
   end
+  
+  def test_trans_six
+    name = "foo_f"
+    expected = "void\nsix() {\nstr a;\na = ZAK;\n}"
+    result = raw_rtc_meth = RADProcessor.translate(TranslationTesting, "six")
+    assert_equal(expected, result)
+  end
+  
+  def test_trans_seven
+    name = "foo_f"
+    expected = "void\nseven(long int) {\nlong a;\na = int * 2;\n}"
+    result = raw_rtc_meth = RADProcessor.translate(TranslationTesting, "seven")
+    assert_equal(expected, result)
+  end
+  
+  def test_trans_eight
+    name = "foo_f"
+    expected = "void\neight(long str) {\nvoid * a;\na = ZAK + str;\n}"
+    result = raw_rtc_meth = RADProcessor.translate(TranslationTesting, "eight")
+    assert_equal(expected, result)
+  end
+  
   
   ## need to look at unsigned long 
   ## need parens removal tests

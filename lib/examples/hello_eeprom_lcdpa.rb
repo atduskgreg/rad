@@ -1,4 +1,34 @@
 class HelloEepromLcdpa < ArduinoSketch
+  # -----------------------------------------------------------------------
+  #    Simple Byte Write and Byte Read-back of I2C EEPROM
+  #
+  #      Brian Riley - Underhill Center, VT, USA  July 2008
+  #                     <brianbr@wulfden.org>
+  #
+  #    I2C Routines are in a plugin not a library
+  #    No block reads and write yet
+  #    Displays to PH Anderson based serial LCD Display
+  #
+  #    <b>I2C Serial EEPROM - Byte Read and Byte Write</b>
+  #      
+  #     i2c_eeprom_write_byte  dev_addr, chip_addr, value
+  #
+  #     dev_addr (byte) - range 0x50 to 0x57 determined by hardware wiring 
+  #     chip_addr (unsigned) - 0 to as much as 64K, depends on chip
+  #     value (byte) - 0 to 255 (0x00 to 0xFF)
+  #
+  #     returns - nothing
+  #
+  #     i2c_eeprom_read_byte  dev_addr, chip_addr
+  #
+  #     dev_addr (byte) - range 0x50 to 0x57 determined by hardware wiring 
+  #     chip_addr (unsigned) - 0 to as much as 64K, depends on chip
+  #
+  #     returns - byte value
+  #
+  #
+  #     http://www.arduino.cc/playground/Code/I2CEEPROM
+  # ----------------------------------------------------------------------
   
   output_pin 19, :as => :mem0, :device => :i2c_eeprom, :enable => :true
   output_pin 14, :as => :myLCD, :device => :pa_lcd, :rate => 19200
@@ -9,11 +39,8 @@ class HelloEepromLcdpa < ArduinoSketch
       delay 1500        # give startup screen time to finish and clear
 	    myLCD.clearscr    "  I2C EEPROM Demo"
       myLCD.setxy 0, 1, "byte write then read"
-#      delay 10          #01234567890123456789
       myLCD.setxy 0, 2, "  back and display"
-#      delay 10
       myLCD.setxy 0, 3, "    to the LCD"
-#      delay 10
       
       clear_off_test
       myLCD.clearline 1, "  byte write test"

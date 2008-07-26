@@ -9,6 +9,7 @@ C_VAR_TYPES = "unsigned|int|long|double|str|char|byte|float|bool"
 require "rubygems"
 require "#{File.expand_path(File.dirname(__FILE__))}/../lib/rad/rad_processor.rb"
 require "#{File.expand_path(File.dirname(__FILE__))}/../lib/rad/rad_rewriter.rb"
+require "#{File.expand_path(File.dirname(__FILE__))}/../lib/rad/rad_type_checker.rb"
 require "#{File.expand_path(File.dirname(__FILE__))}/../lib/rad/variable_processing"
 require "#{File.expand_path(File.dirname(__FILE__))}/../lib/rad/arduino_sketch"
 require 'test/unit'
@@ -36,6 +37,11 @@ class TranslationTesting < ArduinoSketch
     bar = 2
     wiggle = wha
   end
+  
+  def five
+    @foo = 1
+    f = KOOL
+  end
 
 end
 
@@ -48,7 +54,7 @@ class TestTranslationPostProcessing < Test::Unit::TestCase
 
   def setup
     $external_var_identifiers = ["__foo", "__toggle", "wiggle"]   
-
+    $define_types = { "KOOL" => "long"}
     
   end
   
@@ -108,6 +114,13 @@ class TestTranslationPostProcessing < Test::Unit::TestCase
     name = "foo_f"
     expected = "void\nfour() {\nlong bar;\nvoid * wiggle;\n__foo = 1;\nbar = 2;\nwiggle = wha();\n}"    
     result = raw_rtc_meth = RADProcessor.translate(TranslationTesting, "four")
+    assert_equal(expected, result)
+  end
+  
+  def test_trans_five
+    name = "foo_f"
+    expected = "void\nfive() {\nlong f;\n__foo = 1;\nf = KOOL;\n}"
+    result = raw_rtc_meth = RADProcessor.translate(TranslationTesting, "five")
     assert_equal(expected, result)
   end
   

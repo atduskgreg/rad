@@ -8,7 +8,7 @@ end
 PLUGIN_C_VAR_TYPES = "int|void|unsigned|long|short|uint8_t|static|byte"
 
 
-%w(generators/makefile/makefile.rb rad_processor.rb rad_rewriter.rb variable_processing.rb arduino_sketch.rb arduino_plugin.rb tasks/rad.rb).each do |path|
+%w(generators/makefile/makefile.rb rad_processor.rb rad_rewriter.rb rad_type_checker.rb variable_processing.rb arduino_sketch.rb arduino_plugin.rb tasks/rad.rb).each do |path|
   require File.expand_path("#{RAD_ROOT}/vendor/rad/#{path}")
 end
 

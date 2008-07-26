@@ -171,6 +171,7 @@ class ArduinoSketch
     $sketch_methods = []
     $load_libraries ||= []
     $defines  ||= []
+    $define_types = {}
 
     @declarations = []
     @pin_modes = {:output => [], :input => []}
@@ -295,19 +296,26 @@ class ArduinoSketch
     # array "char buffer[32]"
     # result: char buffer[32];
     # todo 
-    # need to feed array external array identifiers to rtc if they are in plugins or libraries
+    # need to feed array external array identifiers to rtc if they are in plugins or libraries, (not so sure about this will do more testing)
     def array(arg)
       if arg
           arg = arg.chomp.rstrip.lstrip
           name = arg.scan(/\s*(\w*)\[\d*\]?/).first.first
-          if /\w*\[\d*\]\s*\=\s*\{(.*)\}/ =~ arg
-            assignment = arg.scan(/\w*\[\d*\]\s*\=\s*\{(.*)\}/).first.first
-            array_size = assignment.split(",").length
-            if /\[(\s*)\]/ =~ arg
-              arg.gsub!(/(\[\d*\])/, "[#{array_size}]")
-            end
-          end
-          arg = arg.scan(/^((\s*|\w*)*\s*\w*\[\d*\])?/).first.first
+          
+    # following 10 lines seem to be unnecessary
+    # and are left over from early array work
+    # but they are still here for a bit
+    # determine if there is an array assignement, and how many
+    # then eliminate the assignment and update the array size
+    #      if /\w*\[\d*\]\s*\=\s*\{(.*)\}/ =~ arg
+    #        assignment = arg.scan(/\w*\[\d*\]\s*\=\s*\{(.*)\}/).first.first
+    #        array_size = assignment.split(",").length
+    #        if /\[(\s*)\]/ =~ arg
+    #          arg.gsub!(/(\[\d*\])/, "[#{array_size}]")
+    #        end
+    #      end
+    #      arg = arg.scan(/^((\s*|\w*)*\s*\w*\[\d*\])?/).first.first
+
           arg = "#{arg};" unless arg[-1,1] == ";"
           $external_var_identifiers << name unless $external_var_identifiers.include?(name)
           # add array_name declaration
@@ -317,30 +325,38 @@ class ArduinoSketch
     
     # define "DS1307_SEC 0"
     # result: #define DS1307_SEC 0
+    # note we send the constant identifiers and type to our rad_type_checker
+    # however, it only knows about long, float, str....
+    # so we don't send ints ...yet..
+    # need more testing
     def define(arg)
       if arg
           arg = arg.chomp.rstrip.lstrip
-          arg = "#define #{arg}"
+          name = arg.split(" ").first
+          value = arg.gsub!("#{name} ","")
+          # negative
+          if value =~ /^-(\d|x)*$/ 
+             type = "long"
+           # negative float
+           elsif value =~ /^-(\d|\.|x)*$/ 
+             type = "float" 
+           elsif value =~ /[a-zA-Z]/
+             type = "str"
+             value = "\"#{value}\""
+           elsif value !~ /(\.|x)/
+             type = "long"
+           elsif value =~ /(\d*\.\d*)/ # and no 
+             type = "float"
+           elsif value =~ /0x\d\d/
+             type = "byte"
+           else 
+             raise ArgumentError, "opps, could not determine the define type, got #{value}"
+           end
+          $define_types[name] = type
+          arg = "#define #{name} #{value}"
           $defines << arg
+          dummy_for_testing = arg, type
       end
-    end
-    
-    # need better location.. module?
-    def self.add_to_setup(meth) 
-      meth = meth.gsub("setup", "additional_setup")
-      post_process_ruby_to_c_methods(meth)
-    end
-    
-    def self.post_process_ruby_to_c_methods(e)      
-      clean_c_methods = []
-        # need to take a look at the \(unsigned in the line below not sure if we are really trying to catch something like that
-        if e !~ /^\s*(#{C_VAR_TYPES})(\W{1,6}|\(unsigned\()(#{$external_var_identifiers.join("|")})/ || $external_var_identifiers.empty?
-          # use the list of identifers the external_vars method of the sketch and remove the parens the ruby2c sometime adds to variables
-          # keep an eye on the gsub!.. are we getting nil errors
-          e.gsub!(/((#{$external_var_identifiers.join("|")})\(\))/, '\2')  unless $external_var_identifiers.empty? 
-          clean_c_methods << e
-        end
-        return clean_c_methods.join( "\n" )
     end
   
   # Configure a single pin for output and setup a method to refer to that pin, i.e.:
@@ -1287,6 +1303,23 @@ class ArduinoSketch
     result.gsub!("ON", "1")
     result.gsub!("OFF", "0")
     result
+  end
+  
+  def self.add_to_setup(meth) 
+    meth = meth.gsub("setup", "additional_setup")
+    post_process_ruby_to_c_methods(meth)
+  end
+  
+  def self.post_process_ruby_to_c_methods(e)      
+    clean_c_methods = []
+      # need to take a look at the \(unsigned in the line below not sure if we are really trying to catch something like that
+      if e !~ /^\s*(#{C_VAR_TYPES})(\W{1,6}|\(unsigned\()(#{$external_var_identifiers.join("|")})/ || $external_var_identifiers.empty?
+        # use the list of identifers the external_vars method of the sketch and remove the parens the ruby2c sometime adds to variables
+        # keep an eye on the gsub!.. are we getting nil errors
+        e.gsub!(/((#{$external_var_identifiers.join("|")})\(\))/, '\2')  unless $external_var_identifiers.empty? 
+        clean_c_methods << e
+      end
+      return clean_c_methods.join( "\n" )
   end
   
   private

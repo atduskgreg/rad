@@ -490,13 +490,17 @@ class ArduinoSketch
     servo(num, opts)
     # move this to better place ... 
     # should probably go along with servo code into plugin
-    @declarations << "void servo_refresh(void);"
-    helper_methods = []
-    helper_methods << "void servo_refresh(void)"
-    helper_methods << "{"
-    helper_methods <<  "\tServo::refresh();"
-    helper_methods << "}"
-    @helper_methods += "\n#{helper_methods.join("\n")}"
+    @@servo_dh ||= FALSE
+    if (@@servo_dh == FALSE)	# on second instance this stuff can't be repeated - BBR
+      @@servo_dh = TRUE
+      @declarations << "void servo_refresh(void);"
+      helper_methods = []
+      helper_methods << "void servo_refresh(void)"
+      helper_methods << "{"
+      helper_methods <<  "\tServo::refresh();"
+      helper_methods << "}"
+      @helper_methods += "\n#{helper_methods.join("\n")}"
+    end
   end
   
   ## this won't work at all... no pins

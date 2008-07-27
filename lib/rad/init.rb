@@ -5,7 +5,7 @@ unless defined?(PROJECT_DIR_NAME)
   PROJECT_DIR_NAME = a[a.length-1]
 end
 
-PLUGIN_C_VAR_TYPES = "int|void|unsigned|long|short|uint8_t|static|byte"
+PLUGIN_C_VAR_TYPES = "int|void|unsigned|long|short|uint8_t|static|byte|char\\*"
 
 
 %w(generators/makefile/makefile.rb rad_processor.rb rad_rewriter.rb rad_type_checker.rb variable_processing.rb arduino_sketch.rb arduino_plugin.rb tasks/rad.rb).each do |path|

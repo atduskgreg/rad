@@ -21,7 +21,7 @@ class SparkfunLcd < ArduinoSketch
 # need a bit
 
   def say_hello
-    my_lcd.home			# line 0, col 0
+    my_lcd.setxy 0,0			# line 0, col 0
 		my_lcd.print "All your base   "
 		my_lcd.setxy 0,1		# line 1, col 0
 		my_lcd.print "are belong to us"
@@ -29,7 +29,7 @@ class SparkfunLcd < ArduinoSketch
   end 
   
   def	say_ruby
-		my_lcd.home			# line 0, col 0
+		my_lcd.setxy 0,0			# line 0, col 0
 		my_lcd.print " Ruby + Arduino "
 		my_lcd.setxy 0,1		# line 1, col 0
 		my_lcd.print " RAD 0.2.4+     "

@@ -1,43 +1,46 @@
 class BlinkM < ArduinoPlugin
 
-# scaffolding for blink_m
+#
+#
+#  BlinkM_funcs.h -- Arduino library to control BlinkM
+#  --------------
+#
+#
+#  Note: original version of this file lives with the BlinkMTester sketch
+#
+#  2007, Tod E. Kurt, ThingM, http://thingm.com/
+#
+#  version: 20080203
+#
+#  history:
+#   20080101 - initial release
+#   20080203 - added setStartupParam(), bugfix receiveBytes() from Dan Julio
+#   20080727 - ported to rad jd barnhart
+#
+#   first step, declare output pin 19 as i2c
+##  output_pin 19, :as => :wire, :device => :i2c, :enable => :true # reminder, true issues wire.begin
+
+
 include_wire
 
 add_blink_m_struct
 
-void simply_blink(void)
-{
-   
-}   
 
 
-static void wire_begin(void) 
-{
-  delay(200);
-	Wire.begin();
-}
-
-static void stop_script( void )
-{
-  Wire.begin();
-  Wire.beginTransmission(0x09);
-  Wire.send('o');
-  Wire.endTransmission();
-}
-
-// Call this first (when powering BlinkM from a power supply)
+# Not needed when pin is declared with :enable => :true 
+# In fact, declaring it twice causes nothing but problems
 
 static void BlinkM_begin()
 {
     Wire.begin();                // join i2c bus (address optional for master)
 }
 
+
 // General version of BlinkM_beginWithPower().
-// Call this first when BlinkM is plugged directly into Arduino
 
 static void BlinkM_beginWithPowerPins(byte pwrpin, byte gndpin)
 {
-    DDRC |= _BV(pwrpin) | _BV(gndpin);
+    DDRC |= _BV(pwrpin) | _BV(gndpin);  // make outputs
     PORTC &=~ _BV(gndpin);
     PORTC |=  _BV(pwrpin);
     delay(100);  // wait for things to stabilize
@@ -46,6 +49,8 @@ static void BlinkM_beginWithPowerPins(byte pwrpin, byte gndpin)
 }
 
 // Call this first when BlinkM is plugged directly into Arduino
+// The BlinkM's PWR (power) pins should line up with pins 2 and 3 of the connector, 
+// while the I2C (communications) pins should line up with pins 4 and 5.
 
 static void BlinkM_beginWithPower()
 {
@@ -68,6 +73,7 @@ static void BlinkM_sendCmd(byte addr, byte* cmd, int cmdlen)
 
 static int BlinkM_receiveBytes(byte addr, byte* resp, byte len)
 {
+    Wire.requestFrom(addr, len);
     if( Wire.available() ) {
         for( int i=0; i<len; i++) 
             resp[i] = Wire.receive();
@@ -76,7 +82,10 @@ static int BlinkM_receiveBytes(byte addr, byte* resp, byte len)
     return -1;
 }
 
-// Sets the I2C address of the Arduino.  
+// Sets the I2C address of the BlinkM(s)
+// Typically used to setup BlinkM addresses
+// Connect one and call this with an address like 10, 
+// then 11 for the next and so on and so forth 
 // Uses "general call" broadcast address
 
 static void BlinkM_setAddress(byte newaddress)
@@ -88,11 +97,11 @@ static void BlinkM_setAddress(byte newaddress)
   Wire.send(0x0D);  // dood!
   Wire.send(newaddress);
   Wire.endTransmission();
-  delay(30);
+  delay(50); // just in case
 }
 
 
-// Gets the I2C addrss of the Arduino
+// Gets the I2C addrss of the BlinkM
 // Kind of redundant when sent to a specific address
 // but uses to verify BlinkM communication
 
@@ -126,7 +135,31 @@ static int BlinkM_getVersion(byte addr)
 }
 
 // Demonstrates how to verify you're talking to a BlinkM 
-// and that you know its address
+// and that you know its address -- message version
+
+static char* blink_m_check_address_message(byte addr) // :as => :optional
+{
+    char message[50];
+    char status[5];
+    strcpy(message, "received 0x");
+    //Serial.print("Checking BlinkM address...");
+    int b = BlinkM_getAddress(addr);
+    if( b==-1 ) {
+        //Serial.println("No response, that's not good");
+        return "No response, that's not good";  // no response
+    } 
+    itoa(b, status ,16);
+    
+    //Serial.print("received addr: 0x");
+    //Serial.print(b,HEX);
+    if( b != addr )
+        return "error, mismatch"; // error, addr mismatch 
+    else 
+        return strcat(message, status); // match, everything okay
+}
+
+// Demonstrates how to verify you're talking to a BlinkM 
+// and that you know its address -- digital version
 
 static int BlinkM_checkAddress(byte addr)
 {
@@ -136,6 +169,7 @@ static int BlinkM_checkAddress(byte addr)
         //Serial.println("No response, that's not good");
         return -1;  // no response
     } 
+    
     //Serial.print("received addr: 0x");
     //Serial.print(b,HEX);
     if( b != addr )
@@ -214,7 +248,6 @@ static void BlinkM_fadeToRandomRGB(byte addr, byte rrnd, byte grnd, byte brnd)
     Wire.send(brnd);
     Wire.endTransmission();
 }
-
 // Fades to a random HSB color
 
 static void BlinkM_fadeToRandomHSB(byte addr, byte hrnd, byte srnd, byte brnd)
@@ -250,23 +283,12 @@ static void BlinkM_playScript(byte addr, byte script_id, byte reps, byte pos)
     Wire.endTransmission();
 }
 
-
-
 static void BlinkM_stopScript(byte addr)
 {
     Wire.beginTransmission(addr);
     Wire.send('o');
     Wire.endTransmission();
 }
-
-static void BlinkM_startScript(byte addr)
-{
-    Wire.beginTransmission(addr);
-    Wire.send('p');
-    Wire.endTransmission();
-}
-
-
 
 static void BlinkM_setScriptLengthReps(byte addr, byte script_id, 
                                        byte len, byte reps)
@@ -283,10 +305,11 @@ static void BlinkM_writeScriptLine(byte addr, byte script_id,
                                    byte pos, byte dur,
                                    byte cmd, byte arg1, byte arg2, byte arg3)
 {
-    Serial.print("\nwriting line:");  Serial.print(pos,DEC);
+#ifdef BLINKM_FUNCS_DEBUG
+    Serial.print("writing line:");  Serial.print(pos,DEC);
     Serial.print(" with cmd:"); Serial.print(cmd); 
     Serial.print(" arg1:"); Serial.println(arg1,HEX);
-    
+#endif
     Wire.beginTransmission(addr);
     Wire.send('W');
     Wire.send(script_id);
@@ -303,6 +326,10 @@ static void BlinkM_writeScript(byte addr, byte script_id,
                                byte len, byte reps,
                                blinkm_script_line* lines)
 {
+#ifdef BLINKM_FUNCS_DEBUG
+    Serial.print("writing script to addr:"); Serial.print(addr,DEC);
+    Serial.print(", script_id:"); Serial.println(script_id,DEC);
+#endif
     for(byte i=0; i < len; i++) {
         blinkm_script_line l = lines[i];
         BlinkM_writeScriptLine( addr, script_id, i, l.dur,
@@ -312,12 +339,18 @@ static void BlinkM_writeScript(byte addr, byte script_id,
 }
 
 
-
-
-
-
-
-
+static void BlinkM_setStartupParams(byte addr, byte mode, byte script_id,
+                                    byte reps, byte fadespeed, byte timeadj)
+{
+    Wire.beginTransmission(addr);
+    Wire.send('B');
+    Wire.send(mode);
+    Wire.send(script_id);
+    Wire.send(reps);
+    Wire.send(fadespeed);
+    Wire.send(timeadj);
+    Wire.endTransmission();
+} 
 
 
 end

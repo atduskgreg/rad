@@ -16,13 +16,13 @@ class HysteresisDuel < ArduinoSketch
 
     def setup
       delay 1000
-      my_lcd.home "hysteresis duel"
+      my_lcd.setxy 0,0, "hysteresis duel"
       delay 5000
       my_lcd.clearscr
     end
 
     def loop
-      my_lcd.home "direct"
+      my_lcd.setxy 0,0, "direct"
       my_lcd.setxy 0,1, "one: "
       my_lcd.print analogRead sensor_one
       my_lcd.print " two: "

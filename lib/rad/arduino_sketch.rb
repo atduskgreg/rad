@@ -163,8 +163,10 @@ class ArduinoSketch
   def initialize #:nodoc:
     @servo_settings = [] # need modular way to add this
     @debounce_settings = [] # need modular way to add this
+    @hysteresis_settings = []
     @servo_pins = [] 
     @debounce_pins = []
+    @hysteresis_pins = []
     $external_array_vars = [] 
     $external_vars =[]
     $external_var_identifiers = []
@@ -565,6 +567,12 @@ class ArduinoSketch
         prev = opts[:latch] == :on ? 0 : 1
         adjust = opts[:adjust] ? opts[:adjust] : 200
         @debounce_settings <<  "dbce[#{num}].state = #{state}, dbce[#{num}].read = 0, dbce[#{num}].prev = #{prev}, dbce[#{num}].time = 0, dbce[#{num}].adjust = #{adjust}"
+      end
+      if opts[:device] == :sensor
+        ArduinoPlugin.add_sensor_struct
+        count = @hysteresis_pins.length
+        @hysteresis_pins << num
+        @hysteresis_settings << "hyst[#{count}].pin = #{num}, hyst[#{count}].state = 0"
       end
       @declarations << "int _#{opts[ :as ]} = #{num};"
 
@@ -1223,6 +1231,11 @@ class ArduinoSketch
     external_vars << "// debounce array"
     array_size = @debounce_settings.empty? ? 1 : @debounce_pins.max + 1 # conserve space if no variables needed
     external_vars << "struct debounce dbce[#{array_size}] = { #{@debounce_settings.join(", ")} };" if $plugin_structs[:debounce]
+    external_vars << ""
+    
+    external_vars << "// hysteresis array"
+    h_array_size = @hysteresis_settings.empty? ? 1 : @hysteresis_pins.max + 1 # conserve space if no variables needed
+    external_vars << "struct hysteresis hyst[#{h_array_size}] = { #{@hysteresis_settings.join(", ")} };" if $plugin_structs[:sensor]
     external_vars << ""
     
     $external_array_vars.each { |var| external_vars << var } if $external_array_vars

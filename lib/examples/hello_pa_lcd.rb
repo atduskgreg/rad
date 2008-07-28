@@ -16,7 +16,7 @@ class HelloPaLcd < ArduinoSketch
 
   def setup
     delay 3000
-    my_lcd.home
+    my_lcd.setxy 0,0
     my_lcd.print "Press button"
     my_lcd.setxy 0,1
     my_lcd.print "One, two or three...."
@@ -30,34 +30,30 @@ class HelloPaLcd < ArduinoSketch
   
   def say_hello
     @toggle = true
-    my_lcd.clearscr
-    my_lcd.home            # line 0, col 0
-    my_lcd.print "Any sufficiently    advanced technology"
+    my_lcd.clearscr "Any sufficiently    advanced technology"
     my_lcd.setxy 0,2
-    my_lcd.setxy 0,3
-    my_lcd.print "toggle state: "
+    my_lcd.setxy 0,3, "toggle state: "
     my_lcd.print @toggle
   end
   
   def say_more # passing print strings to home and setxy (also works on clearscr)
     @toggle = false
-    my_lcd.clearscr
-    my_lcd.home  "is indistinguishablefrom magic"
+    my_lcd.clearscr "is indistinguishablefrom magic"
     my_lcd.setxy 0,3, "toggle state: "
     my_lcd.print @toggle
   end
   
   
   def say_it_large
-  my_lcd.clearscr
-  my_lcd.intoBignum
-  my_lcd.home            # line 0, col 0
-  1.upto(32) do |i|
-    my_lcd.setxy 0,1
-    my_lcd.print i * i
-    delay 200
+
+    my_lcd.intoBignum
+    my_lcd.clearscr            # line 0, col 0
+    1.upto(32) do |i|
+      my_lcd.setxy 0,1
+      my_lcd.print i * i
+      delay 200
+    end
+    my_lcd.outofBignum
   end
-  my_lcd.outofBignum
- end
  
 end

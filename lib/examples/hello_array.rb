@@ -17,8 +17,7 @@ class HelloArray < ArduinoSketch
  
  def loop
    
-   my_lcd.clearscr
-   my_lcd.home "toppings: "
+   my_lcd.clearscr "toppings: "
    delay 500
    
    @toppings.each do |a|

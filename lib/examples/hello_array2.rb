@@ -29,7 +29,7 @@ class HelloArray2 < ArduinoSketch
  
  def setup
    
-   my_lcd.home "toppings: "
+   my_lcd.clearscr "toppings: "
    delay 500
    
    @toppings.each do |a|

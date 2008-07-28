@@ -62,11 +62,9 @@ void SWSerLCDpa::begin(long speed)
 
   digitalWrite(_transmitPin, HIGH);
   delayMicroseconds( _bitPeriod); // if we were low this establishes the end
-  delay(20);
-  clearscr();
+  delay(50);
   if (_geometry)
-  	setgeo(_geometry);
-  	
+	setgeo(_geometry);
 }
 
 void SWSerLCDpa::print(uint8_t b)
@@ -160,6 +158,12 @@ void SWSerLCDpa::clearscr(const char *s)
     print(s);
 }
 
+void SWSerLCDpa::clearscr(int n)
+{
+	clearscr();
+    print(n);
+}
+
 void SWSerLCDpa::clearline(int line)
 {
   setxy(0,line);
@@ -173,17 +177,12 @@ void SWSerLCDpa::clearline(int line, const char *s)
   print(s);
 }
 
-void SWSerLCDpa::home(void)
+void SWSerLCDpa::clearline(int line, int n)
 {
-  print("?a");
-  delay(10);
+  clearline(line);
+  print(n);
 }
 
-void SWSerLCDpa::home(const char *s)
-{
-	home();
-    print(s);
-}
 
 void SWSerLCDpa::setxy(int x, int y)
 {
@@ -202,12 +201,17 @@ void SWSerLCDpa::setxy(int x, int y, const char *s)
 	print(s);
 }
 
+void SWSerLCDpa::setxy(int x, int y, int n)
+{
+	setxy(x,y);
+	print(n);
+}
 
 void SWSerLCDpa::setgeo(int geometry)
 {
-  print("?G");
-  print(geometry);
-  delay(200);
+	print("?G");
+	print(geometry);
+	delay(200);
 }
 
 void SWSerLCDpa::setintensity(int intensity)

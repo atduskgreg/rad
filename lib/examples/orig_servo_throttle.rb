@@ -27,7 +27,7 @@ class OrigServoThrottle < ArduinoSketch
        
        def servo_status
          
-        my_lcd.home			# line 0, col 0
+        my_lcd.setxy 0,0			# line 0, col 0
      		my_lcd.print "Read  Send"
      		my_lcd.setxy 0,1		# line 1, col 0
      		my_lcd.print sensor_position # need method of blanking out previous reading

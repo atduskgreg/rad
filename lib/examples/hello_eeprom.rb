@@ -6,7 +6,7 @@ class HelloEeprom < ArduinoSketch
   output_pin 14, :as => :myLCD, :device => :pa_lcd, :rate => 19200
     
   def loop
-	    myLCD.home					# set to 0,0
+	    myLCD.setxy 0,0					# set to 0,0
 	    myLCD.print rtc.get(5, 1)	# refresh registers (=1) get month
      	myLCD.print "/"
 	    myLCD.print rtc.get(4, 0)	# no need to refresh (=0) get day 
@@ -31,13 +31,10 @@ class HelloEeprom < ArduinoSketch
 
 		delay 2000
 		
-		myLCD.setxy 0,2 	# clears bottom two lines           
-		myLCD.print "?l"
-		myLCD.setxy 0,3
-		myLCD.print "?l"
+		myLCD.clearline 2 	# clears bottom two lines           
+		myLCD.clearline 3
 
-		myLCD.setxy 10,0
-		myLCD.print "read test "
+		myLCD.setxy 10,0, "read test "
 		myLCD.setxy 0,2
 									# read and print 39 addresses with printable numbers
 		75.upto(113) { |x| myLCD.print(i2c_eeprom_read_byte(0x50, x)) }

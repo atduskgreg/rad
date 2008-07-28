@@ -64,8 +64,7 @@ void SWSerLCDsf::begin(long speed)
 
   digitalWrite(_transmitPin, HIGH);
   delayMicroseconds( _bitPeriod); // if we were low this establishes the end
-  delay(20);
-  clearscr();
+  delay(50);
   if (_geometry)
   	setgeo(_geometry);
 }
@@ -151,11 +150,16 @@ void SWSerLCDsf::clearscr(void)
   delay(100);
 }
 
-void SWSerLCDsf::home(void)
+void SWSerLCDsf::clearscr(const char *s)
 {
-  print((uint8_t) 0xFE);
-  print((uint8_t) 0x80);
-  delay(10);
+	clearscr();
+	print(s);
+}
+
+void SWSerLCDsf::clearscr(int n)
+{
+	clearscr();
+	print(n);
 }
 
 void SWSerLCDsf::setxy(byte x, byte y)
@@ -180,22 +184,16 @@ void SWSerLCDsf::setxy(byte x, byte y)
   print((uint8_t) posvar);
 }
 
-void SWSerLCDsf::clearscr(const char *s)
-{
-	clearscr();
-	print(s);
-}
-
-void SWSerLCDsf::home(const char *s)
-{
-	home();
-	print(s);
-}
-
 void SWSerLCDsf::setxy(byte x, byte y, const char *s)
 {
 	setxy(x,y);
 	print(s);
+}
+
+void SWSerLCDsf::setxy(byte x, byte y, int n)
+{
+	setxy(x,y);
+	print(n);
 }
 
 

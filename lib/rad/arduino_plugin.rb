@@ -182,6 +182,18 @@ end
     STR
   end
   
+  def self.add_spectra_struct
+    $plugin_structs[:spectra] = <<-STR
+    struct spectra {
+      int pin;
+      int state;
+      int r1;
+      int r2;
+      int r3;
+    };
+    STR
+  end
+  
 
   def self.check_for_plugin_use(sketch_string, plugin_string, file_name) # rename klass to filename
     $plugin_structs = $plugin_structs || {}

@@ -164,9 +164,11 @@ class ArduinoSketch
     @servo_settings = [] # need modular way to add this
     @debounce_settings = [] # need modular way to add this
     @hysteresis_settings = []
+    @spectra_settings = []
     @servo_pins = [] 
     @debounce_pins = []
     @hysteresis_pins = []
+    @spectra_pins = []
     $external_array_vars = [] 
     $external_vars =[]
     $external_var_identifiers = []
@@ -573,6 +575,12 @@ class ArduinoSketch
         count = @hysteresis_pins.length
         @hysteresis_pins << num
         @hysteresis_settings << "hyst[#{count}].pin = #{num}, hyst[#{count}].state = 0"
+      end
+      if opts[:device] == :spectra
+        ArduinoPlugin.add_spectra_struct
+        count = @spectra_pins.length
+        @spectra_pins << num
+        @spectra_settings << "spec[#{count}].pin = #{num}, spec[#{count}].state = 0, spec[#{count}].r1 = 0, spec[#{count}].r2 = 0, spec[#{count}].r3 = 0"
       end
       @declarations << "int _#{opts[ :as ]} = #{num};"
 
@@ -1236,6 +1244,11 @@ class ArduinoSketch
     external_vars << "// hysteresis array"
     h_array_size = @hysteresis_settings.empty? ? 1 : @hysteresis_pins.max + 1 # conserve space if no variables needed
     external_vars << "struct hysteresis hyst[#{h_array_size}] = { #{@hysteresis_settings.join(", ")} };" if $plugin_structs[:sensor]
+    external_vars << ""
+    
+    external_vars << "// spectrasymbol soft pot array"
+    sp_array_size = @spectra_settings.empty? ? 1 : @spectra_pins.max + 1 # conserve space if no variables needed
+    external_vars << "struct spectra spec[#{sp_array_size}] = { #{@spectra_settings.join(", ")} };" if $plugin_structs[:spectra]
     external_vars << ""
     
     $external_array_vars.each { |var| external_vars << var } if $external_array_vars

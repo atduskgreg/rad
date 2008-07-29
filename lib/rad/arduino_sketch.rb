@@ -580,7 +580,7 @@ class ArduinoSketch
         ArduinoPlugin.add_spectra_struct
         count = @spectra_pins.length
         @spectra_pins << num
-        @spectra_settings << "spec[#{count}].pin = #{num}, spec[#{count}].state = 0, spec[#{count}].r1 = 0, spec[#{count}].r2 = 0, spec[#{count}].r3 = 0"
+        @spectra_settings << "spec[#{count}].pin = #{num}, spec[#{count}].state = 10, spec[#{count}].r1 = 0, spec[#{count}].r2 = 0, spec[#{count}].r3 = 0"
       end
       @declarations << "int _#{opts[ :as ]} = #{num};"
 

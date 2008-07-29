@@ -14,7 +14,8 @@ class SpectraSoftPot < ArduinoSketch
 
    def setup
      delay 1000
-     my_lcd.setxy 0,0, "spectrasymbol"
+     my_lcd.setxy 0,0, "spectra symbol"
+     my_lcd.setxy 0,1, "soft pot"
      delay 5000
      my_lcd.clearscr
    end

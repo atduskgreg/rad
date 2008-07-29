@@ -27,17 +27,17 @@ class SpectraSymbol < ArduinoPlugin
 # notes:
 # experimental settings for 100mm spectrasymbol
 # 
-# hysteresis is set at 4 // probably not needed
+# hysteresis is set at 5 
 # amount of sensor drop is set to 3
-# delay time (dtime) is 10
+# delay time (dtime) is 4
 # cutoff set to 10
 #
 int soft_lock(int pin)
 
 {
-  int amt = 4;
+  int hyst = 5;
   int drop = 3;
-  int dtime = 10;
+  int dtime = 4;
   int cutoff = 10;
   int read;
   int r1;
@@ -55,19 +55,19 @@ int soft_lock(int pin)
   for (i = 0; i < (int) (sizeof(spec) / sizeof(spec[0])); i++) {   
     if (pin == spec[i].pin) {
       if (((r3 - r2) > drop) && ((r2 - r1) > drop) && ((r1 - read) > drop)) 
-        return spec[i].state;
+        return spec[i].state - 10;
       else
       {
       if (read < cutoff) 
-        return spec[i].state;
+        return spec[i].state - 10;
       else
       {
-          if (((read - spec[i].state) > amt ) || ((spec[i].state - read) > amt )) {
+          if (((read - spec[i].state) > hyst ) || ((spec[i].state - read) > hyst )) {
             spec[i].state = read;
-            return spec[i].state;
+            return spec[i].state - 10;
           } 
           else
-            return spec[i].state;   
+            return spec[i].state - 10;   
         } 
       }   
     } 

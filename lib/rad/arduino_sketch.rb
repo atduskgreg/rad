@@ -1242,12 +1242,12 @@ class ArduinoSketch
     external_vars << ""
     
     external_vars << "// hysteresis array"
-    h_array_size = @hysteresis_settings.empty? ? 1 : @hysteresis_pins.max + 1 # conserve space if no variables needed
+    h_array_size = @hysteresis_settings.empty? ? 1 : @hysteresis_pins.length + 1 # conserve space if no variables needed
     external_vars << "struct hysteresis hyst[#{h_array_size}] = { #{@hysteresis_settings.join(", ")} };" if $plugin_structs[:sensor]
     external_vars << ""
     
     external_vars << "// spectrasymbol soft pot array"
-    sp_array_size = @spectra_settings.empty? ? 1 : @spectra_pins.max + 1 # conserve space if no variables needed
+    sp_array_size = @spectra_settings.empty? ? 1 : @spectra_pins.length + 1 # conserve space if no variables needed
     external_vars << "struct spectra spec[#{sp_array_size}] = { #{@spectra_settings.join(", ")} };" if $plugin_structs[:spectra]
     external_vars << ""
     

@@ -157,8 +157,8 @@ class ArduinoSketch
   include ExternalVariableProcessing
   
   # find another way to do this
-  @@frequency_inc = FALSE
   @@twowire_inc	= FALSE
+
   
   def initialize #:nodoc:
     @servo_settings = [] # need modular way to add this
@@ -674,9 +674,13 @@ class ArduinoSketch
  			@@slcdpa_inc ||= FALSE
  			if (@@slcdpa_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
  				@@slcdpa_inc = TRUE
+				  # ------------------- print generics -------------------------------
  	 			  accessor << "void print( SWSerLCDpa& s, uint8_t b ) {"
 	  			accessor << "\treturn s.print( b );"
  	 			  accessor << "}"
+  				accessor << "void print( SWSerLCDpa& s, char* str ) {"
+  				accessor << "\treturn s.print( str );"
+  				accessor << "}"
  	 			  accessor << "void print( SWSerLCDpa& s, const char *str ) {"
   				accessor << "\treturn s.print( str );"
   				accessor << "}"
@@ -698,39 +702,68 @@ class ArduinoSketch
   				accessor << "void print( SWSerLCDpa& s, long i, int b ) {"
   				accessor << "\treturn s.print( i, b );"
   				accessor << "}"
-  				accessor << "void println( SWSerLCDpa& s, char* str ) {"
-  				accessor << "\treturn s.println( str );"
- 	 			  accessor << "}"
-  				accessor << "void print( SWSerLCDpa& s, char* str ) {"
-  				accessor << "\treturn s.print( str );"
-  				accessor << "}"
+  				# ------------------- print line generics -------------------------------
 	  			accessor << "void println(SWSerLCDpa& s) {"
   				accessor << "\treturn s.println();"
   				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, uint8_t b ) {"
+  				accessor << "\treturn s.println( b );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, char* str ) {"
+  				accessor << "\treturn s.println( str );"
+ 	 			  accessor << "}"
+ 	 			  accessor << "void println( SWSerLCDpa& s, char c ) {"
+  				accessor << "\treturn s.println( c );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, const char c[] ) {"
+  				accessor << "\treturn s.println( c );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, int i ) {"
+  				accessor << "\treturn s.println( i );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, long i ) {"
+  				accessor << "\treturn s.println( i );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, unsigned long i ) {"
+  				accessor << "\treturn s.println( i );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, long i, int b ) {"
+  				accessor << "\treturn s.println( i, b );"
+ 	 			  accessor << "}"
+          # ------------------ PA-LCD specific functions ---------------------------------
    				accessor << "void clearscr(SWSerLCDpa& s) {"
  	 			  accessor << "\treturn s.clearscr();"
-  				accessor << "}"
-   				accessor << "void clearline(SWSerLCDpa& s, int line) {"
- 	 			  accessor << "\treturn s.clearline( line );"
-  				accessor << "}"
-  				accessor << "void setxy( SWSerLCDpa& s, int x, int y) {"
-  				accessor << "\treturn s.setxy( x, y );"
   				accessor << "}"
   				accessor << "void clearscr(SWSerLCDpa& s, const char *str) {"
  	 			  accessor << "\treturn s.clearscr(str);"
   				accessor << "}"
-   				accessor << "void clearline(SWSerLCDpa& s, int line, const char *str) {"
- 	 			  accessor << "\treturn s.clearline( line, str );"
-  				accessor << "}"
-  				accessor << "void setxy( SWSerLCDpa& s, int x, int y, const char *str) {"
-  				accessor << "\treturn s.setxy( x, y, str );"
-    			accessor << "}"
   				accessor << "void clearscr(SWSerLCDpa& s, int n) {"
  	 			  accessor << "\treturn s.clearscr(n);"
+  				accessor << "}"
+   				accessor << "void clearline(SWSerLCDpa& s, int line) {"
+ 	 			  accessor << "\treturn s.clearline( line );"
+  				accessor << "}"
+   				accessor << "void clearline(SWSerLCDpa& s, int line, const char *str) {"
+ 	 			  accessor << "\treturn s.clearline( line, str );"
   				accessor << "}"
    				accessor << "void clearline(SWSerLCDpa& s, int line, int n) {"
  	 			  accessor << "\treturn s.clearline( line, n );"
   				accessor << "}"
+  				accessor << "void home( SWSerLCDpa& s) {"
+  				accessor << "\treturn s.home();"
+  				accessor << "}"
+  				accessor << "void home( SWSerLCDpa& s, const char *str) {"
+  				accessor << "\treturn s.home( str );"
+    			accessor << "}"
+  				accessor << "void home( SWSerLCDpa& s, int n) {"
+  				accessor << "\treturn s.home( n );"
+    			accessor << "}"
+  				accessor << "void setxy( SWSerLCDpa& s, int x, int y) {"
+  				accessor << "\treturn s.setxy( x, y );"
+  				accessor << "}"
+  				accessor << "void setxy( SWSerLCDpa& s, int x, int y, const char *str) {"
+  				accessor << "\treturn s.setxy( x, y, str );"
+    			accessor << "}"
   				accessor << "void setxy( SWSerLCDpa& s, int x, int y, int n) {"
   				accessor << "\treturn s.setxy( x, y, n );"
     			accessor << "}"
@@ -746,27 +779,6 @@ class ArduinoSketch
   				accessor << "void outofBignum(SWSerLCDpa& s) {"
   				accessor << "\treturn s.outofBignum();"
   				accessor << "}"
- 	 			  accessor << "void println( SWSerLCDpa& s, char c ) {"
-  				accessor << "\treturn s.println( c );"
-  				accessor << "}"
-  				accessor << "void println( SWSerLCDpa& s, const char c[] ) {"
-  				accessor << "\treturn s.println( c );"
-  				accessor << "}"
-  				accessor << "void println( SWSerLCDpa& s, uint8_t b ) {"
-  				accessor << "\treturn s.println( b );"
-  				accessor << "}"
-  				accessor << "void println( SWSerLCDpa& s, int i ) {"
-  				accessor << "\treturn s.println( i );"
-  				accessor << "}"
-  				accessor << "void println( SWSerLCDpa& s, long i ) {"
-  				accessor << "\treturn s.println( i );"
-  				accessor << "}"
-  				accessor << "void println( SWSerLCDpa& s, unsigned long i ) {"
-  				accessor << "\treturn s.println( i );"
-  				accessor << "}"
-  				accessor << "void println( SWSerLCDpa& s, long i, int b ) {"
-  				accessor << "\treturn s.println( i, b );"
- 	 			  accessor << "}"
  			end
  			@accessors << accessor.join( "\n" )
  			
@@ -825,14 +837,23 @@ class ArduinoSketch
    				accessor << "void clearscr(SWSerLCDsf& s) {"
  	 			  accessor << "\treturn s.clearscr();"
   				accessor << "}"
-  				accessor << "void setxy( SWSerLCDsf& s, int x, int y) {"
-  				accessor << "\treturn s.setxy( x, y );"
-  				accessor << "}"
   				accessor << "void clearscr(SWSerLCDsf& s, const char *str) {"
  	 			  accessor << "\treturn s.clearscr(str);"
   				accessor << "}"
   				accessor << "void clearscr(SWSerLCDsf& s, int n) {"
  	 			  accessor << "\treturn s.clearscr(n);"
+  				accessor << "}"
+  				accessor << "void home( SWSerLCDsf& s) {"
+  				accessor << "\treturn s.home();"
+  				accessor << "}"
+  				accessor << "void home( SWSerLCDsf& s, const char *str) {"
+  				accessor << "\treturn s.home( str );"
+    			accessor << "}"
+  				accessor << "void home( SWSerLCDsf& s, int n) {"
+  				accessor << "\treturn s.home( n );"
+    			accessor << "}"
+  				accessor << "void setxy( SWSerLCDsf& s, int x, int y) {"
+  				accessor << "\treturn s.setxy( x, y );"
   				accessor << "}"
   				accessor << "void setxy( SWSerLCDsf& s, int x, int y, const char *str) {"
   				accessor << "\treturn s.setxy( x, y, str );"
@@ -985,6 +1006,10 @@ class ArduinoSketch
  	
  	def frequency_timer(pin, opts={}) # frequency timer routines
 
+#    @@frequency_inc ||= FALSE
+#    raise ArgumentError, "there can be only one instance of Frequency Timer2" if @@frequency_inc == TRUE
+#    @@frequency_inc = TRUE
+    
     raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
     raise ArgumentError, "only pin 11 may be used for freq_out, got #{pin}" unless pin == 11
     
@@ -1000,17 +1025,13 @@ class ArduinoSketch
     # refer to: http://www.arduino.cc/playground/Code/FrequencyTimer2
 
    		if opts[:as]
-   		  
-   		  @@frequency_inc = TRUE
+   		   
    		  @declarations << "FrequencyTimer2 _#{opts[ :as ]} = FrequencyTimer2();"
    			accessor = []
    			$load_libraries << "FrequencyTimer2"	
    			accessor << "FrequencyTimer2& #{opts[ :as ]}() {"
    			accessor << "\treturn _#{opts[ :as ]};"
    			accessor << "}"
-   			# add ||=
-#   		if (@@frequency_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
-   			# @@frequency_inc = TRUE
    			accessor << "void set_frequency( FrequencyTimer2& s, int b ) {"
    			accessor << "\treturn s.setPeriod( 1000000L/b );"
    			accessor << "}"
@@ -1023,7 +1044,6 @@ class ArduinoSketch
    			accessor << "void disable( FrequencyTimer2& s ) {"
    			accessor << "\treturn s.disable();"
    			accessor << "}"
-#   		end
 
    			@accessors << accessor.join( "\n" )
 
@@ -1085,14 +1105,11 @@ class ArduinoSketch
    		if opts[:as]
 
    			@@twowire_inc = TRUE
-   		    @declarations << "TwoWire _wire = TwoWire();"
-#   		    @declarations << "TwoWire _#{opts[ :as ]} = TwoWire();"
+   		  @declarations << "TwoWire _wire = TwoWire();"
    			accessor = []
    			$load_libraries << "Wire"	
    			accessor << "TwoWire& wire() {"
    			accessor << "\treturn _wire;"
-#   			accessor << "TwoWire& #{opts[ :as ]}() {"
-#   			accessor << "\treturn _#{opts[ :as ]};"
    			accessor << "}"
    			accessor << "void begin( TwoWire& s) {"
    			accessor << "\treturn s.begin();"
@@ -1140,46 +1157,48 @@ class ArduinoSketch
    			@accessors << accessor.join( "\n" )
 
    			@signatures << "TwoWire& wire();"
-#   			@signatures << "TwoWire& #{opts[ :as ]}();"
 
- 			@other_setup << "\t_wire.begin();" if opts[:enable] == :true
-# 			@other_setup << "\t_#{opts[ :as ]}.begin();" if opts[:enable] == :true
+# 			@other_setup << "\t_wire.begin();" if opts[:enable] == :true
+  			@other_setup << "\t_wire.begin();"    # we never get here a second time, if we go to trouble of setting up
+  			                                      # i2c, we gotta start it and it never gets stopped thi is not 'optional'
 
  		end
  	end	
 
-	def ds1307(pin, opts={}) # DS1307 motor routines
+	def ds1307(pin, opts={}) # DS1307 real time clock routines routines
+
+#     @@ds1307_inc ||= FALSE
+#		  raise ArgumentError, "only one DS1307  may be used for i2c" unless @@ds1307_inc == FALSE
+#			@@ds1307_inc = TRUE
+
     	raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
-        raise ArgumentError, "only pin 19 may be used for i2c, got #{pin}" unless pin == 19
-#		raise ArgumentError, "only one DS1307  may be used for i2c" if @@ds1307_inc == :true
+      raise ArgumentError, "only pin 19 may be used for i2c, got #{pin}" unless pin == 19
 
    		if opts[:as]
- 			@@ds1307_inc = TRUE
- 			@declarations << "DS1307 _#{opts[ :as ]} = DS1307();"
- 			accessor = []
- 			$load_libraries << "DS1307"
- 			accessor << "DS1307& #{opts[ :as ]}() {"
- 			accessor << "\treturn _#{opts[ :as ]};"
- 			accessor << "}"
- 			accessor << "int get( DS1307& s, int b, boolean r ) {"
- 			accessor << "\treturn s.get( b, r );"
- 			accessor << "}"
- 			accessor << "void set( DS1307& s, int b, int r ) {"
- 			accessor << "\treturn s.set( b, r );"
- 			accessor << "}"
- 			accessor << "void start( DS1307& s ) {"
- 			accessor << "\treturn s.start();"
- 			accessor << "}"
- 			accessor << "void stop( DS1307& s ) {"
- 			accessor << "\treturn s.stop();"
- 			accessor << "}"
+    			@declarations << "DS1307 _#{opts[ :as ]} = DS1307();"
+    			accessor = []
+    			$load_libraries << "DS1307"
+    			accessor << "DS1307& #{opts[ :as ]}() {"
+    			accessor << "\treturn _#{opts[ :as ]};"
+    			accessor << "}"
+    			accessor << "int get( DS1307& s, int b, boolean r ) {"
+    			accessor << "\treturn s.get( b, r );"
+    			accessor << "}"
+    			accessor << "void set( DS1307& s, int b, int r ) {"
+    			accessor << "\treturn s.set( b, r );"
+    			accessor << "}"
+    			accessor << "void start( DS1307& s ) {"
+    			accessor << "\treturn s.start();"
+    			accessor << "}"
+    			accessor << "void stop( DS1307& s ) {"
+    			accessor << "\treturn s.stop();"
+    			accessor << "}"
 
- 			@accessors << accessor.join( "\n" )
+    			@accessors << accessor.join( "\n" )
 
- 			@signatures << "DS1307& #{opts[ :as ]}();"
- 			@other_setup << "\t_#{opts[ :as ]}.start();" if opts[:rtcstart]
-
- 		end
+    			@signatures << "DS1307& #{opts[ :as ]}();"
+    			@other_setup << "\t_#{opts[ :as ]}.start();" if opts[:rtcstart]
+ 		    end
  	end 
 
 

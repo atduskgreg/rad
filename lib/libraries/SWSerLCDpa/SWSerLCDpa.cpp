@@ -207,6 +207,24 @@ void SWSerLCDpa::setxy(int x, int y, int n)
 	print(n);
 }
 
+void SWSerLCDpa::home(void)
+{
+  print("?a");
+  delay(10);
+}
+
+void SWSerLCDpa::home(const char *s)
+{
+  home();
+  print(s);
+}
+
+void SWSerLCDpa::home(int n)
+{
+  home();
+  print(n);
+}
+
 void SWSerLCDpa::setgeo(int geometry)
 {
 	print("?G");

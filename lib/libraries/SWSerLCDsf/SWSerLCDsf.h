@@ -33,6 +33,7 @@ class SWSerLCDsf
     byte _cols;
     int _geometry;
     void printNumber(unsigned long, uint8_t);
+
   public:
     SWSerLCDsf(uint8_t);
     SWSerLCDsf(uint8_t, int);
@@ -46,10 +47,13 @@ class SWSerLCDsf
     void print(unsigned long);
     void print(long, int);
 	void clearscr(void);
-	void setxy(byte, byte);
 	void clearscr(const char[]);
-	void setxy(byte, byte, const char[]);
 	void clearscr(int);
+	void home(void);
+	void home(const char[]);
+	void home(int);
+	void setxy(byte, byte);
+	void setxy(byte, byte, const char[]);
 	void setxy(byte, byte, int);
 	void setgeo(int);
 	void setintensity(int);

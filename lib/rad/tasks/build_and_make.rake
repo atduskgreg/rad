@@ -82,7 +82,6 @@ namespace :build do
   desc "actually build the sketch"
   task :sketch => [:file_list, :sketch_dir, :gather_required_plugins, :plugin_setup, :setup] do
     klass = @sketch_class.split(".").first.split("_").collect{|c| c.capitalize}.join("")    
-    eval ArduinoSketch.pre_process(File.read(@test_dir + @sketch_class))
     c_methods = []
     sketch_signatures = []
     # until we better understand RubyToC let's see what's happening on errors
@@ -138,7 +137,7 @@ namespace :build do
        end
        CODE
     end   
-    eval File.read(@test_dir + @sketch_class)
+    eval ArduinoSketch.pre_process(File.read(@test_dir + @sketch_class))
     @@as.process_external_vars(constantize(klass))
     @setup = @@as.compose_setup
   end

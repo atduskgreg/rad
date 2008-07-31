@@ -241,61 +241,6 @@ class ArduinoSketch
     end
   end
   
-
-    # a different way to setup external variables outside the loop
-    # 
-    # in addition to being added to the c file as external variables:
-    # we fake ruby2c out by adding them to internal vars for ruby2c processing
-    # but we don't include then in the cpp loop
-    # then, we use the indentiers to remove any parens that ruby2c adds 
-    # this resolves ruby2c's habit of converting variables to methods
-    # need tests and ability to add custom char length
-    def external_vars(opts={})
-      if opts
-          opts.each do |k,v|
-            if v.include? ","
-              if v.split(",")[0] == "char"
-                ## default is 40 characters
-                if v.split(",")[2]
-                    $external_vars << "#{v.split(",")[0]}* #{k}[#{v.split(",")[2].lstrip}];"
-                else
-                    $external_vars << "#{v.split(",")[0]} #{k}[40] = \"#{v.split(",")[1].lstrip}\";"
-                end
-              else
-              $external_vars << "#{v.split(",")[0]} #{k} =#{v.split(",")[1]};"
-              end
-            else
-              if v.split(",")[0] == "char"
-                $external_vars << "#{v.split(",")[0]} #{k}[40];"
-              else
-
-                $external_vars << "#{v.split(",")[0]} #{k};"
-              end
-            end
-            # check chars work here
-            $external_var_identifiers << k
-         end
-      end
-    end
-
-    # phasing this out
-    def add_to_setup(*args)
-      if args
-         args.each do |arg|
-           $add_to_setup << arg
-         end
-       end
-    end
-
-    # phasing this out
-    def external_arrays(*args)
-      if args
-        args.each do |arg|
-          $external_array_vars << arg
-        end
-      end
-
-    end
     
     # array "char buffer[32]"
     # result: char buffer[32];

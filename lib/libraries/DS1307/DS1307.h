@@ -21,9 +21,10 @@
 #define DS1307_YR 6
 #define DS1307_CTRL	7
 
-#define DS1307_BASE_YR 2000
+#define DS1307_BASE_YR 2000			// with change of get() return from int to byte. this is no longer 
+									// used, the user must add 2000 himself
 
-#define DS1307_CTRL_ID B1101000  //DS1307
+#define DS1307_CTRL_ID B1101000  	// DS1307
 
  // Define register bit masks  
 #define DS1307_CLOCKHALT B10000000
@@ -45,8 +46,8 @@ class DS1307
   // user-accessible "public" interface
   public:
     DS1307();
-    // void get(int *, boolean);
-    int get(int, boolean);
+    void get(byte*, boolean);
+    byte get(int, boolean);
 	void set(int, int);
     void start(void);
     void stop(void);
@@ -56,6 +57,7 @@ class DS1307
     byte rtc_bcd[7]; // used prior to read/set ds1307 registers;
 	void read(void);
 	void save(void);
+
 };
 
 extern DS1307 RTC;

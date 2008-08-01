@@ -8,7 +8,7 @@ DS1307::DS1307()
   // Wire.begin();
 }
 
-DS1307 RTC=DS1307();
+// DS1307 RTC=DS1307();
 
 // PRIVATE FUNCTIONS
 
@@ -45,8 +45,8 @@ void DS1307::save(void)
 
 
 // PUBLIC FUNCTIONS
-/*
-void DS1307::get(int *rtc, boolean refresh)   // Aquire data from buffer and convert to int, refresh buffer if required
+
+void DS1307::get(byte *rtc, boolean refresh)   // Aquire data from buffer and convert to int, refresh buffer if required
 {
   if(refresh) read();
   for(int i=0;i<7;i++)  // cycle through each component, create array of data
@@ -54,12 +54,12 @@ void DS1307::get(int *rtc, boolean refresh)   // Aquire data from buffer and con
 	rtc[i]=get(i, 0);
   }
 }
-*/
 
-int DS1307::get(int c, boolean refresh)  // aquire individual RTC item from buffer, return as int, refresh buffer if required
+
+byte DS1307::get(int c, boolean refresh)  // aquire individual RTC item from buffer, return as int, refresh buffer if required
 {
   if(refresh) read();
-  int v=-1;
+  byte v=-1;
   switch(c)
   {
   case DS1307_SEC:
@@ -81,7 +81,8 @@ int DS1307::get(int c, boolean refresh)  // aquire individual RTC item from buff
     v=(10*((rtc_bcd[DS1307_MTH] & DS1307_HI_MTH)>>4))+(rtc_bcd[DS1307_MTH] & DS1307_LO_BCD);
 	break;
   case DS1307_YR:
-    v=(10*((rtc_bcd[DS1307_YR] & DS1307_HI_YR)>>4))+(rtc_bcd[DS1307_YR] & DS1307_LO_BCD)+DS1307_BASE_YR;
+//    v=(10*((rtc_bcd[DS1307_YR] & DS1307_HI_YR)>>4))+(rtc_bcd[DS1307_YR] & DS1307_LO_BCD)+DS1307_BASE_YR;
+    v=(10*((rtc_bcd[DS1307_YR] & DS1307_HI_YR)>>4))+(rtc_bcd[DS1307_YR] & DS1307_LO_BCD);
 	break; 
   } // end switch
   return v;

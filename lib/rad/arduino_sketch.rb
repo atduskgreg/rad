@@ -1101,11 +1101,13 @@ class ArduinoSketch
 
    			@signatures << "TwoWire& wire();"
 
-  			@other_setup << "\t_wire.begin();"    # we never get here a second time, if we go to trouble of setting up
-  			                                      # i2c, we gotta start it and it never gets stopped this is not 'optional'
-
+  			@other_setup << "\t_wire.begin();"    # We never get here a second time. If we go to the trouble 
+  			                                      # of setting up i2c, we gotta start it and it never gets 
+  			                                      # stopped. This is not 'optional!'
  		end
- 	end	
+ 		
+ 	end
+ 		
 
 	def ds1307(pin, opts={}) # DS1307 real time clock routines routines
 
@@ -1123,7 +1125,10 @@ class ArduinoSketch
     			accessor << "DS1307& #{opts[ :as ]}() {"
     			accessor << "\treturn _#{opts[ :as ]};"
     			accessor << "}"
-    			accessor << "int get( DS1307& s, int b, boolean r ) {"
+    			accessor << "void get( DS1307& s, byte *buf, boolean r ) {"
+    			accessor << "\treturn s.get( buf, r );"
+    			accessor << "}"
+    			accessor << "byte get( DS1307& s, int b, boolean r ) {"
     			accessor << "\treturn s.get( b, r );"
     			accessor << "}"
     			accessor << "void set( DS1307& s, int b, int r ) {"

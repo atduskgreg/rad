@@ -358,6 +358,7 @@ class ArduinoSketch
           return #
         when :i2c_eeprom
           two_wire(num, opts) unless @@twowire_inc
+          i2c_eeprom(num, opts)
           return #
         when :i2c_ds1307
           two_wire(num, opts) unless @@twowire_inc
@@ -1142,6 +1143,40 @@ class ArduinoSketch
  		    end
  	end 
 
+  def i2c_eeprom(pin, opts={}) # i2c serial eeprom routines #
+        
+      dev_addr = opts[:address] ? opts[:address] : 0
+
+   		if opts[:as]
+ 			@declarations << "I2CEEPROM _#{opts[ :as ]} = I2CEEPROM(#{dev_addr});"
+ 			accessor = []
+ 			$load_libraries << "I2CEEPROM"
+ 			accessor << "I2CEEPROM& #{opts[ :as ]}() {"
+ 			accessor << "\treturn _#{opts[ :as ]};"
+ 			accessor << "}"
+      @@i2cepr_inc ||= FALSE
+ 			if (@@i2cepr_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
+ 				@@i2cepr_inc = TRUE
+ 				accessor << "void write_byte( I2CEEPROM& s, unsigned int addr, byte b ) {"
+ 				accessor << "\treturn s.write_byte( addr, b );"
+ 				accessor << "}"
+ 				accessor << "void write_page( I2CEEPROM& s, unsigned int addr, byte* d, int l ) {"
+	 			accessor << "\treturn s.write_page( addr, d, l );"
+ 				accessor << "}"
+ 				accessor << "byte read_byte( I2CEEPROM& s, unsigned int addr ) {"
+ 				accessor << "\treturn s.read_byte( addr );"
+ 				accessor << "}"
+ 				accessor << "void read_buffer( I2CEEPROM& s, unsigned int addr, byte *d, int l ) {"
+ 				accessor << "\treturn s.read_buffer( addr, d, l );"
+ 				accessor << "}"
+ 			end
+ 			
+ 			@accessors << accessor.join( "\n" )
+ 			
+ 			@signatures << "I2CEEPROM& #{opts[ :as ]}();"
+
+ 		end
+ 	end 
 
 
 	def blinkm

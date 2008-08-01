@@ -47,7 +47,7 @@ class HelloEepromLcdpa < ArduinoSketch
       
       myLCD.setxy 0, 2
       32.upto(109) do				# write address of byte to that b yte
-			  |x| i2c_eeprom_write_byte  0x50, x, x
+			  |x| mem0.write_byte  x, x+7
         myLCD.print(".") if x%2
         delay 10      # EEPROM write _requires_ 3-10 ms pause
       end
@@ -57,7 +57,7 @@ class HelloEepromLcdpa < ArduinoSketch
 
       myLCD.setxy 0, 2
 									# read and print 39 addresses with printable numbers
-      75.upto(113) { |x| myLCD.print(i2c_eeprom_read_byte(0x50, x)) }
+      70.upto(105) { |x| myLCD.print(mem0.read_byte(x)) }
 
       delay 2000
       clear_off_test

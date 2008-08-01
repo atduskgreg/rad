@@ -12,7 +12,7 @@ class HelloEeprom < ArduinoSketch
 	    myLCD.print rtc.get(4, 0)	# no need to refresh (=0) get day 
      	myLCD.print "/"
 	    myLCD.print rtc.get(6, 0)	# get year
-     	myLCD.setxy(1,1)			# set in 1 byte line 1 (second line)
+     	myLCD.setxy(0,1)			# set in 1 byte line 1 (second line)
      	printlz 2					# print hours with lead zero
      	myLCD.print ":"
 	    printlz 1					# print minutes with lead zero
@@ -24,7 +24,7 @@ class HelloEeprom < ArduinoSketch
 		myLCD.print "write test"
 		myLCD.setxy 0,2
 		32.upto(109) do				# write address of byte to that b yte
-			|x| i2c_eeprom_write_byte  0x50, x, x
+			|x| mem0.write_byte  x, x
 			myLCD.print(".") if x%2
 			delay 10
 		end
@@ -37,7 +37,7 @@ class HelloEeprom < ArduinoSketch
 		myLCD.setxy 10,0, "read test "
 		myLCD.setxy 0,2
 									# read and print 39 addresses with printable numbers
-		75.upto(113) { |x| myLCD.print(i2c_eeprom_read_byte(0x50, x)) }
+		75.upto(113) { |x| myLCD.print(mem0.read_byte(x)) }
 		delay 10000
 		myLCD.clearscr
   end

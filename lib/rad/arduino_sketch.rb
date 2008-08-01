@@ -567,6 +567,7 @@ class ArduinoSketch
     raise ArgumentError, "can only define tx from Fixnum, got #{tx.class}" unless tx.is_a?(Fixnum)
     
     output_pin(tx)
+    input_pin(rx)
     
     rate = opts[:rate] ? opts[:rate] : 9600
  		if opts[:as]
@@ -598,14 +599,12 @@ class ArduinoSketch
  			
  			@signatures << "SoftwareSerial& #{opts[ :as ]}();"
  
- 			@other_setup << "_#{opts[ :as ]}.begin(#{rate});"
+ 			@other_setup << "\t_#{opts[ :as ]}.begin(#{rate});"
  		end
  	end 	
  	
  	def swser_LCDpa(tx, opts={})
     raise ArgumentError, "can only define tx from Fixnum, got #{tx.class}" unless tx.is_a?(Fixnum)
-    output_pin(tx)
-    
 
     rate = opts[:rate] ? opts[:rate] : 9600
     geometry = opts[:geometry] ? opts[:geometry] : 0
@@ -736,9 +735,7 @@ class ArduinoSketch
 
 
  	def swser_LCDsf(tx, opts={})
-    raise ArgumentError, "can only define tx from Fixnum, got #{tx.class}" unless tx.is_a?(Fixnum)
-    output_pin(tx)
-    
+    raise ArgumentError, "can only define tx from Fixnum, got #{tx.class}" unless tx.is_a?(Fixnum)    
 
     rate = opts[:rate] ? opts[:rate] : 9600
     geometry = opts[:geometry] ? opts[:geometry] : 0
@@ -951,9 +948,9 @@ class ArduinoSketch
  	
  	def frequency_timer(pin, opts={}) # frequency timer routines
 
-#    @@frequency_inc ||= FALSE
-#    raise ArgumentError, "there can be only one instance of Frequency Timer2" if @@frequency_inc == TRUE
-#    @@frequency_inc = TRUE
+    @@frequency_inc ||= FALSE
+    raise ArgumentError, "there can be only one instance of Frequency Timer2" if @@frequency_inc == TRUE
+    @@frequency_inc = TRUE
     
     raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
     raise ArgumentError, "only pin 11 may be used for freq_out, got #{pin}" unless pin == 11
@@ -1103,18 +1100,17 @@ class ArduinoSketch
 
    			@signatures << "TwoWire& wire();"
 
-# 			@other_setup << "\t_wire.begin();" if opts[:enable] == :true
   			@other_setup << "\t_wire.begin();"    # we never get here a second time, if we go to trouble of setting up
-  			                                      # i2c, we gotta start it and it never gets stopped thi is not 'optional'
+  			                                      # i2c, we gotta start it and it never gets stopped this is not 'optional'
 
  		end
  	end	
 
 	def ds1307(pin, opts={}) # DS1307 real time clock routines routines
 
-#     @@ds1307_inc ||= FALSE
-#		  raise ArgumentError, "only one DS1307  may be used for i2c" unless @@ds1307_inc == FALSE
-#			@@ds1307_inc = TRUE
+      @@ds1307_inc ||= FALSE
+		  raise ArgumentError, "only one DS1307  may be used for i2c" unless @@ds1307_inc == FALSE
+			@@ds1307_inc = TRUE
 
     	raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
       raise ArgumentError, "only pin 19 may be used for i2c, got #{pin}" unless pin == 19

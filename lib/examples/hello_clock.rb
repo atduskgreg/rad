@@ -36,6 +36,7 @@ class HelloClock < ArduinoSketch
 
     def setup
       myLCD.clearscr "   --<Date/Time>--"
+      myLCD.setxy 1,3, "looptime = "
       rtc.get clock, 1
       print_main
       @flag = 1
@@ -43,8 +44,7 @@ class HelloClock < ArduinoSketch
     
     def loop
         mainloop.track
-        myLCD.setxy 1,3, "looptime = "
-        myLCD.print mainloop.get_total
+        myLCD.setxy 12,3,  mainloop.get_total
         rtc.get clock, 1
         if clock[0] == 0
           if @flag == 0
@@ -61,7 +61,7 @@ class HelloClock < ArduinoSketch
        	myLCD.print ":"
   	    printlz clock[0]
 
-        delay 200
+       delay 50
         
     end
 

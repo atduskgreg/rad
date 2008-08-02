@@ -115,6 +115,10 @@ FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/I2CEEPROM/.", "#{sket
 puts "Installed I2CEEPROM into #{sketch_name}/vendor/libraries" 
 puts
 
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/LoopTimer/.", "#{sketch_name}/vendor/libraries/LoopTimer" 
+puts "Installed LoopTimer into #{sketch_name}/vendor/libraries" 
+puts
+
 FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/OneWire/.", "#{sketch_name}/vendor/libraries/OneWire"
 puts "Installed OneWire into #{sketch_name}/vendor/libraries"
 puts

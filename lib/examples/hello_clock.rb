@@ -31,6 +31,8 @@ class HelloClock < ArduinoSketch
                               # software serial tx drives LCD display, screen cleared at startup
                               # defines the softare protocol for controller as Peter Anderson
     output_pin 14, :as => :myLCD, :device => :pa_lcd, :rate => 19200, :clear_screen => :true
+    loop_timer :as => :mainloop
+    
 
     def setup
       myLCD.clearscr "   --<Date/Time>--"
@@ -40,6 +42,9 @@ class HelloClock < ArduinoSketch
     end
     
     def loop
+        mainloop.track
+        myLCD.setxy 1,3, "looptime = "
+        myLCD.print mainloop.get_total
         rtc.get clock, 1
         if clock[0] == 0
           if @flag == 0
@@ -56,7 +61,7 @@ class HelloClock < ArduinoSketch
        	myLCD.print ":"
   	    printlz clock[0]
 
-        delay 100
+        delay 200
         
     end
 

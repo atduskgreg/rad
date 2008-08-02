@@ -157,7 +157,8 @@ class ArduinoSketch
   include ExternalVariableProcessing
   
   # find another way to do this
-  @@twowire_inc	= FALSE
+  @@twowire_inc	  = FALSE
+  @@hwserial_inc  = FALSE
 
   
   def initialize #:nodoc:
@@ -185,28 +186,30 @@ class ArduinoSketch
     @other_setup = [] # specifically, Serial.begin
     @assembler_declarations = []
     @accessors = []
-    @signatures = ["void blink();", "int main();", "void track_total_loop_time(void);", "unsigned long find_total_loop_time(void);"]
+#    @signatures = ["void blink();", "int main();", "void track_total_loop_time(void);", "unsigned long find_total_loop_time(void);"]
+#    @signatures = ["int main();", "void track_total_loop_time(void);", "unsigned long find_total_loop_time(void);"]
+    @signatures = ["int main();"]
 
     helper_methods = []
-    helper_methods << "void blink(int pin, int ms) {"
-    helper_methods << "\tdigitalWrite( pin, HIGH );"
-    helper_methods << "\tdelay( ms );"
-    helper_methods << "\tdigitalWrite( pin, LOW );"
-    helper_methods << "\tdelay( ms );"
-    helper_methods << "}"
-    helper_methods << "void track_total_loop_time(void)"
-    helper_methods << "{"
-    helper_methods << "\ttotal_loop_time = millis() - start_loop_time;"
-    helper_methods << "\tstart_loop_time = millis();"
-    helper_methods << "}"
-    helper_methods << "unsigned long find_total_loop_time(void)"
-    helper_methods << "{"
-    helper_methods << "\nreturn total_loop_time;"
-    helper_methods << "}"
+#    helper_methods << "void blink(int pin, int ms) {"
+#    helper_methods << "\tdigitalWrite( pin, HIGH );"
+#    helper_methods << "\tdelay( ms );"
+#    helper_methods << "\tdigitalWrite( pin, LOW );"
+#    helper_methods << "\tdelay( ms );"
+#    helper_methods << "}"
+#    helper_methods << "void track_total_loop_time(void)"
+#    helper_methods << "{"
+#    helper_methods << "\ttotal_loop_time = millis() - start_loop_time;"
+#    helper_methods << "\tstart_loop_time = millis();"
+#    helper_methods << "}"
+#    helper_methods << "unsigned long find_total_loop_time(void)"
+#    helper_methods << "{"
+#    helper_methods << "\nreturn total_loop_time;"
+#    helper_methods << "}"
     @helper_methods = helper_methods.join( "\n" )
     
-    @declarations << "unsigned long start_loop_time = 0;"
-    @declarations << "unsigned long total_loop_time = 0;"
+#    @declarations << "unsigned long start_loop_time = 0;"
+#    @declarations << "unsigned long total_loop_time = 0;"
   end
   
   # Setup variables outside of the loop. Does some magic based on type of arguments. Subject to renaming. Use with caution.
@@ -560,6 +563,8 @@ class ArduinoSketch
   def serial_begin(opts={})
     rate = opts[:rate] ? opts[:rate] : 9600
     @other_setup << "Serial.begin(#{rate});"
+    @@hwserial_inc = TRUE
+
   end
   
   # Treat a pair of digital I/O pins as a serial line. See: http://www.arduino.cc/en/Tutorial/SoftwareSerial
@@ -821,6 +826,35 @@ class ArduinoSketch
  			@other_setup << "\t_#{opts[ :as ]}.begin(#{rate});"
  		end
  	end 	
+
+
+  def loop_timer(opts={}) # loop timer methods #
+        
+   		if opts[:as]
+ 			@declarations << "LoopTimer _#{opts[ :as ]} = LoopTimer();"
+ 			accessor = []
+ 			$load_libraries << "LoopTimer"
+ 			accessor << "LoopTimer& #{opts[ :as ]}() {"
+ 			accessor << "\treturn _#{opts[ :as ]};"
+ 			accessor << "}"
+      @@loptim_inc ||= FALSE
+ 			if (@@loptim_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
+ 				@@limtim_inc = TRUE
+ 				accessor << "void track( LoopTimer& s ) {"
+ 				accessor << "\treturn s.track();"
+ 				accessor << "}"
+ 				accessor << "unsigned long get_total( LoopTimer& s ) {"
+	 			accessor << "\treturn s.get_total();"
+ 				accessor << "}"
+ 			end
+ 			
+ 			@accessors << accessor.join( "\n" )
+ 			
+ 			@signatures << "LoopTimer& #{opts[ :as ]}();"
+
+ 		end
+ 	end 
+
 
 
   def twowire_stepper(pin1, pin2, opts={}) # servo motor routines #
@@ -1302,8 +1336,10 @@ class ArduinoSketch
     # need to add plugin name to this... 
     $plugin_methods.each { |meth| helpers << "#{meth[0][0]}\n" } unless $plugin_methods.nil? || $plugin_methods.empty?
     
-    helpers << "\n// serial helpers"
-    helpers << serial_boilerplate.lstrip
+    if @@hwserial_inc == TRUE
+      helpers << "\n// serial helpers"
+      helpers << serial_boilerplate.lstrip
+    end
     
     main << "\n" + comment_box( "main() function" )
     main << "int main() {"

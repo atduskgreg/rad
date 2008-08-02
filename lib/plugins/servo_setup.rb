@@ -59,7 +59,7 @@ void move_servo(int servo_num, int pulse_width)
     {
       pulse_servo(servo_name.pin, pw);
       servo_name.lastPulse = millis();
-      if (find_total_loop_time() < 10)
+      // if (find_total_loop_time() < 10)
       // for debug:
       // digitalWrite( 5, HIGH );
       // 18 seems optimal, but we should let the users adjust with a servo option

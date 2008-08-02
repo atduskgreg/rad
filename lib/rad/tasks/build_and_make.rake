@@ -97,7 +97,8 @@ namespace :build do
     clean_c_methods = []
     # remove external variables that were previously injected
     c_methods.join("\n").each { |meth| clean_c_methods << ArduinoSketch.post_process_ruby_to_c_methods(meth) }
-    c_methods_with_timer = clean_c_methods.join.gsub(/loop\(\)\s\{/,"loop() {\ntrack_total_loop_time();")
+#    c_methods_with_timer = clean_c_methods.join.gsub(/loop\(\)\s\{/,"loop() {\ntrack_total_loop_time();")
+    c_methods_with_timer = clean_c_methods.join.gsub(/loop\(\)\s\{/,"loop() {")
     # last chance to add/change setup
     @setup[2] << sketch_signatures.join("\n") unless sketch_signatures.empty?
     # add special setup method to existing setup if present

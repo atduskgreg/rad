@@ -140,11 +140,7 @@ void SWSerLCDpa::print(long n, int base)
 }
 
 // -------- PHA unique codes -------------------------
-void SWSerLCDpa::println(void)
-{
-  print("?n");
-  delay(10);
-}
+
 
 void SWSerLCDpa::clearscr(void)
 {
@@ -163,6 +159,13 @@ void SWSerLCDpa::clearscr(int n)
 	clearscr();
     print(n);
 }
+
+void SWSerLCDpa::clearscr(long n, int base)
+{
+	clearscr();
+	print(n, base);
+}
+
 
 void SWSerLCDpa::clearline(int line)
 {
@@ -183,6 +186,11 @@ void SWSerLCDpa::clearline(int line, int n)
   print(n);
 }
 
+void SWSerLCDpa::clearline(int line, long n, int base)
+{
+	clearline(line);
+	print(n, base);
+}
 
 void SWSerLCDpa::setxy(int x, int y)
 {
@@ -207,6 +215,12 @@ void SWSerLCDpa::setxy(int x, int y, int n)
 	print(n);
 }
 
+void SWSerLCDpa::setxy(int x, int y, long n, int base)
+{
+	setxy(x,y);
+	print(n, base);
+}
+
 void SWSerLCDpa::home(void)
 {
   print("?a");
@@ -223,6 +237,12 @@ void SWSerLCDpa::home(int n)
 {
   home();
   print(n);
+}
+
+void SWSerLCDpa::home(long n, int base)
+{
+	home();
+	print(n, base);
 }
 
 void SWSerLCDpa::setgeo(int geometry)
@@ -249,50 +269,6 @@ void SWSerLCDpa::intoBignum(void)
 void SWSerLCDpa::outofBignum(void)
 {
   print("?<");
-}
-
-
-
-void SWSerLCDpa::println(char c)
-{
-  print(c);
-  println();  
-}
-
-void SWSerLCDpa::println(const char c[])
-{
-  print(c);
-  println();
-}
-
-void SWSerLCDpa::println(uint8_t b)
-{
-  print(b);
-  println();
-}
-
-void SWSerLCDpa::println(int n)
-{
-  print(n);
-  println();
-}
-
-void SWSerLCDpa::println(long n)
-{
-  print(n);
-  println();  
-}
-
-void SWSerLCDpa::println(unsigned long n)
-{
-  print(n);
-  println();  
-}
-
-void SWSerLCDpa::println(long n, int base)
-{
-  print(n, base);
-  println();
 }
 
 // Private Methods /////////////////////////////////////////////////////////////

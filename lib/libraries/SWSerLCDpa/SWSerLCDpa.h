@@ -43,30 +43,26 @@ class SWSerLCDpa
     void print(long);
     void print(unsigned long);
     void print(long, int);
-    void println(void);
 	void clearscr(void);
 	void clearscr(const char[]);
 	void clearscr(int);
+	void clearscr(long, int);
 	void clearline(int);
 	void clearline(int, const char[]);
 	void clearline(int, int);
+	void clearline(int, long, int);
 	void home(void);
 	void home(const char[]);
 	void home(int);
+	void home(long, int);
 	void setxy(int, int);
 	void setxy(int, int, const char[]);
 	void setxy(int, int, int);
+	void setxy(int, int, long, int);
 	void setgeo(int);
 	void setintensity(int);
 	void intoBignum(void);
 	void outofBignum(void);
-    void println(char);
-    void println(const char[]);
-    void println(uint8_t);
-    void println(int);
-    void println(long);
-    void println(unsigned long);
-    void println(long, int);
 };
 
 #endif

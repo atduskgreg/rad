@@ -10,7 +10,7 @@ require 'optparse'
 require 'fileutils'
 require 'yaml'
 
-
+require File.expand_path(File.dirname(__FILE__)) + "/../lib/rad/version.rb"
 
 class OptionParser #:nodoc:
     
@@ -59,6 +59,13 @@ Usage: #{File.basename($0)} <sketch_dir_name> <options for config>
               "Path to your Arduino install",
               "   (default: #{options['software']['arduino_root']})") do |arduino|
         options["software"]["arduino_root"] = arduino if arduino
+      end
+      
+      opts.on("-v", "--version [VERSION]", 
+              "RAD version number",
+              "   (#{Rad::VERSION::STRING})") do 
+        puts Rad::VERSION::STRING
+        exit
       end
 
       opts.on_tail("-h", "--help", "Show this message") do

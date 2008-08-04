@@ -49,7 +49,7 @@ static void BlinkM_beginWithPowerPins(byte pwrpin, byte gndpin)
 }
 
 // Call this first when BlinkM is plugged directly into Arduino
-// The BlinkM's PWR (power) pins should line up with pins 2 and 3 of the connector, 
+// The BlinkMs PWR (power) pins should line up with pins 2 and 3 of the connector, 
 // while the I2C (communications) pins should line up with pins 4 and 5.
 
 static void BlinkM_beginWithPower()
@@ -134,7 +134,7 @@ static int BlinkM_getVersion(byte addr)
     return -1;
 }
 
-// Demonstrates how to verify you're talking to a BlinkM 
+// Demonstrates how to verify you-re talking to a BlinkM 
 // and that you know its address -- message version
 
 static char* blink_m_check_address_message(byte addr) // :as => :optional
@@ -158,7 +158,7 @@ static char* blink_m_check_address_message(byte addr) // :as => :optional
         return strcat(message, status); // match, everything okay
 }
 
-// Demonstrates how to verify you're talking to a BlinkM 
+// Demonstrates how to verify you-re talking to a BlinkM 
 // and that you know its address -- digital version
 
 static int BlinkM_checkAddress(byte addr)

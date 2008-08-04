@@ -549,16 +549,19 @@ class ArduinoSketch
   end
   
   def formatted_print(opts={})
-    buffer_size = opts[:buffer_size] ? opts[:buffer_size] : 64
-    @@sprintf_inc ||= FALSE
-    if @@sprintf_inc == FALSE
-      @@sprintf_inc = TRUE
-      accessor = []
-      accessor << "\n#undef int\n#include <stdio.h>" 
-      accessor << "char _str[#{buffer_size}];" 
-      accessor << "#define write_line(...) sprintf(_str,__VA_ARGS__); xx[0] = _str"
 
-      @accessors << accessor.join( "\n" ) 			
+    buffer_size = opts[:buffer_size] ? opts[:buffer_size] : 64
+    
+    if opts[:as]
+      @@sprintf_inc ||= FALSE
+      if @@sprintf_inc == FALSE
+        @@sprintf_inc = TRUE
+        accessor = []
+        accessor << "\n#undef int\n#include <stdio.h>"
+        accessor << "#define write_line(...) sprintf(#{opts[:as]},__VA_ARGS__);"
+        @accessors << accessor.join( "\n" )
+        array("char #{opts[:as]}[#{buffer_size}]") 
+      end
     end
   end
   

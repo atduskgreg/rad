@@ -548,6 +548,20 @@ class ArduinoSketch
 
   end
   
+  def formatted_print(opts={})
+    buffer_size = opts[:buffer_size] ? opts[:buffer_size] : 64
+    @@sprintf_inc ||= FALSE
+    if @@sprintf_inc == FALSE
+      @@sprintf_inc = TRUE
+      accessor = []
+      accessor << "\n#undef int\n#include <stdio.h>" 
+      accessor << "char _str[#{buffer_size}];" 
+      accessor << "#define write_line(...) sprintf(_str,__VA_ARGS__); xx[0] = _str"
+
+      @accessors << accessor.join( "\n" ) 			
+    end
+  end
+  
   # Treat a pair of digital I/O pins as a serial line. See: http://www.arduino.cc/en/Tutorial/SoftwareSerial
   def software_serial(rx, tx, opts={})
     raise ArgumentError, "can only define rx from Fixnum, got #{rx.class}" unless rx.is_a?(Fixnum)

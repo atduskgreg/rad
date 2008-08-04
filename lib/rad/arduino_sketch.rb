@@ -549,6 +549,7 @@ class ArduinoSketch
   end
   
   def formatted_print(opts={})
+
     buffer_size = opts[:buffer_size] ? opts[:buffer_size] : 64
     
     if opts[:as]

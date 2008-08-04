@@ -14,10 +14,7 @@ class ExternalVariables < ArduinoSketch
   @boom = "1, int"
   @rad = "1.00"
   
-  
-  
   def loop
-
 	  delay 1
 	  @foo = 2
     @foo = KOOL

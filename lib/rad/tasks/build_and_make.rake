@@ -19,18 +19,20 @@ namespace :test do
   end
   
   task :compile => :gather do 
+
     @examples.each {|e| run_tests(e, "compile")}
-    end
   end
   
   desc "gather all tests"
   task :gather do # => "make:upload" do
     @examples = []
-    @test_results = []
-    Dir.entries( File.expand_path("#{RAD_ROOT}/examples/") ).each do |f|
-      if (f =~ /\.rb$/)
-        @examples << f.split('.').first
+    if ENV['sketch']
+      @examples << ENV['sketch']
+    else
+      Dir.entries( File.expand_path("#{RAD_ROOT}/examples/") ).each do |f|
+        @examples << f.split('.').first if (f =~ /\.rb$/)
       end
+    end
   end
 
 end
@@ -49,10 +51,8 @@ namespace :make do
     
   desc "generate a makefile and use it to compile the .cpp"
   task :compile => [:clean_sketch_dir, "build:sketch"] do # should also depend on "build:sketch"
-    puts; puts
-    puts @compiler.name
-    puts
     Makefile.compose_for_sketch( @compiler.build_dir )
+
     # not allowed? sh %{export PATH=#{Makefile.software_params[:arduino_root]}/tools/avr/bin:$PATH}
     sh %{cd #{@compiler.build_dir}; make depend; make}
   end
@@ -86,7 +86,7 @@ namespace :build do
     c_methods = []
     sketch_signatures = []
     # until we better understand RubyToC let's see what's happening on errors
-    $sketch_methods.each do |meth| 
+    @compiler.sketch_methods.each do |meth|   
       raw_rtc_meth = RADProcessor.translate(constantize(@compiler.klass), meth) 
       puts "Translator Error: #{raw_rtc_meth.inspect}" if raw_rtc_meth[0..8] == "// ERROR:"
       c_methods << raw_rtc_meth unless meth == "setup"
@@ -137,6 +137,9 @@ namespace :build do
        end
        CODE
     end   
+    
+    @compiler.process_constants
+    
     eval ArduinoSketch.pre_process(@compiler.body)
     @@as.process_external_vars(constantize(@compiler.klass))
     @setup = @@as.compose_setup
@@ -177,18 +180,15 @@ namespace :build do
   desc "setup target directory named after your sketch class"
   task :sketch_dir => [:file_list] do
     @compiler.create_build_dir!
-    # mkdir_p "#{@test_dir + @sketch_class.split(".").first}"
   end
 
   task :file_list do
     # take another look at this, since if the root directory name is changed, everything breaks
     # perhaps we generate a constant when the project is generated an pop it here or in the init file
-    # assume the only .rb file in the sketch dir is the sketch:
     if ENV['sketch']
-
       @compiler = SketchCompiler.new File.expand_path("#{ENV['sketch']}.rb")
-
     else
+      # assume the only .rb file in the sketch dir is the sketch:
       @compiler = SketchCompiler.new Dir.glob("#{File.expand_path(File.dirname(__FILE__))}/../../../*.rb").first
     end
 

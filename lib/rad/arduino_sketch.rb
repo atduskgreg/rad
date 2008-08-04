@@ -186,11 +186,30 @@ class ArduinoSketch
     @other_setup = [] # specifically, Serial.begin
     @assembler_declarations = []
     @accessors = []
+#    @signatures = ["void blink();", "int main();", "void track_total_loop_time(void);", "unsigned long find_total_loop_time(void);"]
+#    @signatures = ["int main();", "void track_total_loop_time(void);", "unsigned long find_total_loop_time(void);"]
     @signatures = ["int main();"]
 
     helper_methods = []
+#    helper_methods << "void blink(int pin, int ms) {"
+#    helper_methods << "\tdigitalWrite( pin, HIGH );"
+#    helper_methods << "\tdelay( ms );"
+#    helper_methods << "\tdigitalWrite( pin, LOW );"
+#    helper_methods << "\tdelay( ms );"
+#    helper_methods << "}"
+#    helper_methods << "void track_total_loop_time(void)"
+#    helper_methods << "{"
+#    helper_methods << "\ttotal_loop_time = millis() - start_loop_time;"
+#    helper_methods << "\tstart_loop_time = millis();"
+#    helper_methods << "}"
+#    helper_methods << "unsigned long find_total_loop_time(void)"
+#    helper_methods << "{"
+#    helper_methods << "\nreturn total_loop_time;"
+#    helper_methods << "}"
     @helper_methods = helper_methods.join( "\n" )
     
+#    @declarations << "unsigned long start_loop_time = 0;"
+#    @declarations << "unsigned long total_loop_time = 0;"
   end
   
   # Setup variables outside of the loop. Does some magic based on type of arguments. Subject to renaming. Use with caution.
@@ -548,23 +567,6 @@ class ArduinoSketch
 
   end
   
-  def formatted_print(opts={})
-
-    buffer_size = opts[:buffer_size] ? opts[:buffer_size] : 64
-    
-    if opts[:as]
-      @@sprintf_inc ||= FALSE
-      if @@sprintf_inc == FALSE
-        @@sprintf_inc = TRUE
-        accessor = []
-        accessor << "\n#undef int\n#include <stdio.h>"
-        accessor << "#define write_line(...) sprintf(#{opts[:as]},__VA_ARGS__);"
-        @accessors << accessor.join( "\n" )
-        array("char #{opts[:as]}[#{buffer_size}]") 
-      end
-    end
-  end
-  
   # Treat a pair of digital I/O pins as a serial line. See: http://www.arduino.cc/en/Tutorial/SoftwareSerial
   def software_serial(rx, tx, opts={})
     raise ArgumentError, "can only define rx from Fixnum, got #{rx.class}" unless rx.is_a?(Fixnum)
@@ -650,6 +652,34 @@ class ArduinoSketch
   				accessor << "void print( SWSerLCDpa& s, long i, int b ) {"
   				accessor << "\treturn s.print( i, b );"
   				accessor << "}"
+  				# ------------------- print line generics -------------------------------
+	  			accessor << "void println(SWSerLCDpa& s) {"
+  				accessor << "\treturn s.println();"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, uint8_t b ) {"
+  				accessor << "\treturn s.println( b );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, char* str ) {"
+  				accessor << "\treturn s.println( str );"
+ 	 			  accessor << "}"
+ 	 			  accessor << "void println( SWSerLCDpa& s, char c ) {"
+  				accessor << "\treturn s.println( c );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, const char c[] ) {"
+  				accessor << "\treturn s.println( c );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, int i ) {"
+  				accessor << "\treturn s.println( i );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, long i ) {"
+  				accessor << "\treturn s.println( i );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, unsigned long i ) {"
+  				accessor << "\treturn s.println( i );"
+  				accessor << "}"
+  				accessor << "void println( SWSerLCDpa& s, long i, int b ) {"
+  				accessor << "\treturn s.println( i, b );"
+ 	 			  accessor << "}"
           # ------------------ PA-LCD specific functions ---------------------------------
    				accessor << "void clearscr(SWSerLCDpa& s) {"
  	 			  accessor << "\treturn s.clearscr();"
@@ -660,9 +690,6 @@ class ArduinoSketch
   				accessor << "void clearscr(SWSerLCDpa& s, int n) {"
  	 			  accessor << "\treturn s.clearscr(n);"
   				accessor << "}"
-  				accessor << "void clearscr(SWSerLCDpa& s, long n, int b) {"
- 	 			  accessor << "\treturn s.clearscr(n, b);"
-  				accessor << "}"
    				accessor << "void clearline(SWSerLCDpa& s, int line) {"
  	 			  accessor << "\treturn s.clearline( line );"
   				accessor << "}"
@@ -671,9 +698,6 @@ class ArduinoSketch
   				accessor << "}"
    				accessor << "void clearline(SWSerLCDpa& s, int line, int n) {"
  	 			  accessor << "\treturn s.clearline( line, n );"
-  				accessor << "}"
-   				accessor << "void clearline(SWSerLCDpa& s, int line, long n,  int b) {"
- 	 			  accessor << "\treturn s.clearline( line, n, b );"
   				accessor << "}"
   				accessor << "void home( SWSerLCDpa& s) {"
   				accessor << "\treturn s.home();"
@@ -684,17 +708,11 @@ class ArduinoSketch
   				accessor << "void home( SWSerLCDpa& s, int n) {"
   				accessor << "\treturn s.home( n );"
     			accessor << "}"
-  				accessor << "void home( SWSerLCDpa& s, long n, int b) {"
-  				accessor << "\treturn s.home( n, b );"
-    			accessor << "}"
   				accessor << "void setxy( SWSerLCDpa& s, int x, int y) {"
   				accessor << "\treturn s.setxy( x, y );"
   				accessor << "}"
   				accessor << "void setxy( SWSerLCDpa& s, int x, int y, const char *str) {"
   				accessor << "\treturn s.setxy( x, y, str );"
-    			accessor << "}"
-  				accessor << "void setxy( SWSerLCDpa& s, int x, int y, long n, int b) {"
-  				accessor << "\treturn s.setxy( x, y, n, b );"
     			accessor << "}"
   				accessor << "void setxy( SWSerLCDpa& s, int x, int y, int n) {"
   				accessor << "\treturn s.setxy( x, y, n );"
@@ -1359,18 +1377,9 @@ class ArduinoSketch
   end
   
   def self.pre_process(sketch_string) #:nodoc:
-    result = sketch_string 
     # add external vars to each method (needed for better translation, will be removed in make:upload)
-    result.gsub!(/(^\s*def\s.\w*(\(.*\))?)/, '\1' + " \n #{$external_vars.join("  \n ")}"  )
-    # gather method names
-    sketch_methods = result.scan(/^\s*def\s.\w*/)
-    sketch_methods.each {|m| $sketch_methods << m.gsub(/\s*def\s*/, "") }
-    
-    result.gsub!("HIGH", "1")
-    result.gsub!("LOW", "0")
-    result.gsub!("ON", "1")
-    result.gsub!("OFF", "0")
-    result
+    sketch_string.gsub!(/(^\s*def\s.\w*(\(.*\))?)/, '\1' + " \n #{$external_vars.join("  \n ")}"  )
+    sketch_string
   end
   
   def self.add_to_setup(meth) 

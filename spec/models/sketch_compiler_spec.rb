@@ -1,6 +1,35 @@
 require File.dirname(__FILE__) + '/spec_helper.rb'
 require File.expand_path(File.dirname(__FILE__) + "/../../lib/rad/sketch_compiler.rb")
 
+context "SketchCompiler#sketch_methods" do
+  before do
+    @as = File.expand_path(File.dirname(__FILE__)) + "/../../lib/examples/i2c_with_clock_chip.rb"
+    @sc = SketchCompiler.new @as
+  end
+  
+  it "should locate all the methods defined in the sketch" do
+    @sc.sketch_methods.should include( "loop")
+    @sc.sketch_methods.should include( "printlz")
+    @sc.sketch_methods.should include( "print_hexbyte")
+    @sc.sketch_methods.should include( "clear_bottom_line")
+  end
+end
+
+context "SketchCompiler#process_constants" do
+  before do
+    @as = File.expand_path(File.dirname(__FILE__)) + "/../../lib/examples/external_variable_fu.rb"
+    @sc = SketchCompiler.new @as
+  end
+  
+  it "should correctly process constants" do
+    @sc.process_constants
+    @sc.body.should_not match(/HIGH/)
+    @sc.body.should_not match(/LOW/)
+    @sc.body.should_not match(/ON/)
+    @sc.body.should_not match(/OFF/)
+  end
+end
+
 context "SketchCompiler.new" do
   before do
     @as = File.expand_path(File.dirname(__FILE__)) + "/../../lib/examples/add_hysteresis.rb"

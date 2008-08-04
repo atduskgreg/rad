@@ -190,7 +190,7 @@ class ArduinoSketch
  
     helper_methods = []
     @helper_methods = helper_methods.join( "\n" )
-    
+
   end
   
   # Setup variables outside of the loop. Does some magic based on type of arguments. Subject to renaming. Use with caution.
@@ -564,7 +564,7 @@ class ArduinoSketch
       end
     end
   end
-  
+
   
   # Treat a pair of digital I/O pins as a serial line. See: http://www.arduino.cc/en/Tutorial/SoftwareSerial
   def software_serial(rx, tx, opts={})
@@ -1337,9 +1337,6 @@ class ArduinoSketch
   return [declarations, plugin_directives, signatures, external_vars, setup, additional_setup, helpers, main]
 
   end
-  
-  
- 
   
   
   # Write inline assembler code. 'Name' is a symbol representing the name of the function to be defined in the assembly code; 'signature' is the function signature for the function being defined; and 'code' is the assembly code itself (both of these last two arguments are strings). See an example here: http://rad.rubyforge.org/examples/assembler_test.html

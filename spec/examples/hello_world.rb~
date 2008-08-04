@@ -1,8 +1,0 @@
-# Hardware: LED connected on pin 7
-
-class HelloWorld < ArduinoSketch
-  output_pin 7, :as => :led
-  def loop
-    blink led, 500
-  end
-end

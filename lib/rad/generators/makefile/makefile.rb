@@ -5,9 +5,9 @@ class Makefile
   class << self
     
     # build the sketch Makefile for the given template based on the values in its software and hardware config files
-    def compose_for_sketch(sketch_name)
+    def compose_for_sketch(build_dir)
       params = hardware_params.merge software_params
-      params['target'] = sketch_name.split("/").last
+      params['target'] = build_dir.split("/").last
            
       params['libraries_root'] = "#{File.expand_path(RAD_ROOT)}/vendor/libraries"
       params['libraries'] = $load_libraries # load only libraries used 
@@ -19,7 +19,7 @@ class Makefile
             
       e = ERB.new File.read("#{File.dirname(__FILE__)}/makefile.erb")
       
-      File.open("#{RAD_ROOT}/#{sketch_name}/Makefile", "w") do |f|
+      File.open("#{build_dir}/Makefile", "w") do |f|
         f << e.result(binding)
       end
     end

@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.summary = "Fork of the Ruby Arduino Development - 0.2.4.8.9"
   s.email = "jd@jdbarnhart.com"
   s.executables = ["rad"]
-  s.homepage = "http://github.com/madrona/rad"
+  s.homepage = "http://github.com/madrona/rad"  
   s.description = "Ruby Arduino Development: a framework for programming the Arduino physcial computing platform using Ruby"
   s.has_rdoc = true
   s.authors = ["Greg Borenstein", "plugins+: JD Barnhart"]

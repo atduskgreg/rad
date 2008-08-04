@@ -44,34 +44,36 @@ namespace :make do
       puts "Reset the Arduino and hit enter.\n==If your board doesn't need it, you can turn off this prompt in config/software.yml=="
       STDIN.gets.chomp
     end
-    sh %{cd #{RAD_ROOT}/#{@test_dir + @sketch_name}; make upload}
+    sh %{cd #{@compiler.build_dir}; make upload}
   end
     
   desc "generate a makefile and use it to compile the .cpp"
   task :compile => [:clean_sketch_dir, "build:sketch"] do # should also depend on "build:sketch"
-    Makefile.compose_for_sketch( @test_dir + @sketch_name )
+    puts; puts
+    puts @compiler.name
+    puts
+    Makefile.compose_for_sketch( @compiler.build_dir )
     # not allowed? sh %{export PATH=#{Makefile.software_params[:arduino_root]}/tools/avr/bin:$PATH}
-    sh %{cd #{RAD_ROOT}/#{@test_dir + @sketch_name}; make depend; make}
+    sh %{cd #{@compiler.build_dir}; make depend; make}
   end
   
   desc "generate a makefile and use it to compile the .cpp using the current .cpp file"
   task :compile_cpp => ["build:sketch_dir", "build:gather_required_plugins", "build:plugin_setup", "build:setup", :clean_sketch_dir] do # should also depend on "build:sketch"
-    Makefile.compose_for_sketch( @test_dir + @sketch_name )
+    Makefile.compose_for_sketch( @compiler.build_dir )
     # not allowed? sh %{export PATH=#{Makefile.software_params[:arduino_root]}/tools/avr/bin:$PATH}
-    sh %{cd #{RAD_ROOT}/#{@test_dir + @sketch_name}; make depend; make}
+    sh %{cd #{@compiler.build_dir}; make depend; make}
   end
   
   desc "generate a makefile and use it to compile the .cpp and upload it using current .cpp file"
   task :upload_cpp => ["build:sketch_dir", "build:gather_required_plugins", "build:plugin_setup", "build:setup", :clean_sketch_dir] do # should also depend on "build:sketch"
-    Makefile.compose_for_sketch( @test_dir + @sketch_name )
+    Makefile.compose_for_sketch( @compiler.build_dir )
     # not allowed? sh %{export PATH=#{Makefile.software_params[:arduino_root]}/tools/avr/bin:$PATH}
-    sh %{cd #{RAD_ROOT}/#{@test_dir + @sketch_name}; make depend; make upload}
+    sh %{cd #{@compiler.build_dir}; make depend; make upload}
   end
   
   task :clean_sketch_dir => ["build:file_list", "build:sketch_dir"] do
-    @sketch_name = @sketch_class.split(".").first
-    FileList.new(Dir.entries("#{RAD_ROOT}/#{@test_dir + @sketch_name}")).exclude("#{@sketch_name}.cpp").exclude(/^\./).each do |f|
-      sh %{rm #{RAD_ROOT}/#{@test_dir + @sketch_name}/#{f}}
+    FileList.new(Dir.entries("#{@compiler.build_dir}")).exclude("#{@compiler.name}.cpp").exclude(/^\./).each do |f|
+      sh %{rm #{@compiler.build_dir}/#{f}}
     end
   end
   
@@ -81,12 +83,11 @@ namespace :build do
 
   desc "actually build the sketch"
   task :sketch => [:file_list, :sketch_dir, :gather_required_plugins, :plugin_setup, :setup] do
-    klass = @sketch_class.split(".").first.split("_").collect{|c| c.capitalize}.join("")    
     c_methods = []
     sketch_signatures = []
     # until we better understand RubyToC let's see what's happening on errors
     $sketch_methods.each do |meth| 
-      raw_rtc_meth = RADProcessor.translate(constantize(klass), meth) 
+      raw_rtc_meth = RADProcessor.translate(constantize(@compiler.klass), meth) 
       puts "Translator Error: #{raw_rtc_meth.inspect}" if raw_rtc_meth[0..8] == "// ERROR:"
       c_methods << raw_rtc_meth unless meth == "setup"
       # treat the setup method differently
@@ -97,25 +98,24 @@ namespace :build do
     clean_c_methods = []
     # remove external variables that were previously injected
     c_methods.join("\n").each { |meth| clean_c_methods << ArduinoSketch.post_process_ruby_to_c_methods(meth) }
+#    c_methods_with_timer = clean_c_methods.join.gsub(/loop\(\)\s\{/,"loop() {\ntrack_total_loop_time();")
     c_methods_with_timer = clean_c_methods.join.gsub(/loop\(\)\s\{/,"loop() {")
     # last chance to add/change setup
     @setup[2] << sketch_signatures.join("\n") unless sketch_signatures.empty?
     # add special setup method to existing setup if present
     if @additional_setup
       @setup[2] << "void additional_setup();" # declaration
-      @setup[4] << "\tadditional_setup();" # call from setup
+      @setup[4] << "additional_setup();" # call from setup
       @setup[5] << @additional_setup.join("") # 
     end
     result = "#{@setup.join( "\n" )}\n#{c_methods_with_timer}\n"
-    name = @sketch_class.split(".").first
-    File.open("#{@test_dir}#{name}/#{name}.cpp", "w"){|f| f << result}
+    File.open("#{@compiler.build_dir}/#{@compiler.name}.cpp", "w"){|f| f << result}
   end
 
   # needs to write the library include and the method signatures
   desc "build setup function"
   task :setup do
-    klass = @sketch_class.split(".").first.split("_").collect{|c| c.capitalize}.join("")
-    eval "class #{klass} < ArduinoSketch; end;"
+    eval "class #{@compiler.klass} < ArduinoSketch; end;"
     
     @@as = ArduinoSketch.new
     
@@ -123,7 +123,7 @@ namespace :build do
     delegate_methods.reject!{|m| m == "compose_setup"}
         
     delegate_methods.each do |meth|
-       constantize(klass).module_eval <<-CODE
+       constantize(@compiler.klass).module_eval <<-CODE
        def self.#{meth}(*args)
        @@as.#{meth}(*args)
        end
@@ -131,14 +131,14 @@ namespace :build do
     end
     # allow variable declaration without quotes: @foo = int 
     ["long","unsigned","int","byte","short"].each do |type|
-      constantize(klass).module_eval <<-CODE
+      constantize(@compiler.klass).module_eval <<-CODE
        def self.#{type}
         return "#{type}"
        end
        CODE
     end   
-    eval ArduinoSketch.pre_process(File.read(@test_dir + @sketch_class))
-    @@as.process_external_vars(constantize(klass))
+    eval ArduinoSketch.pre_process(@compiler.body)
+    @@as.process_external_vars(constantize(@compiler.klass))
     @setup = @@as.compose_setup
   end
   
@@ -169,36 +169,30 @@ namespace :build do
   desc "determine which plugins to load based on use of methods in sketch"
   task :gather_required_plugins do
     @plugin_names.each do |name|
-       ArduinoPlugin.check_for_plugin_use(File.read(@test_dir + @sketch_class), File.read("vendor/plugins/#{name}"), name )
+       ArduinoPlugin.check_for_plugin_use(@compiler.body, File.read("vendor/plugins/#{name}"), name )
     end
     puts "#{$plugins_to_load.length} of #{$plugin_methods_hash.length} plugins are being loaded:  #{$plugins_to_load.join(", ")}"
   end
   
   desc "setup target directory named after your sketch class"
   task :sketch_dir => [:file_list] do
-    mkdir_p "#{@test_dir + @sketch_class.split(".").first}"
+    @compiler.create_build_dir!
+    # mkdir_p "#{@test_dir + @sketch_class.split(".").first}"
   end
 
   task :file_list do
     # take another look at this, since if the root directory name is changed, everything breaks
     # perhaps we generate a constant when the project is generated an pop it here or in the init file
-    @sketch_directory = File.expand_path("#{File.dirname(__FILE__)}/../../../").split("/").last
-    # multiple sketches are possible with rake make:upload sketch=new_sketch
-    @test_dir = ""
-    if ENV['sketch'] =~ /^examples\//
-      # strip the example and set a directory variable
-      ENV['sketch'] = ENV['sketch'].gsub(/^examples\//, "")
-      @test_dir = "examples/"
+    # assume the only .rb file in the sketch dir is the sketch:
+    if ENV['sketch']
+
+      @compiler = SketchCompiler.new File.expand_path("#{ENV['sketch']}.rb")
+
+    else
+      @compiler = SketchCompiler.new Dir.glob("#{File.expand_path(File.dirname(__FILE__))}/../../../*.rb").first
     end
-    @sketch_class = ENV['sketch'] ? "#{ENV['sketch']}.rb" : "#{@sketch_directory}.rb"
-    $sketch_file_location = @test_dir + @sketch_class
-    @file_names = []
+
     @plugin_names = []
-    Dir.entries( File.expand_path(RAD_ROOT) ).each do |f|
-      if (f =~ /\.rb$/)
-        @file_names << f
-      end
-    end
     Dir.entries( File.expand_path("#{RAD_ROOT}/vendor/plugins/") ).each do |f|
       if (f =~ /\.rb$/)
         @plugin_names << f

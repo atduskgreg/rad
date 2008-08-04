@@ -187,7 +187,7 @@ class ArduinoSketch
     @assembler_declarations = []
     @accessors = []
     @signatures = ["int main();"]
-
+ 
     helper_methods = []
     @helper_methods = helper_methods.join( "\n" )
     

@@ -104,7 +104,7 @@ namespace :build do
     # add special setup method to existing setup if present
     if @additional_setup
       @setup[2] << "void additional_setup();" # declaration
-      @setup[4] << "\tadditional_setup();" # call from setup
+      @setup[4] << "\tadditional_setup();" # call from setup 
       @setup[5] << @additional_setup.join("") # 
     end
     result = "#{@setup.join( "\n" )}\n#{c_methods_with_timer}\n"

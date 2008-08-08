@@ -5,7 +5,7 @@ extern "C" {
 
 DS1307::DS1307()
 {
-  // Wire.begin();
+  // Wire.begin();  // no no no no ..... do it explictly outside of library - multiple invocations is TROUBLE!!!!!  BBR
 }
 
 // DS1307 RTC=DS1307();
@@ -16,7 +16,7 @@ DS1307::DS1307()
 // refresh the buffer
 void DS1307::read(void)
 {
-  // use the Wire lib to connect to tho rtc
+  // use the Wire lib to connect to the rtc
   // reset the register pointer to zero
   Wire.beginTransmission(DS1307_CTRL_ID);
     Wire.send(0x00);

@@ -162,6 +162,12 @@ void SWSerLCDsf::clearscr(int n)
 	print(n);
 }
 
+void SWSerLCDsf::clearscr(long n, int b)
+{
+	clearscr();
+	print(n,b);
+}
+
 void SWSerLCDsf::home(void)
 {
 	setxy(0, 0);
@@ -177,6 +183,12 @@ void SWSerLCDsf::home(int n)
 {
 	home();
 	print(n);
+}
+
+void SWSerLCDsf::home(long n, int b)
+{
+	home();
+	print(n,b);
 }
 
 
@@ -213,6 +225,12 @@ void SWSerLCDsf::setxy(byte x, byte y, int n)
 {
 	setxy(x,y);
 	print(n);
+}
+
+void SWSerLCDsf::setxy(byte x, byte y, long n, int b)
+{
+	setxy(x,y);
+	print(n,b);
 }
 
 

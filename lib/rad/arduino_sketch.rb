@@ -627,9 +627,6 @@ class ArduinoSketch
  	 			  accessor << "void print( SWSerLCDpa& s, uint8_t b ) {"
 	  			accessor << "\treturn s.print( b );"
  	 			  accessor << "}"
-  				accessor << "void print( SWSerLCDpa& s, char* str ) {"
-  				accessor << "\treturn s.print( str );"
-  				accessor << "}"
  	 			  accessor << "void print( SWSerLCDpa& s, const char *str ) {"
   				accessor << "\treturn s.print( str );"
   				accessor << "}"
@@ -713,11 +710,14 @@ class ArduinoSketch
   				accessor << "\treturn s.outofBignum();"
   				accessor << "}"
  			end
+ 			
  			@accessors << accessor.join( "\n" )
  			
  			@signatures << "SWSerLCDpa& #{opts[ :as ]}();"
  
  			@other_setup << "\t_#{opts[ :as ]}.begin(#{rate});"
+ 			@other_setup << "\t_#{opts[ :as ]}.clearscr();"     if :clear_screen == :true
+ 			
  		end
  	end 	
 
@@ -762,9 +762,7 @@ class ArduinoSketch
   				accessor << "void print( SWSerLCDsf& s, long i, int b ) {"
   				accessor << "\treturn s.print( i, b );"
   				accessor << "}"
-  				accessor << "void print( SWSerLCDsf& s, char* str ) {"
-  				accessor << "\treturn s.print( str );"
-  				accessor << "}"
+          # ------------------ Spark Fun Specific  Functions ---------------------------------
    				accessor << "void clearscr(SWSerLCDsf& s) {"
  	 			  accessor << "\treturn s.clearscr();"
   				accessor << "}"
@@ -773,6 +771,9 @@ class ArduinoSketch
   				accessor << "}"
   				accessor << "void clearscr(SWSerLCDsf& s, int n) {"
  	 			  accessor << "\treturn s.clearscr(n);"
+  				accessor << "}"
+  				accessor << "void clearscr(SWSerLCDsf& s, long n, int b) {"
+ 	 			  accessor << "\treturn s.clearscr(n, b);"
   				accessor << "}"
   				accessor << "void home( SWSerLCDsf& s) {"
   				accessor << "\treturn s.home();"
@@ -783,6 +784,9 @@ class ArduinoSketch
   				accessor << "void home( SWSerLCDsf& s, int n) {"
   				accessor << "\treturn s.home( n );"
     			accessor << "}"
+  				accessor << "void home( SWSerLCDsf& s, long n, int b) {"
+  				accessor << "\treturn s.home( n, b );"
+    			accessor << "}"
   				accessor << "void setxy( SWSerLCDsf& s, int x, int y) {"
   				accessor << "\treturn s.setxy( x, y );"
   				accessor << "}"
@@ -792,6 +796,9 @@ class ArduinoSketch
   				accessor << "void setxy( SWSerLCDsf& s, int x, int y, int n) {"
   				accessor << "\treturn s.setxy( x, y, n );"
   				accessor << "}"
+  				accessor << "void setxy( SWSerLCDsf& s, int x, int y, long n, int b) {"
+  				accessor << "\treturn s.setxy( x, y, n, b );"
+    			accessor << "}"
   				accessor << "void setgeo( SWSerLCDsf& s, int g) {"
   				accessor << "\treturn s.setgeo( g );"
   				accessor << "}"
@@ -807,6 +814,8 @@ class ArduinoSketch
  			@signatures << "SWSerLCDsf& #{opts[ :as ]}();"
  
  			@other_setup << "\t_#{opts[ :as ]}.begin(#{rate});"
+ 			@other_setup << "\t_#{opts[ :as ]}.clearscr();"     if :clear_screen == :true
+
  		end
  	end 	
 
@@ -934,6 +943,18 @@ class ArduinoSketch
       @@servo_inc ||= FALSE
  			if (@@servo_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
  				@@servo_inc = TRUE
+ 				accessor << "uint8_t attach( Servo& s, int p ) {"
+ 				accessor << "\treturn s.attach(p);"
+ 				accessor << "}"
+ 				accessor << "uint8_t attach( Servo& s, int p, int pos ) {"
+ 				accessor << "\treturn s.attach(p, pos );"
+ 				accessor << "}"
+ 				accessor << "uint8_t attach( Servo& s, int p, uint16_t mn, uint16_t mx ) {"
+ 				accessor << "\treturn s.attach(p, mn, mx);"
+ 				accessor << "}"
+ 				accessor << "uint8_t attach( Servo& s, int p, int pos, uint16_t mn, uint16_t mx ) {"
+ 				accessor << "\treturn s.attach(p, pos, mn, mx);"
+ 				accessor << "}"
  				accessor << "void detach( Servo& s ) {"
  				accessor << "\treturn s.detach();"
  				accessor << "}"

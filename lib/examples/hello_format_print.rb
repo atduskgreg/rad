@@ -31,9 +31,11 @@ class HelloFormatPrint < ArduinoSketch
   input_pin 9,  :as => :button_two, :device => :button
   input_pin 10, :as => :button_three, :device => :button
   
+  formatted_print :as => :string_line, :buffer_size => 65   # generally this statement should precede any serial_begin or
+                                                            # LCD display directive
+
   output_pin 14, :as => :my_lcd, :device => :pa_lcd, :rate => 19200, :clear_screen => :true
 
-  formatted_print :as => :string_line, :buffer_size => 65
   
   def setup
     my_lcd.clearscr " --<Press Button>--?nOne, Two, or Three"
@@ -51,20 +53,23 @@ class HelloFormatPrint < ArduinoSketch
   
   def say_hello
     @toggle = true
-    write_line "This sketch has?nbeen running for?n %ld mins and %d secs", millis/60000, (millis/1000)%60
-    my_lcd.clearscr string_line
+    my_lcd.clearscr "This sketch has?nbeen running for?n "
+    write_line "%ld mins and %d secs?n", millis/60000, (millis/1000)%60
+    my_lcd.print string_line
     delay 3000
     my_lcd.clearscr " --<Press Button>--?nOne, Two, or Three"
   end
   
   def say_more # passing print strings to home and setxy (also works on clearscr)
     @toggle = false
-    my_lcd.clearscr "is indistinguishablefrom magic"
+    my_lcd.clearscr "Food Store Prices"
     write_line "Pies $%2d.%02d", @pie_cents/100, @pie_cents%100
-#    write_line "Pies $%6.2f", @pie_price
-    my_lcd.setxy 4, 2, string_line
-    my_lcd.setxy 0, 3, "toggle state: "
-    my_lcd.print @toggle
+#    write_line "Pies $%6.2f", @pie_price # float doessn't seem to work .....
+    my_lcd.setxy 2, 1, string_line
+#    write_line "toggle state is [%s]", @toggle ? "ON" : "OFF"  # RubyToC screws this construct up and RAD mistajekl put 1 ad 0
+                                                                # in place of "ON" and "OFF"
+    write_line "toggle state is [%d]", @toggle
+    my_lcd.setxy 2, 3, string_line
     delay 3000
     my_lcd.clearscr " --<Press Button>--?nOne, Two, or Three"
   end

@@ -18,15 +18,15 @@ Occasional commentary here: http://senplicity.wordpress.com/
 
 ==Getting Started
 
-To install the madrona fork gem:
-
- $ Update to RubyGems 1.2.0 before proceeding!! 
- $ gem sources -a http://gems.github.com (you only have to do this once)
- $ sudo gem install madrona-rad
-
-To install the original rad:
+To install the current 'stable' RAD:
 
  $ sudo gem install rad
+
+To install the edge gem:
+
+ # Update to RubyGems 1.2.0 before proceeding!
+ $ gem sources -a http://gems.github.com (you only have to do this once)
+ $ sudo gem install atduskgreg-rad
 
 Run the rad command to create a new project:
 

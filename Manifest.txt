@@ -51,7 +51,6 @@ lib/libraries/SWSerLCDsf/SWSerLCDsf.cpp
 lib/libraries/SWSerLCDsf/SWSerLCDsf.h
 lib/libraries/Servo/Servo.cpp
 lib/libraries/Servo/Servo.h
-lib/libraries/Servo/keywords.txt
 lib/libraries/Stepper/Stepper.cpp
 lib/libraries/Stepper/Stepper.h
 lib/libraries/Stepper/keywords.txt
@@ -91,7 +90,6 @@ lib/rad/variable_processing.rb
 lib/rad/version.rb
 scripts/txt2html
 setup.rb
-spec/models/spec_helper.rb
 spec/models/arduino_sketch_spec.rb
 spec/spec.opts
 test/test_array_processing.rb

@@ -1403,7 +1403,8 @@ class ArduinoSketch
       if e !~ /^\s*(#{C_VAR_TYPES})(\W{1,6}|\(unsigned\()(#{$external_var_identifiers.join("|")})/ || $external_var_identifiers.empty?
         # use the list of identifers the external_vars method of the sketch and remove the parens the ruby2c sometime adds to variables
         # keep an eye on the gsub!.. are we getting nil errors
-        e.gsub!(/((#{$external_var_identifiers.join("|")})\(\))/, '\2')  unless $external_var_identifiers.empty? 
+        # and more recently, the \b
+        e.gsub!(/\b((#{$external_var_identifiers.join("|")})\(\))/, '\2')  unless $external_var_identifiers.empty?
         clean_c_methods << e
       end
       return clean_c_methods.join( "\n" )

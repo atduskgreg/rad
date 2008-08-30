@@ -87,8 +87,8 @@ namespace :build do
     sketch_signatures = []
     # until we better understand RubyToC let's see what's happening on errors
     @compiler.sketch_methods.each do |meth|   
-      raw_rtc_meth = RADProcessor.translate(constantize(@compiler.klass), meth) 
-      puts "Translator Error: #{raw_rtc_meth.inspect}" if raw_rtc_meth[0..8] == "// ERROR:"
+      raw_rtc_meth = RADProcessor.translate(constantize(@compiler.klass), meth)
+      puts "Translator Error: #{raw_rtc_meth.inspect}" if raw_rtc_meth =~ /\/\/ ERROR:/ 
       c_methods << raw_rtc_meth unless meth == "setup"
       # treat the setup method differently
       @additional_setup = [] if meth == "setup"

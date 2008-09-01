@@ -113,6 +113,15 @@ class RADProcessor < RubyToAnsiC
 
     return out
   end
+  
+  def process_str(exp)
+    s = exp.shift.gsub(/\n/, '\\n')
+    if s.size == 1
+      return "\'#{s}\'"
+    else
+      return "\"#{s}\""
+    end
+  end
 
 
 end

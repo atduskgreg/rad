@@ -1102,52 +1102,6 @@ class ArduinoSketch
  		end
  		
  	end
- 		
-
-	def ds1307(pin, opts={}) # DS1307 real time clock routines routines
-
-      @@ds1307_inc ||= FALSE
-		  raise ArgumentError, "only one DS1307  may be used for i2c" unless @@ds1307_inc == FALSE
-			@@ds1307_inc = TRUE
-
-    	raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
-      raise ArgumentError, "only pin 19 may be used for i2c, got #{pin}" unless pin == 19
-
-   		if opts[:as]
-    			@declarations << "DS1307 _#{opts[ :as ]} = DS1307();"
-    			accessor = []
-    			$load_libraries << "DS1307"
-    			accessor << "DS1307& #{opts[ :as ]}() {"
-    			accessor << "\treturn _#{opts[ :as ]};"
-    			accessor << "}"
-    			accessor << "void get( DS1307& s, byte *buf, boolean r ) {"
-    			accessor << "\treturn s.get( buf, r );"
-    			accessor << "}"
-    			accessor << "byte get( DS1307& s, int b, boolean r ) {"
-    			accessor << "\treturn s.get( b, r );"
-    			accessor << "}"
-    			accessor << "void set( DS1307& s, int b, int r ) {"
-    			accessor << "\treturn s.set( b, r );"
-    			accessor << "}"
-    			accessor << "void start( DS1307& s ) {"
-    			accessor << "\treturn s.start();"
-    			accessor << "}"
-    			accessor << "void stop( DS1307& s ) {"
-    			accessor << "\treturn s.stop();"
-    			accessor << "}"
-
-    			@accessors << accessor.join( "\n" )
-
-    			@signatures << "DS1307& #{opts[ :as ]}();"
-    			@other_setup << "\t_#{opts[ :as ]}.start();" if opts[:rtcstart]
- 		    end
- 	end 
-
-	def blinkm
-
-	end
-
-
 
 
   def compose_setup #:nodoc: also composes headers and signatures
@@ -1332,7 +1286,6 @@ class ArduinoSketch
   end
   
 
-  
   def comment_box( content ) #:nodoc:
     out = []
     out << "/" * 74

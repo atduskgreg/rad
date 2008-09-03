@@ -91,6 +91,7 @@ lib/rad/arduino_plugin.rb
 lib/rad/arduino_sketch.rb
 lib/rad/generators/makefile/makefile.erb
 lib/rad/generators/makefile/makefile.rb
+lib/rad/hardware_library.rb
 lib/rad/init.rb
 lib/rad/rad_processor.rb
 lib/rad/rad_rewriter.rb

@@ -46,34 +46,34 @@ namespace :make do
       puts "Reset the Arduino and hit enter.\n==If your board doesn't need it, you can turn off this prompt in config/software.yml=="
       STDIN.gets.chomp
     end
-    sh %{cd #{@compiler.build_dir}; make upload}
+    sh %{cd #{@sketch.build_dir}; make upload}
   end
     
   desc "generate a makefile and use it to compile the .cpp"
   task :compile => [:clean_sketch_dir, "build:sketch"] do # should also depend on "build:sketch"
-    Makefile.compose_for_sketch( @compiler.build_dir )
+    Makefile.compose_for_sketch( @sketch.build_dir )
 
     # not allowed? sh %{export PATH=#{Makefile.software_params[:arduino_root]}/tools/avr/bin:$PATH}
-    sh %{cd #{@compiler.build_dir}; make depend; make}
+    sh %{cd #{@sketch.build_dir}; make depend; make}
   end
   
   desc "generate a makefile and use it to compile the .cpp using the current .cpp file"
   task :compile_cpp => ["build:sketch_dir", "build:gather_required_plugins", "build:plugin_setup", "build:setup", :clean_sketch_dir] do # should also depend on "build:sketch"
-    Makefile.compose_for_sketch( @compiler.build_dir )
+    Makefile.compose_for_sketch( @sketch.build_dir )
     # not allowed? sh %{export PATH=#{Makefile.software_params[:arduino_root]}/tools/avr/bin:$PATH}
-    sh %{cd #{@compiler.build_dir}; make depend; make}
+    sh %{cd #{@sketch.build_dir}; make depend; make}
   end
   
   desc "generate a makefile and use it to compile the .cpp and upload it using current .cpp file"
   task :upload_cpp => ["build:sketch_dir", "build:gather_required_plugins", "build:plugin_setup", "build:setup", :clean_sketch_dir] do # should also depend on "build:sketch"
-    Makefile.compose_for_sketch( @compiler.build_dir )
+    Makefile.compose_for_sketch( @sketch.build_dir )
     # not allowed? sh %{export PATH=#{Makefile.software_params[:arduino_root]}/tools/avr/bin:$PATH}
-    sh %{cd #{@compiler.build_dir}; make depend; make upload}
+    sh %{cd #{@sketch.build_dir}; make depend; make upload}
   end
   
   task :clean_sketch_dir => ["build:file_list", "build:sketch_dir"] do
-    FileList.new(Dir.entries("#{@compiler.build_dir}")).exclude("#{@compiler.name}.cpp").exclude(/^\./).each do |f|
-      sh %{rm #{@compiler.build_dir}/#{f}}
+    FileList.new(Dir.entries("#{@sketch.build_dir}")).exclude("#{@sketch.name}.cpp").exclude(/^\./).each do |f|
+      sh %{rm #{@sketch.build_dir}/#{f}}
     end
   end
   
@@ -86,8 +86,8 @@ namespace :build do
     c_methods = []
     sketch_signatures = []
     # until we better understand RubyToC let's see what's happening on errors
-    @compiler.sketch_methods.each do |meth|   
-      raw_rtc_meth = RADProcessor.translate(constantize(@compiler.klass), meth)
+    @sketch.sketch_methods.each do |meth|   
+      raw_rtc_meth = RADProcessor.translate(constantize(@sketch.klass), meth)
       puts "Translator Error: #{raw_rtc_meth.inspect}" if raw_rtc_meth =~ /\/\/ ERROR:/ 
       c_methods << raw_rtc_meth unless meth == "setup"
       # treat the setup method differently
@@ -108,21 +108,21 @@ namespace :build do
       @setup[5] << @additional_setup.join("") # 
     end
     result = "#{@setup.join( "\n" )}\n#{c_methods_with_timer}\n"
-    File.open("#{@compiler.build_dir}/#{@compiler.name}.cpp", "w"){|f| f << result}
+    File.open("#{@sketch.build_dir}/#{@sketch.name}.cpp", "w"){|f| f << result}
   end
 
   # needs to write the library include and the method signatures
   desc "build setup function"
   task :setup do
-    eval "class #{@compiler.klass} < ArduinoSketch; end;"
+    eval "class #{@sketch.klass} < ArduinoSketch; end;"
     
-    @@as = ArduinoHardwareConfig.new
+    @@as = HardwareLibrary.new
     
     delegate_methods = @@as.methods - Object.new.methods
     delegate_methods.reject!{|m| m == "compose_setup"}
         
     delegate_methods.each do |meth|
-       constantize(@compiler.klass).module_eval <<-CODE
+       constantize(@sketch.klass).module_eval <<-CODE
        def self.#{meth}(*args)
        @@as.#{meth}(*args)
        end
@@ -130,17 +130,17 @@ namespace :build do
     end
     # allow variable declaration without quotes: @foo = int 
     ["long","unsigned","int","byte","short"].each do |type|
-      constantize(@compiler.klass).module_eval <<-CODE
+      constantize(@sketch.klass).module_eval <<-CODE
        def self.#{type}
         return "#{type}"
        end
        CODE
     end   
     
-    @compiler.process_constants
+    @sketch.process_constants
     
-    eval ArduinoSketch.pre_process(@compiler.body)
-    @@as.process_external_vars(constantize(@compiler.klass))
+    eval ArduinoSketch.pre_process(@sketch.body)
+    @@as.process_external_vars(constantize(@sketch.klass))
     @setup = @@as.compose_setup
   end
   
@@ -171,24 +171,24 @@ namespace :build do
   desc "determine which plugins to load based on use of methods in sketch"
   task :gather_required_plugins do
     @plugin_names.each do |name|
-       ArduinoPlugin.check_for_plugin_use(@compiler.body, File.read("vendor/plugins/#{name}"), name )
+       ArduinoPlugin.check_for_plugin_use(@sketch.body, File.read("vendor/plugins/#{name}"), name )
     end
     puts "#{$plugins_to_load.length} of #{$plugin_methods_hash.length} plugins are being loaded:  #{$plugins_to_load.join(", ")}"
   end
   
   desc "setup target directory named after your sketch class"
   task :sketch_dir => [:file_list] do
-    @compiler.create_build_dir!
+    @sketch.create_build_dir!
   end
 
   task :file_list do
     # take another look at this, since if the root directory name is changed, everything breaks
     # perhaps we generate a constant when the project is generated an pop it here or in the init file
     if ENV['sketch']
-      @compiler = SketchCompiler.new File.expand_path("#{ENV['sketch']}.rb")
+      @sketch = SketchCompiler.new File.expand_path("#{ENV['sketch']}.rb")
     else
       # assume the only .rb file in the sketch dir is the sketch:
-      @compiler = SketchCompiler.new Dir.glob("#{File.expand_path(File.dirname(__FILE__))}/../../../*.rb").first
+      @sketch = SketchCompiler.new Dir.glob("#{File.expand_path(File.dirname(__FILE__))}/../../../*.rb").first
     end
 
     @plugin_names = []

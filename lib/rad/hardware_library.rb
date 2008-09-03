@@ -1,6 +1,4 @@
-
-
-class ArduinoHardwareConfig < ArduinoSketch
+class HardwareLibrary < ArduinoSketch
   
   def initialize
     super
@@ -101,4 +99,4 @@ class ArduinoHardwareConfig < ArduinoSketch
     return out
   end
   
-end 
+end

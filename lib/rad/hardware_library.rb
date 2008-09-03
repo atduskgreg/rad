@@ -4,6 +4,120 @@ class HardwareLibrary < ArduinoSketch
     super
   end
   
+  def one_wire(pin, opts={})
+    raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
+
+    if opts[:as]
+      @declarations << "OneWire _#{opts[ :as ]} = OneWire(#{pin});"
+      accessor = []
+      $load_libraries << "OneWire"
+      accessor = <<-STR 
+        OneWire& #{opts[ :as ]}() {
+        return _#{opts[ :as ]};
+        }
+    STR
+      @@onewire_inc ||= FALSE
+      if (@@onewire_inc == FALSE)     # on second instance this stuff can't be repeated - BBR
+        @@onewire_inc = TRUE
+        accessor += <<-STR
+          uint8_t reset(OneWire& s) {
+            return s.reset();
+          }
+          void skip(OneWire& s) {
+            return s.skip();
+          }
+          void write(OneWire& s, uint8_t v, uint8_t p = 0) {
+            return s.write( v, p );
+          }
+          uint8_t read(OneWire& s) {
+            return s.read();
+          }
+          void write_bit( OneWire& s, uint8_t b ) {
+            return s.write_bit( b );
+          }
+          uint8_t read_bit(OneWire& s) {
+            return s.read_bit();
+          }
+          void depower(OneWire& s) {
+            return s.depower();
+          }
+        STR
+      end
+      @accessors << accessor
+
+      @signatures << "OneWire& #{opts[ :as ]}();"
+    end
+  end
+
+  def two_wire (pin, opts={}) # i2c Two-Wire
+
+    raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
+    raise ArgumentError, "only pin 19 may be used for i2c, got #{pin}" unless pin == 19
+
+    if opts[:as]
+
+      @@twowire_inc = TRUE
+       @declarations << "TwoWire _wire = TwoWire();"
+      $load_libraries << "Wire"	
+      accessor = <<-STR
+        TwoWire& wire() {
+          return _wire;
+        }
+        void begin( TwoWire& s) {
+          return s.begin();
+        }
+        void begin( TwoWire& s, uint8_t a) {
+          return s.begin(a);
+        }
+        void begin( TwoWire& s, int a) {
+          return s.begin(a);
+        }
+        void beginTransmission( TwoWire& s, uint8_t a ) {
+          return s.beginTransmission( a );
+        }
+        void beginTransmission( TwoWire& s, int a ) {
+          return s.beginTransmission( a );
+        }
+        void endTransmission( TwoWire& s ) {
+          return s.endTransmission();
+        }
+        void requestFrom( TwoWire& s, uint8_t a, uint8_t q) {
+          return s.requestFrom( a, q );
+        }
+        void requestFrom( TwoWire& s, int a, int q) {
+          return s.requestFrom( a, q );
+        }
+        void send( TwoWire& s, uint8_t d) {
+          return s.send(d);
+        }
+        void send( TwoWire& s, int d) {
+          return s.send(d);
+        }
+        void send( TwoWire& s, char* d) {
+          return s.send(d);
+        }
+        void send( TwoWire& s, uint8_t* d, uint8_t q) {
+          return s.send( d, q );
+        }
+        uint8_t available( TwoWire& s) {
+          return s.available();
+        }
+        uint8_t receive( TwoWire& s) {
+          return s.receive();
+        }
+      STR
+
+      @accessors << accessor
+
+      @signatures << "TwoWire& wire();"
+
+      @other_setup << "\t_wire.begin();"    # We never get here a second time. If we go to the trouble 
+                                            # of setting up i2c, we gotta start it and it never gets 
+                                            # stopped. This is not 'optional!'
+    end
+
+  end
+  
   def i2c_eeprom(pin, opts={}) # i2c serial eeprom routines #
 
     dev_addr = opts[:address] ? opts[:address] : 0
@@ -59,19 +173,19 @@ class HardwareLibrary < ArduinoSketch
         return _#{opts[ :as ]};
         }
         void get( DS1307& s, byte *buf, boolean r ) {
-        return s.get( buf, r );
+          return s.get( buf, r );
         }
         byte get( DS1307& s, int b, boolean r ) {
-        return s.get( b, r );
+          return s.get( b, r );
         }
         void set( DS1307& s, int b, int r ) {
-        return s.set( b, r );
+          return s.set( b, r );
         }
         void start( DS1307& s ) {
-        return s.start();
+          return s.start();
         }
         void stop( DS1307& s ) {
-        return s.stop();
+          return s.stop();
         }
         STR
 

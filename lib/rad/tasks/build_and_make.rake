@@ -116,7 +116,7 @@ namespace :build do
   task :setup do
     eval "class #{@compiler.klass} < ArduinoSketch; end;"
     
-    @@as = ArduinoSketch.new
+    @@as = ArduinoHardwareConfig.new
     
     delegate_methods = @@as.methods - Object.new.methods
     delegate_methods.reject!{|m| m == "compose_setup"}

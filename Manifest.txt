@@ -86,6 +86,7 @@ lib/plugins/smoother.rb
 lib/plugins/spark_fun_serial_lcd.rb
 lib/plugins/spectra_symbol.rb
 lib/rad.rb
+lib/rad/arduino_hardware_config.rb
 lib/rad/arduino_plugin.rb
 lib/rad/arduino_sketch.rb
 lib/rad/generators/makefile/makefile.erb

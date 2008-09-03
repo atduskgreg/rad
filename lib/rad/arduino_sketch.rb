@@ -1186,42 +1186,6 @@ class ArduinoSketch
  		    end
  	end 
 
-  def i2c_eeprom(pin, opts={}) # i2c serial eeprom routines #
-        
-      dev_addr = opts[:address] ? opts[:address] : 0
-
-   		if opts[:as]
- 			@declarations << "I2CEEPROM _#{opts[ :as ]} = I2CEEPROM(#{dev_addr});"
- 			accessor = []
- 			$load_libraries << "I2CEEPROM"
- 			accessor << "I2CEEPROM& #{opts[ :as ]}() {"
- 			accessor << "\treturn _#{opts[ :as ]};"
- 			accessor << "}"
-      @@i2cepr_inc ||= FALSE
- 			if (@@i2cepr_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
- 				@@i2cepr_inc = TRUE
- 				accessor << "void write_byte( I2CEEPROM& s, unsigned int addr, byte b ) {"
- 				accessor << "\treturn s.write_byte( addr, b );"
- 				accessor << "}"
- 				accessor << "void write_page( I2CEEPROM& s, unsigned int addr, byte* d, int l ) {"
-	 			accessor << "\treturn s.write_page( addr, d, l );"
- 				accessor << "}"
- 				accessor << "byte read_byte( I2CEEPROM& s, unsigned int addr ) {"
- 				accessor << "\treturn s.read_byte( addr );"
- 				accessor << "}"
- 				accessor << "void read_buffer( I2CEEPROM& s, unsigned int addr, byte *d, int l ) {"
- 				accessor << "\treturn s.read_buffer( addr, d, l );"
- 				accessor << "}"
- 			end
- 			
- 			@accessors << accessor.join( "\n" )
- 			
- 			@signatures << "I2CEEPROM& #{opts[ :as ]}();"
-
- 		end
- 	end 
-
-
 	def blinkm
 
 	end
@@ -1410,61 +1374,7 @@ class ArduinoSketch
       return clean_c_methods.join( "\n" )
   end
   
-  private
-  
-  def serial_boilerplate #:nodoc:
-    out = []
-    out << "int serial_available() {"
-    out << "\treturn (Serial.available() > 0);"
-    out << "}"
 
-    out << "char serial_read() {"
-    out << "\treturn (char) Serial.read();"
-    out << "}"
-
-    out << "void serial_flush() {"
-    out << "\treturn Serial.flush();"
-    out << "}"
-
-    out << "void serial_print( char str ) {"
-    out << "\treturn Serial.print( str );"
-    out << "}"
-    
-    out << "void serial_print( char* str ) {"
-    out << "\treturn Serial.print( str );"
-    out << "}"
-    
-    out << "void serial_print( int i ) {"
-    out << "\treturn Serial.print( i );"
-    out << "}"
-    
-    out << "void serial_print( long i ) {"
-    out << "\treturn Serial.print( i );"
-    out << "}"
-  
- 		out << "void serial_println( char* str ) {"
-    out << "\treturn Serial.println( str );"
-    out << "}"
-    
-    out << "void serial_println( char str ) {"
-    out << "\treturn Serial.println( str );"
-    out << "}"
- 
-  	out << "void serial_println( int i ) {"
-    out << "\treturn Serial.println( i );"
-    out << "}"
-    
-    out << "void serial_println( long i ) {"
-    out << "\treturn Serial.println( i );"
-    out << "}"
-    
-    ## added to support millis
-    out << "void serial_print( unsigned long i ) {"
-    out << "\treturn Serial.print( i );"
-    out << "}"
-
-    return out.join( "\n" )
-  end
   
   def comment_box( content ) #:nodoc:
     out = []

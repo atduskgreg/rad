@@ -12,21 +12,25 @@ See also the Arduino Software reference: http://www.arduino.cc/en/Reference/Home
 
 ==Examples
 
-See the examples directory for lots of examples of RAD in action: http://rad.rubyforge.org/examples
-Madrona Fork Screencast is here: http://www.vimeo.com/1272402
-Occasional commentary here: http://senplicity.wordpress.com/
+See the examples directory for lots of examples of RAD in action: 
+http://github.com/atduskgreg/rad/tree/master/lib/examples
+
+The atduskgreg/rad wiki also contains a growing library of examples and hardware tutorials:
+http://github.com/atduskgreg/rad/wikis
 
 ==Getting Started
-
-To install the current 'stable' RAD:
-
- $ sudo gem install rad
 
 To install the edge gem:
 
  # Update to RubyGems 1.2.0 before proceeding!
  $ gem sources -a http://gems.github.com (you only have to do this once)
  $ sudo gem install atduskgreg-rad
+
+A very old and feature poor (though slightly more 'stable' RAD) is available from RubyGems:
+
+ $ sudo gem install rad
+
+We plan to push tagged releases to RubyGems at key points. The 0.3 release should be coming up soon.
 
 Run the rad command to create a new project:
 

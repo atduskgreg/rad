@@ -236,21 +236,6 @@ class ArduinoSketch
       if arg
           arg = arg.chomp.rstrip.lstrip
           name = arg.scan(/\s*(\w*)\[\d*\]?/).first.first
-          
-    # following 10 lines seem to be unnecessary
-    # and are left over from early array work
-    # but they are still here for a bit
-    # determine if there is an array assignement, and how many
-    # then eliminate the assignment and update the array size
-    #      if /\w*\[\d*\]\s*\=\s*\{(.*)\}/ =~ arg
-    #        assignment = arg.scan(/\w*\[\d*\]\s*\=\s*\{(.*)\}/).first.first
-    #        array_size = assignment.split(",").length
-    #        if /\[(\s*)\]/ =~ arg
-    #          arg.gsub!(/(\[\d*\])/, "[#{array_size}]")
-    #        end
-    #      end
-    #      arg = arg.scan(/^((\s*|\w*)*\s*\w*\[\d*\])?/).first.first
-
           # help rad_processor do a better job with array types
           types = ["int", "long", "char*", "unsigned int", "unsigned long", "byte", "bool", "float" ]
           types.each_with_index do |type, i|
@@ -321,10 +306,8 @@ class ArduinoSketch
       if opts[:device]
         case opts[:device]
         when :servo
-          new_servo_setup(num, opts)
+          servo_setup(num, opts)
           return # don't use declarations, accessor, signatures below
-        when :orig_servo
-          orig_servo_setup(num, opts)
         when :lcd || :LCD
           lcd_setup(num, opts)
           return 
@@ -359,21 +342,6 @@ class ArduinoSketch
           raise ArgumentError, "today's device choices are: :servo, :original_servo_setup, :pa_lcd, :sf_lcd, :freq_out,:i2c, :i2c_eeprom, :i2c_ds1307, and :i2c_blinkm  got #{opts[:device]}"
         end
       end
-    
-# remove the next 14 lines as soon as documentation on new :device => :servo option is out
-      
-      if opts[:min] && opts[:max] 
-        ArduinoPlugin.add_servo_struct
-        @servo_pins << num
-        refresh = opts[:refresh] ? opts[:refresh] : 200
-        @servo_settings <<  "serv[#{num}].pin = #{num}, serv[#{num}].pulseWidth = 0, serv[#{num}].lastPulse = 0, serv[#{num}].startPulse = 0, serv[#{num}].refreshTime = #{refresh}, serv[#{num}].min = #{opts[:min]}, serv[#{num}].max = #{opts[:max]}  "
-        unless opts[:device]
-          puts "#{"*"*80} \n   using :max and :min to instantiate a servo is deprecated\n   use :device => :servo instead\n#{"*"*80}"
-        end
-      else    
-          raise ArgumentError, "two are required for each servo: min & max" if opts[:min] || opts[:max] 
-          raise ArgumentError, "refresh is an optional servo parameter, don't forget min & max" if opts[:refresh] 
-      end
       
   # add state variables for outputs with :state => :on or :off -- useful for toggling a light with output_toggle -- need to make this more modular
       if opts[:state] 
@@ -404,19 +372,8 @@ class ArduinoSketch
     ar.each {|n| output_pin(n)} 
   end
   
-  ### tuck the following five methods into private once they are solid 
-  
-  def orig_servo_setup(num, opts)
-    ArduinoPlugin.add_servo_struct
-    @servo_pins << num
-    refresh = opts[:refresh] ? opts[:refresh] : 200
-    min = opts[:min] ? opts[:min] : 700
-    max = opts[:min] ? opts[:max] : 2200
-    @servo_settings <<  "serv[#{num}].pin = #{num}, serv[#{num}].pulseWidth = 0, serv[#{num}].lastPulse = 0, serv[#{num}].startPulse = 0, serv[#{num}].refreshTime = #{refresh}, serv[#{num}].min = #{min}, serv[#{num}].max = #{max}  "
-  end
-  
   # use the servo library
-  def new_servo_setup(num, opts)
+  def servo_setup(num, opts)
     if opts[:position]
       raise ArgumentError, "position must be an integer from 0 to 360, got #{opts[:position].class}" unless opts[:position].is_a?(Fixnum)
       raise ArgumentError, "position must be an integer from 0 to 360---, got #{opts[:position]}" if opts[:position] < 0 || opts[:position] > 360
@@ -472,7 +429,7 @@ class ArduinoSketch
     swser_LCDsf(num, opts)
   end
   
-  # Confiugre a single pin for input and setup a method to refer to that pin, i.e.:
+  # Configure a single pin for input and setup a method to refer to that pin, i.e.:
   #
   #   input_pin 3, :as => :button
   #

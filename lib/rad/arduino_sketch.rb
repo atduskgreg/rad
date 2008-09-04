@@ -363,12 +363,6 @@ class ArduinoSketch
     end
   end
   
-  # Like ArduinoSketch#output_pin but configure more than one output pin simultaneously. Takes an array of pin numbers. 
-  def output_pins(nums)
-    ar = Array(nums)
-    ar.each {|n| output_pin(n)} 
-  end
-  
   
   # Configure a single pin for input and setup a method to refer to that pin, i.e.:
   #

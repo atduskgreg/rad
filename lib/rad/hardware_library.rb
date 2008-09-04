@@ -25,19 +25,19 @@ class HardwareLibrary < ArduinoSketch
         @@swser_inc = TRUE
         accessor += <<-STR
         int read(SoftwareSerial& s) {
-        return s.read();
+          return s.read();
         }
         void println( SoftwareSerial& s, char* str ) {
-        return s.println( str );
+          return s.println( str );
         }
         void print( SoftwareSerial& s, char* str ) {
-        return s.print( str );
+          return s.print( str );
         }
         void println( SoftwareSerial& s, int i ) {
-        return s.println( i );
+          return s.println( i );
         }
         void print( SoftwareSerial& s, int i ) {
-        return s.print( i );
+          return s.print( i );
         }
         STR
       end
@@ -72,7 +72,7 @@ class HardwareLibrary < ArduinoSketch
       $load_libraries << "SWSerLCDpa"
       accessor = <<-STR
         SWSerLCDpa& #{opts[ :as ]}() {
-        return _#{opts[ :as ]};
+          return _#{opts[ :as ]};
         }
       STR
       @@slcdpa_inc ||= FALSE
@@ -81,91 +81,91 @@ class HardwareLibrary < ArduinoSketch
         # ------------------- print generics -------------------------------
         accessor += <<-STR			  
         void print( SWSerLCDpa& s, uint8_t b ) {
-        return s.print( b );
+          return s.print( b );
         }
         void print( SWSerLCDpa& s, const char *str ) {
-        return s.print( str );
+          return s.print( str );
         }
         void print( SWSerLCDpa& s, char c ) {
-        return s.print( c );
+          return s.print( c );
         }
         void print( SWSerLCDpa& s, int i ) {
-        return s.print( i );
+          return s.print( i );
         }
         void print( SWSerLCDpa& s, unsigned int i ) {
-        return s.print( i );
+          return s.print( i );
         }
         void print( SWSerLCDpa& s, long i ) {
-        return s.print( i );
+          return s.print( i );
         }
         void print( SWSerLCDpa& s, unsigned long i ) {
-        return s.print( i );
+          return s.print( i );
         }
         void print( SWSerLCDpa& s, long i, int b ) {
-        return s.print( i, b );
+          return s.print( i, b );
         }
         STR
         # ------------------ PA-LCD specific functions ---------------------------------
         accessor += <<-STR
         void clearscr(SWSerLCDpa& s) {
-        return s.clearscr();
+          return s.clearscr();
         }
         void clearscr(SWSerLCDpa& s, const char *str) {
-        return s.clearscr(str);
+          return s.clearscr(str);
         }
         void clearscr(SWSerLCDpa& s, int n) {
-        return s.clearscr(n);
+          return s.clearscr(n);
         }
         void clearscr(SWSerLCDpa& s, long n, int b) {
-        return s.clearscr(n, b);
+          return s.clearscr(n, b);
         }
         void clearline(SWSerLCDpa& s, int line) {
-        return s.clearline( line );
+          return s.clearline( line );
         }
         void clearline(SWSerLCDpa& s, int line, const char *str) {
-        return s.clearline( line, str );
+          return s.clearline( line, str );
         }
         void clearline(SWSerLCDpa& s, int line, int n) {
-        return s.clearline( line, n );
+          return s.clearline( line, n );
         }
         void clearline(SWSerLCDpa& s, int line, long n,  int b) {
-        return s.clearline( line, n, b );
+          return s.clearline( line, n, b );
         }
         void home( SWSerLCDpa& s) {
-        return s.home();
+          return s.home();
         }
         void home( SWSerLCDpa& s, const char *str) {
-        return s.home( str );
+          return s.home( str );
         }
         void home( SWSerLCDpa& s, int n) {
-        return s.home( n );
+          return s.home( n );
         }
         void home( SWSerLCDpa& s, long n, int b) {
-        return s.home( n, b );
+          return s.home( n, b );
         }
         void setxy( SWSerLCDpa& s, int x, int y) {
-        return s.setxy( x, y );
+          return s.setxy( x, y );
         }
         void setxy( SWSerLCDpa& s, int x, int y, const char *str) {
-        return s.setxy( x, y, str );
+          return s.setxy( x, y, str );
         }
         void setxy( SWSerLCDpa& s, int x, int y, long n, int b) {
-        return s.setxy( x, y, n, b );
+          return s.setxy( x, y, n, b );
         }
         void setxy( SWSerLCDpa& s, int x, int y, int n) {
-        return s.setxy( x, y, n );
+          return s.setxy( x, y, n );
         }
         void setgeo( SWSerLCDpa& s, int g) {
-        return s.setgeo( g );
+          return s.setgeo( g );
         }
         void setintensity( SWSerLCDpa& s, int i ) {
-        return s.setintensity( i );
+          return s.setintensity( i );
         }
         void intoBignum(SWSerLCDpa& s) {
-        return s.intoBignum();
+          return s.intoBignum();
         }
         void outofBignum(SWSerLCDpa& s) {
-        return s.outofBignum();
+          return s.outofBignum();
         }
         STR
       end
@@ -204,7 +204,7 @@ class HardwareLibrary < ArduinoSketch
       $load_libraries << "SWSerLCDsf"
       accessor = <<-STR
         SWSerLCDsf& #{opts[ :as ]}() {
-        return _#{opts[ :as ]};
+          return _#{opts[ :as ]};
         }
       STR
       @@slcdsf_inc ||= FALSE # assign only if nil
@@ -303,7 +303,7 @@ class HardwareLibrary < ArduinoSketch
       $load_libraries << "LoopTimer"
       accessor = <<-STR
         LoopTimer& #{opts[ :as ]}() {
-        return _#{opts[ :as ]};
+          return _#{opts[ :as ]};
         }
       STR
       @@loptim_inc ||= FALSE
@@ -359,7 +359,7 @@ class HardwareLibrary < ArduinoSketch
       $load_libraries << "Servo"
       accessor = <<-STR
         Servo& #{opts[ :as ]}() {
-        return _#{opts[ :as ]};
+          return _#{opts[ :as ]};
         }
       STR
       @@servo_inc ||= FALSE
@@ -367,34 +367,34 @@ class HardwareLibrary < ArduinoSketch
         @@servo_inc = TRUE
         accessor += <<-STR
         uint8_t attach( Servo& s, int p ) {
-        return s.attach(p);
+          return s.attach(p);
         }
         uint8_t attach( Servo& s, int p, int pos ) {
-        return s.attach(p, pos );
+          return s.attach(p, pos );
         }
         uint8_t attach( Servo& s, int p, uint16_t mn, uint16_t mx ) {
-        return s.attach(p, mn, mx);
+          return s.attach(p, mn, mx);
         }
         uint8_t attach( Servo& s, int p, int pos, uint16_t mn, uint16_t mx ) {
-        return s.attach(p, pos, mn, mx);
+          return s.attach(p, pos, mn, mx);
         }
         void detach( Servo& s ) {
-        return s.detach();
+          return s.detach();
         }
         void position( Servo& s, int b ) {
-        	return s.position( b );
+          return s.position( b );
         }
         void speed( Servo& s, int b ) {
-        return s.speed( b );
+          return s.speed( b );
         }
         uint8_t read( Servo& s ) {
-        return s.read();
+          return s.read();
         }
         uint8_t attached( Servo& s ) {
-        return s.attached();
+          return s.attached();
         }
         static void refresh( Servo& s ) {
-        return s.refresh();
+          return s.refresh();
         }
         STR
       end
@@ -421,7 +421,7 @@ class HardwareLibrary < ArduinoSketch
       $load_libraries << "Stepper"
       accessor = <<-STR
         Stepper& #{opts[ :as ]}() {
-        return _#{opts[ :as ]};
+          return _#{opts[ :as ]};
         }
       STR
       @@stepr_inc ||= FALSE
@@ -429,13 +429,13 @@ class HardwareLibrary < ArduinoSketch
       @@stepr_inc = TRUE
       accessor = <<-STR
         void set_speed( Stepper& s, long sp ) {
-        return s.set_speed( sp );
+          return s.set_speed( sp );
         }
         void set_steps( Stepper& s, int b ) {
-        return s.set_steps( b );
+          return s.set_steps( b );
         }
         int version( Stepper& s ) {
-        return s.version();
+          return s.version();
         }
         STR
     end
@@ -463,7 +463,7 @@ class HardwareLibrary < ArduinoSketch
       $load_libraries << "Stepper"
       accessor = <<-STR
         Stepper& #{opts[ :as ]}() {
-        return _#{opts[ :as ]};
+          return _#{opts[ :as ]};
         }
       STR
       @@stepr_inc ||= FALSE
@@ -471,13 +471,13 @@ class HardwareLibrary < ArduinoSketch
         @@stepr_inc = TRUE
         accessor += <<-STR
         void set_speed( Stepper& s, long sp ) {
-        return s.set_speed( sp );
+          return s.set_speed( sp );
         }
         void set_steps( Stepper& s, int b ) {
-        return s.set_steps( b );
+          return s.set_steps( b );
         }
         int version( Stepper& s ) {
-        return s.version();
+          return s.version();
         }
         STR
       end
@@ -518,19 +518,19 @@ class HardwareLibrary < ArduinoSketch
       $load_libraries << "FrequencyTimer2"
         accessor = <<-STR
         FrequencyTimer2& #{opts[ :as ]}() {
-        \treturn _#{opts[ :as ]};
+          return _#{opts[ :as ]};
         }
         void set_frequency( FrequencyTimer2& s, int b ) {
-        \treturn s.setPeriod( 1000000L/b );
+          return s.setPeriod( 1000000L/b );
         }
         void set_period( FrequencyTimer2& s, int b ) {
-        \treturn s.setPeriod( b );
+          return s.setPeriod( b );
         }
         void enable( FrequencyTimer2& s ) {
-        \treturn s.enable();
+          return s.enable();
         }
         void disable( FrequencyTimer2& s ) {
-        \treturn s.disable();
+          return s.disable();
         }
       STR
 
@@ -554,7 +554,7 @@ class HardwareLibrary < ArduinoSketch
       $load_libraries << "OneWire"
       accessor = <<-STR 
         OneWire& #{opts[ :as ]}() {
-        return _#{opts[ :as ]};
+          return _#{opts[ :as ]};
         }
     STR
       @@onewire_inc ||= FALSE
@@ -711,7 +711,7 @@ class HardwareLibrary < ArduinoSketch
         $load_libraries << "DS1307"
         accessor = <<-STR
         DS1307& #{opts[ :as ]}() {
-        return _#{opts[ :as ]};
+          return _#{opts[ :as ]};
         }
         void get( DS1307& s, byte *buf, boolean r ) {
           return s.get( buf, r );

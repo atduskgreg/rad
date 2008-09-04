@@ -193,37 +193,6 @@ class ArduinoSketch
 
   end
   
-  # Setup variables outside of the loop. Does some magic based on type of arguments. Subject to renaming. Use with caution.
-  def vars(opts={})
-    opts.each do |k,v|
-      if v.class == Symbol
-       @declarations << "#{v} _#{k};"
-       @accessors << <<-CODE
-        #{v} #{k}(){
-        \treturn _#{k};
-        }
-       CODE
-      else
-        type = case v
-        when Integer
-          "int"
-        when String
-          "char*"
-        when TrueClass
-          "bool"
-        when FalseClass
-          "bool"
-        end
-
-        @declarations << "#{type} _#{k} = #{v};"
-        @accessors << <<-CODE
-          #{type} #{k}(){
-          \treturn _#{k};
-          }
-        CODE
-      end
-    end
-  end
 
   
   # array "char buffer[32]"

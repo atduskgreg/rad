@@ -4,49 +4,306 @@ class HardwareLibrary < ArduinoSketch
     super
   end
   
-  def fourwire_stepper( pin1, pin2, pin3, pin4, opts={}) # servo motor routines #
-    raise ArgumentError, "can only define pin1 from Fixnum, got #{pin1.class}" unless pin1.is_a?(Fixnum)
-    raise ArgumentError, "can only define pin2 from Fixnum, got #{pin2.class}" unless pin2.is_a?(Fixnum)
-    raise ArgumentError, "can only define pin3 from Fixnum, got #{pin3.class}" unless pin3.is_a?(Fixnum)
-    raise ArgumentError, "can only define pin4 from Fixnum, got #{pin4.class}" unless pin4.is_a?(Fixnum)
+  # Treat a pair of digital I/O pins as a serial line. See: http://www.arduino.cc/en/Tutorial/SoftwareSerial
+  def software_serial(rx, tx, opts={})
+    raise ArgumentError, "can only define rx from Fixnum, got #{rx.class}" unless rx.is_a?(Fixnum)
+    raise ArgumentError, "can only define tx from Fixnum, got #{tx.class}" unless tx.is_a?(Fixnum)
 
-    st_speed = opts[:speed] ? opts[:speed] : 30
-    st_steps = opts[:steps] ? opts[:steps] : 100
+    output_pin(tx)
+    input_pin(rx)
 
+    rate = opts[:rate] ? opts[:rate] : 9600
     if opts[:as]
-      @declarations << "Stepper _#{opts[ :as ]} = Stepper(#{st_steps},#{pin1},#{pin2},#{pin3},#{pin4});"
-      $load_libraries << "Stepper"
+      @declarations << "SoftwareSerial _#{opts[ :as ]} = SoftwareSerial(#{rx}, #{tx});"
       accessor = <<-STR
-        Stepper& #{opts[ :as ]}() {
+        SoftwareSerial& #{opts[ :as ]}() {
         return _#{opts[ :as ]};
         }
       STR
-      @@stepr_inc ||= FALSE
-      if (@@stepr_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
-        @@stepr_inc = TRUE
+      @@swser_inc ||= FALSE
+      if (@@swser_inc == FALSE) # on second instance this stuff can't be repeated
+        @@swser_inc = TRUE
         accessor += <<-STR
-        void set_speed( Stepper& s, long sp ) {
-        return s.set_speed( sp );
+        int read(SoftwareSerial& s) {
+        return s.read();
         }
-        void set_steps( Stepper& s, int b ) {
-        return s.set_steps( b );
+        void println( SoftwareSerial& s, char* str ) {
+        return s.println( str );
         }
-        int version( Stepper& s ) {
-        return s.version();
+        void print( SoftwareSerial& s, char* str ) {
+        return s.print( str );
+        }
+        void println( SoftwareSerial& s, int i ) {
+        return s.println( i );
+        }
+        void print( SoftwareSerial& s, int i ) {
+        return s.print( i );
+        }
+        STR
+      end
+      @accessors << accessor
+
+      @signatures << "SoftwareSerial& #{opts[ :as ]}();"
+
+      @other_setup << "\t_#{opts[ :as ]}.begin(#{rate});"
+    end
+  end 	
+
+  def swser_LCDpa(tx, opts={})
+    raise ArgumentError, "can only define tx from Fixnum, got #{tx.class}" unless tx.is_a?(Fixnum)
+
+    rate = opts[:rate] ? opts[:rate] : 9600
+    geometry = opts[:geometry] ? opts[:geometry] : 0
+    if opts[:as] 
+      @declarations << "SWSerLCDpa _#{opts[ :as ]} = SWSerLCDpa(#{tx}, #{geometry});"
+      $load_libraries << "SWSerLCDpa"
+      accessor = <<-STR
+        SWSerLCDpa& #{opts[ :as ]}() {
+        return _#{opts[ :as ]};
+        }
+      STR
+      @@slcdpa_inc ||= FALSE
+      if (@@slcdpa_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
+        @@slcdpa_inc = TRUE
+        # ------------------- print generics -------------------------------
+        accessor += <<-STR			  
+        void print( SWSerLCDpa& s, uint8_t b ) {
+        return s.print( b );
+        }
+        void print( SWSerLCDpa& s, const char *str ) {
+        return s.print( str );
+        }
+        void print( SWSerLCDpa& s, char c ) {
+        return s.print( c );
+        }
+        void print( SWSerLCDpa& s, int i ) {
+        return s.print( i );
+        }
+        void print( SWSerLCDpa& s, unsigned int i ) {
+        return s.print( i );
+        }
+        void print( SWSerLCDpa& s, long i ) {
+        return s.print( i );
+        }
+        void print( SWSerLCDpa& s, unsigned long i ) {
+        return s.print( i );
+        }
+        void print( SWSerLCDpa& s, long i, int b ) {
+        return s.print( i, b );
+        }
+        STR
+        # ------------------ PA-LCD specific functions ---------------------------------
+        accessor += <<-STR
+        void clearscr(SWSerLCDpa& s) {
+        return s.clearscr();
+        }
+        void clearscr(SWSerLCDpa& s, const char *str) {
+        return s.clearscr(str);
+        }
+        void clearscr(SWSerLCDpa& s, int n) {
+        return s.clearscr(n);
+        }
+        void clearscr(SWSerLCDpa& s, long n, int b) {
+        return s.clearscr(n, b);
+        }
+        void clearline(SWSerLCDpa& s, int line) {
+        return s.clearline( line );
+        }
+        void clearline(SWSerLCDpa& s, int line, const char *str) {
+        return s.clearline( line, str );
+        }
+        void clearline(SWSerLCDpa& s, int line, int n) {
+        return s.clearline( line, n );
+        }
+        void clearline(SWSerLCDpa& s, int line, long n,  int b) {
+        return s.clearline( line, n, b );
+        }
+        void home( SWSerLCDpa& s) {
+        return s.home();
+        }
+        void home( SWSerLCDpa& s, const char *str) {
+        return s.home( str );
+        }
+        void home( SWSerLCDpa& s, int n) {
+        return s.home( n );
+        }
+        void home( SWSerLCDpa& s, long n, int b) {
+        return s.home( n, b );
+        }
+        void setxy( SWSerLCDpa& s, int x, int y) {
+        return s.setxy( x, y );
+        }
+        void setxy( SWSerLCDpa& s, int x, int y, const char *str) {
+        return s.setxy( x, y, str );
+        }
+        void setxy( SWSerLCDpa& s, int x, int y, long n, int b) {
+        return s.setxy( x, y, n, b );
+        }
+        void setxy( SWSerLCDpa& s, int x, int y, int n) {
+        return s.setxy( x, y, n );
+        }
+        void setgeo( SWSerLCDpa& s, int g) {
+        return s.setgeo( g );
+        }
+        void setintensity( SWSerLCDpa& s, int i ) {
+        return s.setintensity( i );
+        }
+        void intoBignum(SWSerLCDpa& s) {
+        return s.intoBignum();
+        }
+        void outofBignum(SWSerLCDpa& s) {
+        return s.outofBignum();
         }
         STR
       end
 
       @accessors << accessor
 
-      @signatures << "Stepper& #{opts[ :as ]}();"
+      @signatures << "SWSerLCDpa& #{opts[ :as ]}();"
 
-      @other_setup << "\t_#{opts[ :as ]}.set_speed(#{st_speed});" if opts[:speed]
+      @other_setup << "\t_#{opts[ :as ]}.begin(#{rate});"
+      @other_setup << "\t_#{opts[ :as ]}.clearscr();"     if :clear_screen == :true
+
+    end
+  end 	
+
+
+
+  def swser_LCDsf(tx, opts={})
+    raise ArgumentError, "can only define tx from Fixnum, got #{tx.class}" unless tx.is_a?(Fixnum)    
+
+    rate = opts[:rate] ? opts[:rate] : 9600
+    geometry = opts[:geometry] ? opts[:geometry] : 0
+    if opts[:as] 
+      @declarations << "SWSerLCDsf _#{opts[ :as ]} = SWSerLCDsf(#{tx}, #{geometry});"
+
+      $load_libraries << "SWSerLCDsf"
+      accessor = <<-STR
+        SWSerLCDsf& #{opts[ :as ]}() {
+        return _#{opts[ :as ]};
+        }
+      STR
+      @@slcdsf_inc ||= FALSE # assign only if nil
+      if (@@slcdsf_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
+        @@slcdsf_inc = TRUE
+        accessor += <<-STR
+        void print( SWSerLCDsf& s, uint8_t b ) {
+          return s.print( b );
+        }
+        void print( SWSerLCDsf& s, const char *str ) {
+          return s.print( str );
+        }
+        void print( SWSerLCDsf& s, char c ) {
+          return s.print( c );
+        }
+        void print( SWSerLCDsf& s, int i ) {
+          return s.print( i );
+        }
+        void print( SWSerLCDsf& s, unsigned int i ) {
+          return s.print( i );
+        }
+        void print( SWSerLCDsf& s, long i ) {
+          return s.print( i );
+        }
+        void print( SWSerLCDsf& s, unsigned long i ) {
+          return s.print( i );
+        }
+        void print( SWSerLCDsf& s, long i, int b ) {
+          return s.print( i, b );
+        }
+        STR
+        # ------------------ Spark Fun Specific  Functions ---------------------------------
+        accessor += <<-STR
+        void clearscr(SWSerLCDsf& s) {
+          return s.clearscr();
+        }
+        void clearscr(SWSerLCDsf& s, const char *str) {
+          return s.clearscr(str);
+        }
+        void clearscr(SWSerLCDsf& s, int n) {
+          return s.clearscr(n);
+        }
+        void clearscr(SWSerLCDsf& s, long n, int b) {
+          return s.clearscr(n, b);
+        }
+        void home( SWSerLCDsf& s) {
+          return s.home();
+        }
+        void home( SWSerLCDsf& s, const char *str) {
+          return s.home( str );
+        }
+        void home( SWSerLCDsf& s, int n) {
+          return s.home( n );
+        }
+        void home( SWSerLCDsf& s, long n, int b) {
+          return s.home( n, b );
+        }
+        void setxy( SWSerLCDsf& s, int x, int y) {
+          return s.setxy( x, y );
+        }
+        void setxy( SWSerLCDsf& s, int x, int y, const char *str) {
+          return s.setxy( x, y, str );
+        }
+        void setxy( SWSerLCDsf& s, int x, int y, int n) {
+          return s.setxy( x, y, n );
+        }
+        void setxy( SWSerLCDsf& s, int x, int y, long n, int b) {
+          return s.setxy( x, y, n, b );
+        }
+        void setgeo( SWSerLCDsf& s, int g) {
+          return s.setgeo( g );
+        }
+        void setintensity( SWSerLCDsf& s, int i ) {
+          return s.setintensity( i );
+        }
+        void setcmd( SWSerLCDsf& s, uint8_t a, uint8_t b) {
+          return s.setcmd( a, b );
+        }
+        STR
+      end
+      @accessors << accessor
+
+      @signatures << "SWSerLCDsf& #{opts[ :as ]}();"
+
+      @other_setup << "\t_#{opts[ :as ]}.begin(#{rate});"
+      @other_setup << "\t_#{opts[ :as ]}.clearscr();"     if :clear_screen == :true
+
+    end
+  end 	
+
+
+  def loop_timer(opts={}) # loop timer methods #
+
+    if opts[:as]
+      @declarations << "LoopTimer _#{opts[ :as ]} = LoopTimer();"
+      $load_libraries << "LoopTimer"
+      accessor = <<-STR
+        LoopTimer& #{opts[ :as ]}() {
+        return _#{opts[ :as ]};
+        }
+      STR
+      @@loptim_inc ||= FALSE
+      if (@@loptim_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
+        @@limtim_inc = TRUE
+        accessor += <<-STR
+        void track( LoopTimer& s ) {
+          return s.track();
+        }
+        unsigned long get_total( LoopTimer& s ) {
+          return s.get_total();
+        }
+        STR
+      end
+
+      @accessors << accessor
+
+      @signatures << "LoopTimer& #{opts[ :as ]}();"
 
     end
   end
 
-
+  
+  
   def servo(pin, opts={}) # servo motor routines #
     raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
 
@@ -104,6 +361,88 @@ class HardwareLibrary < ArduinoSketch
 
       @other_setup << "\t_#{opts[ :as ]}.attach(#{pin}, #{opts[:position]}, #{minp}, #{maxp});" if opts[:position]
       @other_setup << "\t_#{opts[ :as ]}.attach(#{pin}, #{minp}, #{maxp});" unless opts[:position]
+
+    end
+  end
+  
+  def twowire_stepper(pin1, pin2, opts={}) # servo motor routines #
+    raise ArgumentError, "can only define pin1 from Fixnum, got #{pin1.class}" unless pin1.is_a?(Fixnum)
+    raise ArgumentError, "can only define pin2 from Fixnum, got #{pin2.class}" unless pin2.is_a?(Fixnum)
+
+    st_speed = opts[:speed] ? opts[:speed] : 30
+    st_steps = opts[:steps] ? opts[:steps] : 100
+
+    if opts[:as]
+      @declarations << "Stepper _#{opts[ :as ]} = Stepper(#{st_steps},#{pin1},#{pin2});"
+      $load_libraries << "Stepper"
+      accessor = <<-STR
+        Stepper& #{opts[ :as ]}() {
+        return _#{opts[ :as ]};
+        }
+      STR
+      @@stepr_inc ||= FALSE
+      if (@@stepr_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
+      @@stepr_inc = TRUE
+      accessor = <<-STR
+        void set_speed( Stepper& s, long sp ) {
+        return s.set_speed( sp );
+        }
+        void set_steps( Stepper& s, int b ) {
+        return s.set_steps( b );
+        }
+        int version( Stepper& s ) {
+        return s.version();
+        }
+        STR
+    end
+
+    @accessors << accessor
+
+    @signatures << "Stepper& #{opts[ :as ]}();"
+
+    @other_setup << "\t_#{opts[ :as ]}.set_speed(#{st_speed});" if opts[:speed]
+
+    end
+  end
+  
+  def fourwire_stepper( pin1, pin2, pin3, pin4, opts={}) # servo motor routines #
+    raise ArgumentError, "can only define pin1 from Fixnum, got #{pin1.class}" unless pin1.is_a?(Fixnum)
+    raise ArgumentError, "can only define pin2 from Fixnum, got #{pin2.class}" unless pin2.is_a?(Fixnum)
+    raise ArgumentError, "can only define pin3 from Fixnum, got #{pin3.class}" unless pin3.is_a?(Fixnum)
+    raise ArgumentError, "can only define pin4 from Fixnum, got #{pin4.class}" unless pin4.is_a?(Fixnum)
+
+    st_speed = opts[:speed] ? opts[:speed] : 30
+    st_steps = opts[:steps] ? opts[:steps] : 100
+
+    if opts[:as]
+      @declarations << "Stepper _#{opts[ :as ]} = Stepper(#{st_steps},#{pin1},#{pin2},#{pin3},#{pin4});"
+      $load_libraries << "Stepper"
+      accessor = <<-STR
+        Stepper& #{opts[ :as ]}() {
+        return _#{opts[ :as ]};
+        }
+      STR
+      @@stepr_inc ||= FALSE
+      if (@@stepr_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
+        @@stepr_inc = TRUE
+        accessor += <<-STR
+        void set_speed( Stepper& s, long sp ) {
+        return s.set_speed( sp );
+        }
+        void set_steps( Stepper& s, int b ) {
+        return s.set_steps( b );
+        }
+        int version( Stepper& s ) {
+        return s.version();
+        }
+        STR
+      end
+
+      @accessors << accessor
+
+      @signatures << "Stepper& #{opts[ :as ]}();"
+
+      @other_setup << "\t_#{opts[ :as ]}.set_speed(#{st_speed});" if opts[:speed]
 
     end
   end

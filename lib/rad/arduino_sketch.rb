@@ -224,69 +224,69 @@ class ArduinoSketch
       end
     end
   end
-  
-    
-    # array "char buffer[32]"
-    # result: char buffer[32];
-    # array "char buffer[32]"
-    # result: char buffer[32];
-    # todo 
-    # need to feed array external array identifiers to rtc if they are in plugins or libraries, (not so sure about this will do more testing)
-    def array(arg)
-      if arg
-          arg = arg.chomp.rstrip.lstrip
-          name = arg.scan(/\s*(\w*)\[\d*\]?/).first.first
-          # help rad_processor do a better job with array types
-          types = ["int", "long", "char*", "unsigned int", "unsigned long", "byte", "bool", "float" ]
-          types.each_with_index do |type, i|
-            @type = types[i] if /#{type}/ =~ arg
-          end
-          raise ArgumentError, "type not currently supported.. got: #{arg}.  Currently supporting #{types.join(", ")}" unless @type
 
-          arg = "#{arg};" unless arg[-1,1] == ";"
-          $array_types[name] = @type
-          @type = nil
-          $external_var_identifiers << name unless $external_var_identifiers.include?(name)
-          # add array_name declaration
-          $external_array_vars << arg unless $external_array_vars.include?(arg)
-      end
+  
+  # array "char buffer[32]"
+  # result: char buffer[32];
+  # array "char buffer[32]"
+  # result: char buffer[32];
+  # todo 
+  # need to feed array external array identifiers to rtc if they are in plugins or libraries, (not so sure about this will do more testing)
+  def array(arg)
+    if arg
+        arg = arg.chomp.rstrip.lstrip
+        name = arg.scan(/\s*(\w*)\[\d*\]?/).first.first
+        # help rad_processor do a better job with array types
+        types = ["int", "long", "char*", "unsigned int", "unsigned long", "byte", "bool", "float" ]
+        types.each_with_index do |type, i|
+          @type = types[i] if /#{type}/ =~ arg
+        end
+        raise ArgumentError, "type not currently supported.. got: #{arg}.  Currently supporting #{types.join(", ")}" unless @type
+
+        arg = "#{arg};" unless arg[-1,1] == ";"
+        $array_types[name] = @type
+        @type = nil
+        $external_var_identifiers << name unless $external_var_identifiers.include?(name)
+        # add array_name declaration
+        $external_array_vars << arg unless $external_array_vars.include?(arg)
     end
-    
-    # define "DS1307_SEC 0"
-    # result: #define DS1307_SEC 0
-    # note we send the constant identifiers and type to our rad_type_checker
-    # however, it only knows about long, float, str....
-    # so we don't send ints ...yet..
-    # need more testing
-    def define(arg)
-      if arg
-          arg = arg.chomp.rstrip.lstrip
-          name = arg.split(" ").first
-          value = arg.gsub!("#{name} ","")
-          # negative
-          if value =~ /^-(\d|x)*$/ 
-             type = "long"
-           # negative float
-           elsif value =~ /^-(\d|\.|x)*$/ 
-             type = "float" 
-           elsif value =~ /[a-zA-Z]/
-             type = "str"
-             value = "\"#{value}\""
-           elsif value !~ /(\.|x)/
-             type = "long"
-           elsif value =~ /(\d*\.\d*)/ # and no 
-             type = "float"
-           elsif value =~ /0x\d\d/
-             type = "byte"
-           else 
-             raise ArgumentError, "opps, could not determine the define type, got #{value}"
-           end
-          $define_types[name] = type
-          arg = "#define #{name} #{value}"
-          $defines << arg
-          dummy_for_testing = arg, type
-      end
+  end
+  
+  # define "DS1307_SEC 0"
+  # result: #define DS1307_SEC 0
+  # note we send the constant identifiers and type to our rad_type_checker
+  # however, it only knows about long, float, str....
+  # so we don't send ints ...yet..
+  # need more testing
+  def define(arg)
+    if arg
+        arg = arg.chomp.rstrip.lstrip
+        name = arg.split(" ").first
+        value = arg.gsub!("#{name} ","")
+        # negative
+        if value =~ /^-(\d|x)*$/ 
+           type = "long"
+         # negative float
+         elsif value =~ /^-(\d|\.|x)*$/ 
+           type = "float" 
+         elsif value =~ /[a-zA-Z]/
+           type = "str"
+           value = "\"#{value}\""
+         elsif value !~ /(\.|x)/
+           type = "long"
+         elsif value =~ /(\d*\.\d*)/ # and no 
+           type = "float"
+         elsif value =~ /0x\d\d/
+           type = "byte"
+         else 
+           raise ArgumentError, "opps, could not determine the define type, got #{value}"
+         end
+        $define_types[name] = type
+        arg = "#define #{name} #{value}"
+        $defines << arg
+        dummy_for_testing = arg, type
     end
+  end
   
   # Configure a single pin for output and setup a method to refer to that pin, i.e.:
   #
@@ -308,9 +308,6 @@ class ArduinoSketch
         when :servo
           servo_setup(num, opts)
           return # don't use declarations, accessor, signatures below
-        when :lcd || :LCD
-          lcd_setup(num, opts)
-          return 
         when :pa_lcd || :pa_LCD
           pa_lcd_setup(num, opts)
           return 
@@ -339,7 +336,7 @@ class ArduinoSketch
           one_wire(num, opts)
           return #
         else
-          raise ArgumentError, "today's device choices are: :servo, :original_servo_setup, :pa_lcd, :sf_lcd, :freq_out,:i2c, :i2c_eeprom, :i2c_ds1307, and :i2c_blinkm  got #{opts[:device]}"
+          raise ArgumentError, "today's device choices are: :servo, :pa_lcd, :sf_lcd, :freq_out,:i2c, :i2c_eeprom, :i2c_ds1307, and :i2c_blinkm  got #{opts[:device]}"
         end
       end
       
@@ -372,62 +369,6 @@ class ArduinoSketch
     ar.each {|n| output_pin(n)} 
   end
   
-  # use the servo library
-  def servo_setup(num, opts)
-    if opts[:position]
-      raise ArgumentError, "position must be an integer from 0 to 360, got #{opts[:position].class}" unless opts[:position].is_a?(Fixnum)
-      raise ArgumentError, "position must be an integer from 0 to 360---, got #{opts[:position]}" if opts[:position] < 0 || opts[:position] > 360
-    end
-    servo(num, opts)
-    # move this to better place ... 
-    # should probably go along with servo code into plugin
-    @@servo_dh ||= FALSE
-    if (@@servo_dh == FALSE)	# on second instance this stuff can't be repeated - BBR
-      @@servo_dh = TRUE
-      @declarations << "void servo_refresh(void);"
-      helper_methods = []
-      helper_methods << "void servo_refresh(void)"
-      helper_methods << "{"
-      helper_methods <<  "\tServo::refresh();"
-      helper_methods << "}"
-      @helper_methods += "\n#{helper_methods.join("\n")}"
-    end
-  end
-  
-  ## this won't work at all... no pins
-  # need help
-  def lcd_setup(num, opts)
-    # move to plugin and load plugin
-    # what's the default rate?
-    opts[:rate] ||= 9600
-    rate = opts[:rate] ? opts[:rate] : 9600
-    swser_LCD(num, opts)
-  end
-  
-  # use the pa lcd library
-  def pa_lcd_setup(num, opts)
-    if opts[:geometry]
-      raise ArgumentError, "can only define pin from Fixnum, got #{opts[:geometry]}" unless opts[:geometry].is_a?(Fixnum)
-      raise ArgumentError, "pa_lcd geometry must be 216, 220, 224, 240, 416, 420, got #{opts[:geometry]}" unless opts[:geometry].to_s =~ /(216|220|224|240|416|420)/
-    end
-    # move to plugin and load plugin
-    # what's the default?
-     opts[:rate] ||= 9600
-    rate = opts[:rate] ? opts[:rate] : 9600
-    swser_LCDpa(num, opts)
-  end
-  
-  # use the sf (sparkfun) library
-  def sf_lcd_setup(num, opts)
-    if opts[:geometry]
-      raise ArgumentError, "can only define pin from Fixnum, got #{opts[:geometry]}" unless opts[:geometry].is_a?(Fixnum)
-      raise ArgumentError, "sf_lcd geometry must be 216, 220, 416, 420, got #{opts[:geometry]}" unless opts[:geometry].to_s =~ /(216|220|416|420)/
-    end
-    # move to plugin and load plugin
-     opts[:rate] ||= 9600
-    rate = opts[:rate] ? opts[:rate] : 9600
-    swser_LCDsf(num, opts)
-  end
   
   # Configure a single pin for input and setup a method to refer to that pin, i.e.:
   #
@@ -523,9 +464,6 @@ class ArduinoSketch
   end
 
   
-
-
-
 
 
   def compose_setup #:nodoc: also composes headers and signatures

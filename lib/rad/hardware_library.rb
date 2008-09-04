@@ -48,6 +48,19 @@ class HardwareLibrary < ArduinoSketch
       @other_setup << "\t_#{opts[ :as ]}.begin(#{rate});"
     end
   end 	
+  
+  # use the pa lcd library
+  def pa_lcd_setup(num, opts)
+    if opts[:geometry]
+      raise ArgumentError, "can only define pin from Fixnum, got #{opts[:geometry]}" unless opts[:geometry].is_a?(Fixnum)
+      raise ArgumentError, "pa_lcd geometry must be 216, 220, 224, 240, 416, 420, got #{opts[:geometry]}" unless opts[:geometry].to_s =~ /(216|220|224|240|416|420)/
+    end
+    # move to plugin and load plugin
+    # what's the default?
+     opts[:rate] ||= 9600
+    rate = opts[:rate] ? opts[:rate] : 9600
+    swser_LCDpa(num, opts)
+  end
 
   def swser_LCDpa(tx, opts={})
     raise ArgumentError, "can only define tx from Fixnum, got #{tx.class}" unless tx.is_a?(Fixnum)
@@ -167,7 +180,18 @@ class HardwareLibrary < ArduinoSketch
     end
   end 	
 
-
+  
+  # use the sf (sparkfun) library
+  def sf_lcd_setup(num, opts)
+    if opts[:geometry]
+      raise ArgumentError, "can only define pin from Fixnum, got #{opts[:geometry]}" unless opts[:geometry].is_a?(Fixnum)
+      raise ArgumentError, "sf_lcd geometry must be 216, 220, 416, 420, got #{opts[:geometry]}" unless opts[:geometry].to_s =~ /(216|220|416|420)/
+    end
+    # move to plugin and load plugin
+     opts[:rate] ||= 9600
+    rate = opts[:rate] ? opts[:rate] : 9600
+    swser_LCDsf(num, opts)
+  end
 
   def swser_LCDsf(tx, opts={})
     raise ArgumentError, "can only define tx from Fixnum, got #{tx.class}" unless tx.is_a?(Fixnum)    
@@ -302,7 +326,27 @@ class HardwareLibrary < ArduinoSketch
     end
   end
 
-  
+  # use the servo library
+  def servo_setup(num, opts)
+    if opts[:position]
+      raise ArgumentError, "position must be an integer from 0 to 360, got #{opts[:position].class}" unless opts[:position].is_a?(Fixnum)
+      raise ArgumentError, "position must be an integer from 0 to 360---, got #{opts[:position]}" if opts[:position] < 0 || opts[:position] > 360
+    end
+    servo(num, opts)
+    # move this to better place ... 
+    # should probably go along with servo code into plugin
+    @@servo_dh ||= FALSE
+    if (@@servo_dh == FALSE)	# on second instance this stuff can't be repeated - BBR
+      @@servo_dh = TRUE
+      @declarations << "void servo_refresh(void);"
+      helper_methods = []
+      helper_methods << "void servo_refresh(void)"
+      helper_methods << "{"
+      helper_methods <<  "\tServo::refresh();"
+      helper_methods << "}"
+      @helper_methods += "\n#{helper_methods.join("\n")}"
+    end
+  end
   
   def servo(pin, opts={}) # servo motor routines #
     raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)

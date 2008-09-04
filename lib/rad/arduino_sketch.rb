@@ -809,191 +809,42 @@ class ArduinoSketch
   def twowire_stepper(pin1, pin2, opts={}) # servo motor routines #
     raise ArgumentError, "can only define pin1 from Fixnum, got #{pin1.class}" unless pin1.is_a?(Fixnum)
     raise ArgumentError, "can only define pin2 from Fixnum, got #{pin2.class}" unless pin2.is_a?(Fixnum)
-        
+
     st_speed = opts[:speed] ? opts[:speed] : 30
     st_steps = opts[:steps] ? opts[:steps] : 100
-    
-   		if opts[:as]
- 			@declarations << "Stepper _#{opts[ :as ]} = Stepper(#{st_steps},#{pin1},#{pin2});"
- 			accessor = []
- 			$load_libraries << "Stepper"
- 			accessor << "Stepper& #{opts[ :as ]}() {"
- 			accessor << "\treturn _#{opts[ :as ]};"
- 			accessor << "}"
+
+    if opts[:as]
+      @declarations << "Stepper _#{opts[ :as ]} = Stepper(#{st_steps},#{pin1},#{pin2});"
+      $load_libraries << "Stepper"
+      accessor = <<-STR
+        Stepper& #{opts[ :as ]}() {
+        return _#{opts[ :as ]};
+        }
+      STR
       @@stepr_inc ||= FALSE
- 			if (@@stepr_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
- 				@@stepr_inc = TRUE
- 				accessor << "void set_speed( Stepper& s, long sp ) {"
- 				accessor << "\treturn s.set_speed( sp );"
- 				accessor << "}"
- 				accessor << "void set_steps( Stepper& s, int b ) {"
-	 			accessor << "\treturn s.set_steps( b );"
- 				accessor << "}"
- 				accessor << "int version( Stepper& s ) {"
- 				accessor << "\treturn s.version();"
- 				accessor << "}"
-			end
- 			
- 			@accessors << accessor.join( "\n" )
- 			
- 			@signatures << "Stepper& #{opts[ :as ]}();"
-
- 			@other_setup << "\t_#{opts[ :as ]}.set_speed(#{st_speed});" if opts[:speed]
-
- 		end
- 	end 
- 	
-
-  def fourwire_stepper( pin1, pin2, pin3, pin4, opts={}) # servo motor routines #
-    raise ArgumentError, "can only define pin1 from Fixnum, got #{pin1.class}" unless pin1.is_a?(Fixnum)
-    raise ArgumentError, "can only define pin2 from Fixnum, got #{pin2.class}" unless pin2.is_a?(Fixnum)
-    raise ArgumentError, "can only define pin3 from Fixnum, got #{pin3.class}" unless pin3.is_a?(Fixnum)
-    raise ArgumentError, "can only define pin4 from Fixnum, got #{pin4.class}" unless pin4.is_a?(Fixnum)
-        
-    st_speed = opts[:speed] ? opts[:speed] : 30
-    st_steps = opts[:steps] ? opts[:steps] : 100
-    
-   		if opts[:as]
- 			@declarations << "Stepper _#{opts[ :as ]} = Stepper(#{st_steps},#{pin1},#{pin2},#{pin3},#{pin4});"
- 			accessor = []
- 			$load_libraries << "Stepper"
- 			accessor << "Stepper& #{opts[ :as ]}() {"
- 			accessor << "\treturn _#{opts[ :as ]};"
- 			accessor << "}"
-      @@stepr_inc ||= FALSE
- 			if (@@stepr_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
- 				@@stepr_inc = TRUE
- 				accessor << "void set_speed( Stepper& s, long sp ) {"
- 				accessor << "\treturn s.set_speed( sp );"
- 				accessor << "}"
- 				accessor << "void set_steps( Stepper& s, int b ) {"
-	 			accessor << "\treturn s.set_steps( b );"
- 				accessor << "}"
- 				accessor << "int version( Stepper& s ) {"
- 				accessor << "\treturn s.version();"
- 				accessor << "}"
-			end
- 			
- 			@accessors << accessor.join( "\n" )
- 			
- 			@signatures << "Stepper& #{opts[ :as ]}();"
-
- 			@other_setup << "\t_#{opts[ :as ]}.set_speed(#{st_speed});" if opts[:speed]
-
- 		end
- 	end 
-
-
-  def servo(pin, opts={}) # servo motor routines #
-    raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
-        
-    minp = opts[:min] ? opts[:min] : 544
-    maxp = opts[:max] ? opts[:max] : 2400
-
-   		if opts[:as]
- 			@declarations << "Servo _#{opts[ :as ]} = Servo();"
- 			accessor = []
- 			$load_libraries << "Servo"
- 			accessor << "Servo& #{opts[ :as ]}() {"
- 			accessor << "\treturn _#{opts[ :as ]};"
- 			accessor << "}"
-      @@servo_inc ||= FALSE
- 			if (@@servo_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
- 				@@servo_inc = TRUE
- 				accessor << "uint8_t attach( Servo& s, int p ) {"
- 				accessor << "\treturn s.attach(p);"
- 				accessor << "}"
- 				accessor << "uint8_t attach( Servo& s, int p, int pos ) {"
- 				accessor << "\treturn s.attach(p, pos );"
- 				accessor << "}"
- 				accessor << "uint8_t attach( Servo& s, int p, uint16_t mn, uint16_t mx ) {"
- 				accessor << "\treturn s.attach(p, mn, mx);"
- 				accessor << "}"
- 				accessor << "uint8_t attach( Servo& s, int p, int pos, uint16_t mn, uint16_t mx ) {"
- 				accessor << "\treturn s.attach(p, pos, mn, mx);"
- 				accessor << "}"
- 				accessor << "void detach( Servo& s ) {"
- 				accessor << "\treturn s.detach();"
- 				accessor << "}"
- 				accessor << "void position( Servo& s, int b ) {"
-	 			accessor << "\treturn s.position( b );"
- 				accessor << "}"
- 				accessor << "void speed( Servo& s, int b ) {"
- 				accessor << "\treturn s.speed( b );"
- 				accessor << "}"
- 				accessor << "uint8_t read( Servo& s ) {"
- 				accessor << "\treturn s.read();"
- 				accessor << "}"
- 				accessor << "uint8_t attached( Servo& s ) {"
- 				accessor << "\treturn s.attached();"
- 				accessor << "}"
- 				accessor << "static void refresh( Servo& s ) {"
- 				accessor << "\treturn s.refresh();"
- 				accessor << "}"
- 			end
- 			
- 			@accessors << accessor.join( "\n" )
- 			
- 			@signatures << "Servo& #{opts[ :as ]}();"
-
- 			@other_setup << "\t_#{opts[ :as ]}.attach(#{pin}, #{opts[:position]}, #{minp}, #{maxp});" if opts[:position]
- 			@other_setup << "\t_#{opts[ :as ]}.attach(#{pin}, #{minp}, #{maxp});" unless opts[:position]
-
- 		end
- 	end 
- 	
- 	def frequency_timer(pin, opts={}) # frequency timer routines
-
-    @@frequency_inc ||= FALSE
-    raise ArgumentError, "there can be only one instance of Frequency Timer2" if @@frequency_inc == TRUE
-    @@frequency_inc = TRUE
-    
-    raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
-    raise ArgumentError, "only pin 11 may be used for freq_out, got #{pin}" unless pin == 11
-    
-    if opts[:enable]
-      raise ArgumentError, "enable option must include the frequency or period option" unless opts[:frequency] || opts[:period]
+      if (@@stepr_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
+      @@stepr_inc = TRUE
+      accessor = <<-STR
+        void set_speed( Stepper& s, long sp ) {
+        return s.set_speed( sp );
+        }
+        void set_steps( Stepper& s, int b ) {
+        return s.set_steps( b );
+        }
+        int version( Stepper& s ) {
+        return s.version();
+        }
+        STR
     end
-    if opts[:frequency]
-      raise ArgumentError, "the frequency option must be an integer, got #{opts[:frequency].class}" unless opts[:frequency].is_a?(Fixnum)
+
+    @accessors << accessor
+
+    @signatures << "Stepper& #{opts[ :as ]}();"
+
+    @other_setup << "\t_#{opts[ :as ]}.set_speed(#{st_speed});" if opts[:speed]
+
     end
-    if opts[:period]
-      raise ArgumentError, "the frequency option must be an integer, got #{opts[:period].class}" unless opts[:period].is_a?(Fixnum) 
-    end
-    # refer to: http://www.arduino.cc/playground/Code/FrequencyTimer2
-
-   		if opts[:as]
-   		   
-   		  @declarations << "FrequencyTimer2 _#{opts[ :as ]} = FrequencyTimer2();"
-   			accessor = []
-   			$load_libraries << "FrequencyTimer2"	
-   			accessor << "FrequencyTimer2& #{opts[ :as ]}() {"
-   			accessor << "\treturn _#{opts[ :as ]};"
-   			accessor << "}"
-   			accessor << "void set_frequency( FrequencyTimer2& s, int b ) {"
-   			accessor << "\treturn s.setPeriod( 1000000L/b );"
-   			accessor << "}"
-   			accessor << "void set_period( FrequencyTimer2& s, int b ) {"
-  	 		accessor << "\treturn s.setPeriod( b );"
-   			accessor << "}"
-   			accessor << "void enable( FrequencyTimer2& s ) {"
-   			accessor << "\treturn s.enable();"
-   			accessor << "}"
-   			accessor << "void disable( FrequencyTimer2& s ) {"
-   			accessor << "\treturn s.disable();"
-   			accessor << "}"
-
-   			@accessors << accessor.join( "\n" )
-
-   			@signatures << "FrequencyTimer2& #{opts[ :as ]}();"
-	
-		    @other_setup << "\tFrequencyTimer2::setPeriod(0L);" unless opts[:frequency] || opts[:period]
- 			  @other_setup << "\tFrequencyTimer2::setPeriod(1000000L/#{opts[:frequency]});" if opts[:frequency]
- 			  @other_setup << "\tFrequencyTimer2::setPeriod(#{opts[:period]});" if opts[:period]
- 			  @other_setup << "\tFrequencyTimer2::enable();" if opts[:enable] == :true
- 		end
- 	end	
-
+  end 
 
 
   def compose_setup #:nodoc: also composes headers and signatures

@@ -28,6 +28,7 @@ lib/examples/hello_pa_lcd.rb
 lib/examples/hello_servos.rb
 lib/examples/hello_spectra_sound.rb
 lib/examples/hello_world.rb
+lib/examples/hello_xbee.rb
 lib/examples/hysteresis_duel.rb
 lib/examples/i2c_with_clock_chip.rb
 lib/examples/midi_beat_box.rb
@@ -40,6 +41,7 @@ lib/examples/sparkfun_lcd.rb
 lib/examples/spectra_soft_pot.rb
 lib/examples/times_method.rb
 lib/examples/toggle.rb
+lib/examples/twitter.rb
 lib/examples/two_wire.rb
 lib/libraries/AFSoftSerial/AFSoftSerial.cpp
 lib/libraries/AFSoftSerial/AFSoftSerial.h
@@ -93,6 +95,7 @@ lib/plugins/servo_setup.rb
 lib/plugins/smoother.rb
 lib/plugins/spark_fun_serial_lcd.rb
 lib/plugins/spectra_symbol.rb
+lib/plugins/twitter_connect.rb
 lib/rad.rb
 lib/rad/README.rdoc
 lib/rad/arduino_plugin.rb

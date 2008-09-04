@@ -30,6 +30,8 @@ lib/examples/hello_spectra_sound.rb
 lib/examples/hello_world.rb
 lib/examples/hysteresis_duel.rb
 lib/examples/i2c_with_clock_chip.rb
+lib/examples/midi_beat_box.rb
+lib/examples/midi_scales.rb
 lib/examples/motor_knob.rb
 lib/examples/servo_buttons.rb
 lib/examples/servo_calibrate_continuous.rb
@@ -79,13 +81,15 @@ lib/plugins/hysteresis.rb
 lib/plugins/input_output_state.rb
 lib/plugins/lcd_padding.rb
 lib/plugins/mem_test.rb
+lib/plugins/midi.rb
+lib/plugins/parallax_ping.rb
 lib/plugins/servo_pulse.rb
 lib/plugins/servo_setup.rb
 lib/plugins/smoother.rb
 lib/plugins/spark_fun_serial_lcd.rb
 lib/plugins/spectra_symbol.rb
 lib/rad.rb
-lib/rad/arduino_hardware_config.rb
+lib/rad/README.rdoc
 lib/rad/arduino_plugin.rb
 lib/rad/arduino_sketch.rb
 lib/rad/generators/makefile/makefile.erb

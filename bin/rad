@@ -109,6 +109,7 @@ puts
 
 FileUtils.mkdir_p "#{sketch_name}/vendor/libraries"
 puts "Successfully created your libraries directory."
+puts
 
 FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/DS1307/.", "#{sketch_name}/vendor/libraries/DS1307"
 puts "Installed DS1307 into #{sketch_name}/vendor/libraries"
@@ -174,6 +175,7 @@ puts
 
 FileUtils.mkdir_p "#{sketch_name}/vendor/plugins"
 puts "Successfully created your plugins directory."
+puts
 
 FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/plugins/.", "#{sketch_name}/vendor/plugins"
 puts "Installed Default plugins into #{sketch_name}/vendor/plugins"
@@ -183,6 +185,14 @@ puts
 
 FileUtils.mkdir_p "#{sketch_name}/#{sketch_name}"
 puts "Successfully created your default sketch directory."
+puts
+
+# Copy the README how_to to the sketch directory
+
+FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/rad/README.rdoc", "#{sketch_name}"
+puts "Copied README how_to into #{sketch_name}"
+puts
+
 
 # Build sketch files, etc.:  
 

@@ -659,6 +659,22 @@ class HardwareLibrary < ArduinoSketch
 
   end
   
+  # work in progress
+  def ethernet(pin, opts={})
+    raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
+    if opts[:as]
+      accessor = []
+      $load_libraries << "AF_XPort"
+      $load_libraries << "AFSoftSerial"
+      # needs to be more granular:
+      accessor << "AF_XPort xport = AF_XPort(XPORT_RXPIN, XPORT_TXPIN, XPORT_RESETPIN, XPORT_DTRPIN, XPORT_RTSPIN, XPORT_CTSPIN);"
+      rate = opts[:rate] ? opts[:rate] : 57600
+      @other_setup << "xport.begin(#{rate});"
+      @accessors << accessor.join( "\n" )
+    end
+  end
+  
+  
   def i2c_eeprom(pin, opts={}) # i2c serial eeprom routines #
 
     dev_addr = opts[:address] ? opts[:address] : 0

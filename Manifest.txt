@@ -41,6 +41,11 @@ lib/examples/spectra_soft_pot.rb
 lib/examples/times_method.rb
 lib/examples/toggle.rb
 lib/examples/two_wire.rb
+lib/libraries/AFSoftSerial/AFSoftSerial.cpp
+lib/libraries/AFSoftSerial/AFSoftSerial.h
+lib/libraries/AFSoftSerial/keywords.txt
+lib/libraries/AF_XPort/AF_XPort.cpp
+lib/libraries/AF_XPort/AF_XPort.h
 lib/libraries/DS1307/DS1307.cpp
 lib/libraries/DS1307/DS1307.h
 lib/libraries/DS1307/keywords.txt

@@ -304,6 +304,9 @@ class ArduinoSketch
         when :onewire
           one_wire(num, opts)
           return #
+        when :ethernet
+          ethernet(num, opts)
+          return #
         else
           raise ArgumentError, "today's device choices are: :servo, :pa_lcd, :sf_lcd, :freq_out,:i2c, :i2c_eeprom, :i2c_ds1307, and :i2c_blinkm  got #{opts[:device]}"
         end

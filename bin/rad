@@ -249,5 +249,5 @@ puts "Run 'rake -T' inside your sketch dir to learn how to compile and upload it
 puts "***************************************************"
 puts "***     Please note: This version supports      ***"
 puts "***            Arduino 12 only!                 ***"
-puts "***   run "rad install arduino" to upgrade      ***"
+puts "***   run rad install arduino to upgrade      ***"
 puts "***************************************************"

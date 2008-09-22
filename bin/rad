@@ -9,6 +9,8 @@ end
 require 'optparse'
 require 'fileutils'
 require 'yaml'
+require 'progressbar'
+require 'open-uri'
 
 require File.expand_path(File.dirname(__FILE__)) + "/../lib/rad/version.rb"
 
@@ -90,140 +92,165 @@ end
 # 
 
 
-# Handle options:
-options, parser = OptionParser.parse(ARGV)
-sketch_name = ARGV[0]
-parser.parse!(["-h"]) unless sketch_name 
-  
-
-# Build vendor/rad:  
-  
-FileUtils.mkdir_p "#{sketch_name}/vendor/rad"
-puts "Successfully created your sketch directory."
-
-FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/rad/.", "#{sketch_name}/vendor/rad"
-puts "Installed RAD into #{sketch_name}/vendor/rad"
-puts
-
-# Build vendor/libraries:  
-
-FileUtils.mkdir_p "#{sketch_name}/vendor/libraries"
-puts "Successfully created your libraries directory."
-
-FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/DS1307/.", "#{sketch_name}/vendor/libraries/DS1307"
-puts "Installed DS1307 into #{sketch_name}/vendor/libraries"
-puts
-
-FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/FrequencyTimer2/.", "#{sketch_name}/vendor/libraries/FrequencyTimer2"
-puts "Installed FrequencyTimer2 into #{sketch_name}/vendor/libraries"
-puts
-
-FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/I2CEEPROM/.", "#{sketch_name}/vendor/libraries/I2CEEPROM" 
-puts "Installed I2CEEPROM into #{sketch_name}/vendor/libraries" 
-puts
-
-FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/LoopTimer/.", "#{sketch_name}/vendor/libraries/LoopTimer" 
-puts "Installed LoopTimer into #{sketch_name}/vendor/libraries" 
-puts
-
-FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/OneWire/.", "#{sketch_name}/vendor/libraries/OneWire"
-puts "Installed OneWire into #{sketch_name}/vendor/libraries"
-puts
-
-FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/Servo/.", "#{sketch_name}/vendor/libraries/Servo"
-puts "Installed Servo into #{sketch_name}/vendor/libraries"
-puts
-
-FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/Stepper/.", "#{sketch_name}/vendor/libraries/Stepper"
-puts "Installed Stepper into #{sketch_name}/vendor/libraries"
-puts
-
-FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/SWSerLCDpa/.", "#{sketch_name}/vendor/libraries/SWSerLCDpa"
-puts "Installed SWSerLCDpa into #{sketch_name}/vendor/libraries"
-puts
-
-FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/SWSerLCDsf/.", "#{sketch_name}/vendor/libraries/SWSerLCDsf"
-puts "Installed SWSerLCDsf into #{sketch_name}/vendor/libraries"
-puts
-
-FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/Wire/.", "#{sketch_name}/vendor/libraries/Wire"
-puts "Installed Wire into #{sketch_name}/vendor/libraries"
-puts
-
-# Build examples -- used for basic testing
-
-FileUtils.mkdir_p "#{sketch_name}/vendor/libraries"
-puts "Successfully created your examples directory."
-
-FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/examples/.", "#{sketch_name}/examples"
-puts "Installed examples into #{sketch_name}/examples"
-puts
-
-# Build test -- used testing
-
-# FIXME: this should put the tests into the vendor/tests directory instead.
- 
-# FileUtils.mkdir_p "#{sketch_name}/test"
-# puts "Successfully created your test directory."
-# 
-# FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/test/.", "#{sketch_name}/test"
-# puts "Installed tests into #{sketch_name}/test"
-# puts
-
-# Build vendor/plugins:  
-
-FileUtils.mkdir_p "#{sketch_name}/vendor/plugins"
-puts "Successfully created your plugins directory."
-
-FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/plugins/.", "#{sketch_name}/vendor/plugins"
-puts "Installed Default plugins into #{sketch_name}/vendor/plugins"
-puts
-
-# Add an default sketch directory # needed to run test:compile
-
-FileUtils.mkdir_p "#{sketch_name}/#{sketch_name}"
-puts "Successfully created your default sketch directory."
-
-# Build sketch files, etc.:  
-
-FileUtils.touch "#{sketch_name}/#{sketch_name}.rb"
-File.open("#{sketch_name}/#{sketch_name}.rb", "w") do |file|
-  file << <<-EOS
-class #{sketch_name.split("_").collect{|c| c.capitalize}.join("")} < ArduinoSketch
-  
-  # looking for hints?  check out the examples directory
-  # example sketches can be uploaded to your arduino with
-  # rake make:upload sketch=examples/hello_world
-  # just replace hello_world with other examples
-  
-    def loop
-     # your code here
-    end
+if ARGV[0] == "install"
+  raise "Sorry. Can only install Arduino on Mac OS X. See here for Linux instructions: http://www.arduino.cc/playground/Learning/Linux" unless RUBY_PLATFORM =~ /darwin/
+  puts "Downloading arduino-0012 for Mac from Arduino.cc"
+  File.open("/Applications/arduino-0012.zip", "w") do |file|
+    pbar = nil
+    file << open("http://www.arduino.cc/files/arduino-0012-mac.zip",
+    :content_length_proc => lambda {|t|
+      if t && 0 < t
+        pbar = ProgressBar.new(" Progress", t)
+        pbar.file_transfer_mode
+      end
+    },
+    :progress_proc => lambda {|s|
+      pbar.set s if pbar
+    }).read
+    pbar.finish
+  end
+  puts "Unzipping..."
+  `cd /Applications; unzip arduino-0012.zip`
+  `rm /Applications/arduino-0012.zip`
+  puts "installed Arduino here: /Applications/arduino-0012"
+elsif ARGV[0] == "test"  
+  puts "we should test arduino"
+else
+  # Handle options:
+  options, parser = OptionParser.parse(ARGV)
+  sketch_name = ARGV[0]
+  parser.parse!(["-h"]) unless sketch_name 
     
+  
+  # Build vendor/rad:  
+    
+  FileUtils.mkdir_p "#{sketch_name}/vendor/rad"
+  puts "Successfully created your sketch directory."
+  
+  FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/rad/.", "#{sketch_name}/vendor/rad"
+  puts "Installed RAD into #{sketch_name}/vendor/rad"
+  puts
+  
+  # Build vendor/libraries:  
+  
+  FileUtils.mkdir_p "#{sketch_name}/vendor/libraries"
+  puts "Successfully created your libraries directory."
+  
+  FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/DS1307/.", "#{sketch_name}/vendor/libraries/DS1307"
+  puts "Installed DS1307 into #{sketch_name}/vendor/libraries"
+  puts
+  
+  FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/FrequencyTimer2/.", "#{sketch_name}/vendor/libraries/FrequencyTimer2"
+  puts "Installed FrequencyTimer2 into #{sketch_name}/vendor/libraries"
+  puts
+  
+  FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/I2CEEPROM/.", "#{sketch_name}/vendor/libraries/I2CEEPROM" 
+  puts "Installed I2CEEPROM into #{sketch_name}/vendor/libraries" 
+  puts
+  
+  FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/LoopTimer/.", "#{sketch_name}/vendor/libraries/LoopTimer" 
+  puts "Installed LoopTimer into #{sketch_name}/vendor/libraries" 
+  puts
+  
+  FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/OneWire/.", "#{sketch_name}/vendor/libraries/OneWire"
+  puts "Installed OneWire into #{sketch_name}/vendor/libraries"
+  puts
+  
+  FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/Servo/.", "#{sketch_name}/vendor/libraries/Servo"
+  puts "Installed Servo into #{sketch_name}/vendor/libraries"
+  puts
+  
+  FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/Stepper/.", "#{sketch_name}/vendor/libraries/Stepper"
+  puts "Installed Stepper into #{sketch_name}/vendor/libraries"
+  puts
+  
+  FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/SWSerLCDpa/.", "#{sketch_name}/vendor/libraries/SWSerLCDpa"
+  puts "Installed SWSerLCDpa into #{sketch_name}/vendor/libraries"
+  puts
+  
+  FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/SWSerLCDsf/.", "#{sketch_name}/vendor/libraries/SWSerLCDsf"
+  puts "Installed SWSerLCDsf into #{sketch_name}/vendor/libraries"
+  puts
+  
+  FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/Wire/.", "#{sketch_name}/vendor/libraries/Wire"
+  puts "Installed Wire into #{sketch_name}/vendor/libraries"
+  puts
+  
+  # Build examples -- used for basic testing
+  
+  FileUtils.mkdir_p "#{sketch_name}/vendor/libraries"
+  puts "Successfully created your examples directory."
+  
+  FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/examples/.", "#{sketch_name}/examples"
+  puts "Installed examples into #{sketch_name}/examples"
+  puts
+  
+  # Build test -- used testing
+  
+  # FIXME: this should put the tests into the vendor/tests directory instead.
+   
+  # FileUtils.mkdir_p "#{sketch_name}/test"
+  # puts "Successfully created your test directory."
+  # 
+  # FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/test/.", "#{sketch_name}/test"
+  # puts "Installed tests into #{sketch_name}/test"
+  # puts
+  
+  # Build vendor/plugins:  
+  
+  FileUtils.mkdir_p "#{sketch_name}/vendor/plugins"
+  puts "Successfully created your plugins directory."
+  
+  FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/plugins/.", "#{sketch_name}/vendor/plugins"
+  puts "Installed Default plugins into #{sketch_name}/vendor/plugins"
+  puts
+  
+  # Add an default sketch directory # needed to run test:compile
+  
+  FileUtils.mkdir_p "#{sketch_name}/#{sketch_name}"
+  puts "Successfully created your default sketch directory."
+  
+  # Build sketch files, etc.:  
+  
+  FileUtils.touch "#{sketch_name}/#{sketch_name}.rb"
+  File.open("#{sketch_name}/#{sketch_name}.rb", "w") do |file|
+    file << <<-EOS
+  class #{sketch_name.split("_").collect{|c| c.capitalize}.join("")} < ArduinoSketch
+    
+    # looking for hints?  check out the examples directory
+    # example sketches can be uploaded to your arduino with
+    # rake make:upload sketch=examples/hello_world
+    # just replace hello_world with other examples
+    
+      def loop
+       # your code here
+      end
+      
+  end
+    EOS
+  end
+  puts "Added #{sketch_name}/#{sketch_name}.rb"
+  
+  File.open("#{sketch_name}/Rakefile", 'w') do |file|
+    file << <<-EOS 
+  require 'vendor/rad/init.rb'
+    EOS
+  end
+  puts "Added #{sketch_name}/Rakefile"
+  
+  FileUtils.mkdir_p "#{sketch_name}/config"
+  puts "Added #{sketch_name}/config"
+  
+  File.open("#{sketch_name}/config/hardware.yml", 'w') do |file|
+    file << options["hardware"].to_yaml
+  end
+  puts "Added #{sketch_name}/config/hardware.yml"
+  
+  File.open("#{sketch_name}/config/software.yml", 'w') do |file|
+    file << options["software"].to_yaml
+  end
+  puts "Added #{sketch_name}/config/software.yml"
+  
+  puts
+  puts "Run 'rake -T' inside your sketch dir to learn how to compile and upload it."
 end
-  EOS
-end
-puts "Added #{sketch_name}/#{sketch_name}.rb"
-
-File.open("#{sketch_name}/Rakefile", 'w') do |file|
-  file << <<-EOS 
-require 'vendor/rad/init.rb'
-  EOS
-end
-puts "Added #{sketch_name}/Rakefile"
-
-FileUtils.mkdir_p "#{sketch_name}/config"
-puts "Added #{sketch_name}/config"
-
-File.open("#{sketch_name}/config/hardware.yml", 'w') do |file|
-  file << options["hardware"].to_yaml
-end
-puts "Added #{sketch_name}/config/hardware.yml"
-
-File.open("#{sketch_name}/config/software.yml", 'w') do |file|
-  file << options["software"].to_yaml
-end
-puts "Added #{sketch_name}/config/software.yml"
-
-puts
-puts "Run 'rake -T' inside your sketch dir to learn how to compile and upload it."

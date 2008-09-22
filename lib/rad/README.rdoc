@@ -1,0 +1,5 @@
+=Welcome to RAD (Ruby Arduino Development) Quick Start Documentation
+
+ArduinoSketch is the main access point for working with RAD. Sub-classes of ArduinoSketch have access to a wide array of convenient class methods (documented below) for doing the most common kinds of setup needed when programming the Arduino such as configuring input and output pins and establishing serial connections. Here is the canonical 'hello world' example of blinking a single LED in RAD:
+
+test... to be continued if it works..

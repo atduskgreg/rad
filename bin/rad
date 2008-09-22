@@ -25,7 +25,7 @@ class OptionParser #:nodoc:
                 "physical_reset"   => false
                 },
                 "software" => {
-                  "arduino_root"   => "/Applications/arduino-0011"
+                  "arduino_root"   => "/Applications/arduino-0012"
                  }
                }
     
@@ -253,4 +253,10 @@ else
   
   puts
   puts "Run 'rake -T' inside your sketch dir to learn how to compile and upload it."
+  
+  puts "***************************************************"
+  puts "***     Please note: This version supports      ***"
+  puts "***            Arduino 12 only!                 ***"
+  puts "***   run rad install arduino to upgrade        ***"
+  puts "***************************************************"
 end

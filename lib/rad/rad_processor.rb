@@ -1,3 +1,4 @@
+require 'rubygems'
 require 'ruby_to_ansi_c'
 
 class RADProcessor < RubyToAnsiC

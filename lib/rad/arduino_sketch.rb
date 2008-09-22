@@ -193,100 +193,69 @@ class ArduinoSketch
 
   end
   
-  # Setup variables outside of the loop. Does some magic based on type of arguments. Subject to renaming. Use with caution.
-  def vars(opts={})
-    opts.each do |k,v|
-      if v.class == Symbol
-       @declarations << "#{v} _#{k};"
-       @accessors << <<-CODE
-        #{v} #{k}(){
-        \treturn _#{k};
-        }
-       CODE
-      else
-        type = case v
-        when Integer
-          "int"
-        when String
-          "char*"
-        when TrueClass
-          "bool"
-        when FalseClass
-          "bool"
-        end
 
-        @declarations << "#{type} _#{k} = #{v};"
-        @accessors << <<-CODE
-          #{type} #{k}(){
-          \treturn _#{k};
-          }
-        CODE
-      end
+  
+  # array "char buffer[32]"
+  # result: char buffer[32];
+  # array "char buffer[32]"
+  # result: char buffer[32];
+  # todo 
+  # need to feed array external array identifiers to rtc if they are in plugins or libraries, (not so sure about this will do more testing)
+  def array(arg)
+    if arg
+        arg = arg.chomp.rstrip.lstrip
+        name = arg.scan(/\s*(\w*)\[\d*\]?/).first.first
+        # help rad_processor do a better job with array types
+        types = ["int", "long", "char*", "unsigned int", "unsigned long", "byte", "bool", "float" ]
+        types.each_with_index do |type, i|
+          @type = types[i] if /#{type}/ =~ arg
+        end
+        raise ArgumentError, "type not currently supported.. got: #{arg}.  Currently supporting #{types.join(", ")}" unless @type
+
+        arg = "#{arg};" unless arg[-1,1] == ";"
+        $array_types[name] = @type
+        @type = nil
+        $external_var_identifiers << name unless $external_var_identifiers.include?(name)
+        # add array_name declaration
+        $external_array_vars << arg unless $external_array_vars.include?(arg)
     end
   end
   
-    
-    # array "char buffer[32]"
-    # result: char buffer[32];
-    # array "char buffer[32]"
-    # result: char buffer[32];
-    # todo 
-    # need to feed array external array identifiers to rtc if they are in plugins or libraries, (not so sure about this will do more testing)
-    def array(arg)
-      if arg
-          arg = arg.chomp.rstrip.lstrip
-          name = arg.scan(/\s*(\w*)\[\d*\]?/).first.first
-          # help rad_processor do a better job with array types
-          types = ["int", "long", "char*", "unsigned int", "unsigned long", "byte", "bool", "float" ]
-          types.each_with_index do |type, i|
-            @type = types[i] if /#{type}/ =~ arg
-          end
-          raise ArgumentError, "type not currently supported.. got: #{arg}.  Currently supporting #{types.join(", ")}" unless @type
-
-          arg = "#{arg};" unless arg[-1,1] == ";"
-          $array_types[name] = @type
-          @type = nil
-          $external_var_identifiers << name unless $external_var_identifiers.include?(name)
-          # add array_name declaration
-          $external_array_vars << arg unless $external_array_vars.include?(arg)
-      end
+  # define "DS1307_SEC 0"
+  # result: #define DS1307_SEC 0
+  # note we send the constant identifiers and type to our rad_type_checker
+  # however, it only knows about long, float, str....
+  # so we don't send ints ...yet..
+  # need more testing
+  def define(arg)
+    if arg
+        arg = arg.chomp.rstrip.lstrip
+        name = arg.split(" ").first
+        value = arg.gsub!("#{name} ","")
+        # negative
+        if value =~ /^-(\d|x)*$/ 
+           type = "long"
+         # negative float
+         elsif value =~ /^-(\d|\.|x)*$/ 
+           type = "float" 
+         elsif value =~ /[a-zA-Z]/
+           type = "str"
+           value = "\"#{value}\""
+         elsif value !~ /(\.|x)/
+           type = "long"
+         elsif value =~ /(\d*\.\d*)/ # and no 
+           type = "float"
+         elsif value =~ /0x\d\d/
+           type = "byte"
+         else 
+           raise ArgumentError, "opps, could not determine the define type, got #{value}"
+         end
+        $define_types[name] = type
+        arg = "#define #{name} #{value}"
+        $defines << arg
+        dummy_for_testing = arg, type
     end
-    
-    # define "DS1307_SEC 0"
-    # result: #define DS1307_SEC 0
-    # note we send the constant identifiers and type to our rad_type_checker
-    # however, it only knows about long, float, str....
-    # so we don't send ints ...yet..
-    # need more testing
-    def define(arg)
-      if arg
-          arg = arg.chomp.rstrip.lstrip
-          name = arg.split(" ").first
-          value = arg.gsub!("#{name} ","")
-          # negative
-          if value =~ /^-(\d|x)*$/ 
-             type = "long"
-           # negative float
-           elsif value =~ /^-(\d|\.|x)*$/ 
-             type = "float" 
-           elsif value =~ /[a-zA-Z]/
-             type = "str"
-             value = "\"#{value}\""
-           elsif value !~ /(\.|x)/
-             type = "long"
-           elsif value =~ /(\d*\.\d*)/ # and no 
-             type = "float"
-           elsif value =~ /0x\d\d/
-             type = "byte"
-           else 
-             raise ArgumentError, "opps, could not determine the define type, got #{value}"
-           end
-          $define_types[name] = type
-          arg = "#define #{name} #{value}"
-          $defines << arg
-          dummy_for_testing = arg, type
-      end
-    end
+  end
   
   # Configure a single pin for output and setup a method to refer to that pin, i.e.:
   #
@@ -308,9 +277,6 @@ class ArduinoSketch
         when :servo
           servo_setup(num, opts)
           return # don't use declarations, accessor, signatures below
-        when :lcd || :LCD
-          lcd_setup(num, opts)
-          return 
         when :pa_lcd || :pa_LCD
           pa_lcd_setup(num, opts)
           return 
@@ -338,8 +304,11 @@ class ArduinoSketch
         when :onewire
           one_wire(num, opts)
           return #
+        when :ethernet
+          ethernet(num, opts)
+          return #
         else
-          raise ArgumentError, "today's device choices are: :servo, :original_servo_setup, :pa_lcd, :sf_lcd, :freq_out,:i2c, :i2c_eeprom, :i2c_ds1307, and :i2c_blinkm  got #{opts[:device]}"
+          raise ArgumentError, "today's device choices are: :servo, :pa_lcd, :sf_lcd, :freq_out,:i2c, :i2c_eeprom, :i2c_ds1307, and :i2c_blinkm  got #{opts[:device]}"
         end
       end
       
@@ -366,68 +335,6 @@ class ArduinoSketch
     end
   end
   
-  # Like ArduinoSketch#output_pin but configure more than one output pin simultaneously. Takes an array of pin numbers. 
-  def output_pins(nums)
-    ar = Array(nums)
-    ar.each {|n| output_pin(n)} 
-  end
-  
-  # use the servo library
-  def servo_setup(num, opts)
-    if opts[:position]
-      raise ArgumentError, "position must be an integer from 0 to 360, got #{opts[:position].class}" unless opts[:position].is_a?(Fixnum)
-      raise ArgumentError, "position must be an integer from 0 to 360---, got #{opts[:position]}" if opts[:position] < 0 || opts[:position] > 360
-    end
-    servo(num, opts)
-    # move this to better place ... 
-    # should probably go along with servo code into plugin
-    @@servo_dh ||= FALSE
-    if (@@servo_dh == FALSE)	# on second instance this stuff can't be repeated - BBR
-      @@servo_dh = TRUE
-      @declarations << "void servo_refresh(void);"
-      helper_methods = []
-      helper_methods << "void servo_refresh(void)"
-      helper_methods << "{"
-      helper_methods <<  "\tServo::refresh();"
-      helper_methods << "}"
-      @helper_methods += "\n#{helper_methods.join("\n")}"
-    end
-  end
-  
-  ## this won't work at all... no pins
-  # need help
-  def lcd_setup(num, opts)
-    # move to plugin and load plugin
-    # what's the default rate?
-    opts[:rate] ||= 9600
-    rate = opts[:rate] ? opts[:rate] : 9600
-    swser_LCD(num, opts)
-  end
-  
-  # use the pa lcd library
-  def pa_lcd_setup(num, opts)
-    if opts[:geometry]
-      raise ArgumentError, "can only define pin from Fixnum, got #{opts[:geometry]}" unless opts[:geometry].is_a?(Fixnum)
-      raise ArgumentError, "pa_lcd geometry must be 216, 220, 224, 240, 416, 420, got #{opts[:geometry]}" unless opts[:geometry].to_s =~ /(216|220|224|240|416|420)/
-    end
-    # move to plugin and load plugin
-    # what's the default?
-     opts[:rate] ||= 9600
-    rate = opts[:rate] ? opts[:rate] : 9600
-    swser_LCDpa(num, opts)
-  end
-  
-  # use the sf (sparkfun) library
-  def sf_lcd_setup(num, opts)
-    if opts[:geometry]
-      raise ArgumentError, "can only define pin from Fixnum, got #{opts[:geometry]}" unless opts[:geometry].is_a?(Fixnum)
-      raise ArgumentError, "sf_lcd geometry must be 216, 220, 416, 420, got #{opts[:geometry]}" unless opts[:geometry].to_s =~ /(216|220|416|420)/
-    end
-    # move to plugin and load plugin
-     opts[:rate] ||= 9600
-    rate = opts[:rate] ? opts[:rate] : 9600
-    swser_LCDsf(num, opts)
-  end
   
   # Configure a single pin for input and setup a method to refer to that pin, i.e.:
   #
@@ -523,477 +430,6 @@ class ArduinoSketch
   end
 
   
-  # Treat a pair of digital I/O pins as a serial line. See: http://www.arduino.cc/en/Tutorial/SoftwareSerial
-  def software_serial(rx, tx, opts={})
-    raise ArgumentError, "can only define rx from Fixnum, got #{rx.class}" unless rx.is_a?(Fixnum)
-    raise ArgumentError, "can only define tx from Fixnum, got #{tx.class}" unless tx.is_a?(Fixnum)
-    
-    output_pin(tx)
-    input_pin(rx)
-    
-    rate = opts[:rate] ? opts[:rate] : 9600
- 		if opts[:as]
- 			@declarations << "SoftwareSerial _#{opts[ :as ]} = SoftwareSerial(#{rx}, #{tx});"
- 			accessor = []
- 			accessor << "SoftwareSerial& #{opts[ :as ]}() {"
- 			accessor << "\treturn _#{opts[ :as ]};"
- 			accessor << "}"
- 			@@swser_inc ||= FALSE
- 			if (@@swser_inc == FALSE) # on second instance this stuff can't be repeated
- 				@@swser_inc = TRUE
-	 			accessor << "int read(SoftwareSerial& s) {"
- 				accessor << "\treturn s.read();"
- 				accessor << "}"
- 				accessor << "void println( SoftwareSerial& s, char* str ) {"
- 				accessor << "\treturn s.println( str );"
- 				accessor << "}"
- 				accessor << "void print( SoftwareSerial& s, char* str ) {"
- 				accessor << "\treturn s.print( str );"
- 				accessor << "}"
- 				accessor << "void println( SoftwareSerial& s, int i ) {"
- 				accessor << "\treturn s.println( i );"
- 				accessor << "}"
- 				accessor << "void print( SoftwareSerial& s, int i ) {"
- 				accessor << "\treturn s.print( i );"
- 				accessor << "}"
- 			end
- 			@accessors << accessor.join( "\n" )
- 			
- 			@signatures << "SoftwareSerial& #{opts[ :as ]}();"
- 
- 			@other_setup << "\t_#{opts[ :as ]}.begin(#{rate});"
- 		end
- 	end 	
- 	
- 	def swser_LCDpa(tx, opts={})
-    raise ArgumentError, "can only define tx from Fixnum, got #{tx.class}" unless tx.is_a?(Fixnum)
-
-    rate = opts[:rate] ? opts[:rate] : 9600
-    geometry = opts[:geometry] ? opts[:geometry] : 0
- 		if opts[:as] 
- 			@declarations << "SWSerLCDpa _#{opts[ :as ]} = SWSerLCDpa(#{tx}, #{geometry});"
- 			accessor = []
- 			$load_libraries << "SWSerLCDpa"
- 			accessor << "SWSerLCDpa& #{opts[ :as ]}() {"
- 			accessor << "\treturn _#{opts[ :as ]};"
- 			accessor << "}"
- 			@@slcdpa_inc ||= FALSE
- 			if (@@slcdpa_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
- 				@@slcdpa_inc = TRUE
-				  # ------------------- print generics -------------------------------
- 	 			  accessor << "void print( SWSerLCDpa& s, uint8_t b ) {"
-	  			accessor << "\treturn s.print( b );"
- 	 			  accessor << "}"
- 	 			  accessor << "void print( SWSerLCDpa& s, const char *str ) {"
-  				accessor << "\treturn s.print( str );"
-  				accessor << "}"
-  				accessor << "void print( SWSerLCDpa& s, char c ) {"
-  				accessor << "\treturn s.print( c );"
-  				accessor << "}"
-  				accessor << "void print( SWSerLCDpa& s, int i ) {"
-  				accessor << "\treturn s.print( i );"
-  				accessor << "}"
-  				accessor << "void print( SWSerLCDpa& s, unsigned int i ) {"
-  				accessor << "\treturn s.print( i );"
-  				accessor << "}"
-  				accessor << "void print( SWSerLCDpa& s, long i ) {"
-  				accessor << "\treturn s.print( i );"
-  				accessor << "}"
-  				accessor << "void print( SWSerLCDpa& s, unsigned long i ) {"
-  				accessor << "\treturn s.print( i );"
-  				accessor << "}"
-  				accessor << "void print( SWSerLCDpa& s, long i, int b ) {"
-  				accessor << "\treturn s.print( i, b );"
-  				accessor << "}"
-          # ------------------ PA-LCD specific functions ---------------------------------
-   				accessor << "void clearscr(SWSerLCDpa& s) {"
- 	 			  accessor << "\treturn s.clearscr();"
-  				accessor << "}"
-  				accessor << "void clearscr(SWSerLCDpa& s, const char *str) {"
- 	 			  accessor << "\treturn s.clearscr(str);"
-  				accessor << "}"
-  				accessor << "void clearscr(SWSerLCDpa& s, int n) {"
- 	 			  accessor << "\treturn s.clearscr(n);"
-  				accessor << "}"
-  				accessor << "void clearscr(SWSerLCDpa& s, long n, int b) {"
- 	 			  accessor << "\treturn s.clearscr(n, b);"
-  				accessor << "}"
-   				accessor << "void clearline(SWSerLCDpa& s, int line) {"
- 	 			  accessor << "\treturn s.clearline( line );"
-  				accessor << "}"
-   				accessor << "void clearline(SWSerLCDpa& s, int line, const char *str) {"
- 	 			  accessor << "\treturn s.clearline( line, str );"
-  				accessor << "}"
-   				accessor << "void clearline(SWSerLCDpa& s, int line, int n) {"
- 	 			  accessor << "\treturn s.clearline( line, n );"
-  				accessor << "}"
-   				accessor << "void clearline(SWSerLCDpa& s, int line, long n,  int b) {"
- 	 			  accessor << "\treturn s.clearline( line, n, b );"
-  				accessor << "}"
-  				accessor << "void home( SWSerLCDpa& s) {"
-  				accessor << "\treturn s.home();"
-  				accessor << "}"
-  				accessor << "void home( SWSerLCDpa& s, const char *str) {"
-  				accessor << "\treturn s.home( str );"
-    			accessor << "}"
-  				accessor << "void home( SWSerLCDpa& s, int n) {"
-  				accessor << "\treturn s.home( n );"
-    			accessor << "}"
-  				accessor << "void home( SWSerLCDpa& s, long n, int b) {"
-  				accessor << "\treturn s.home( n, b );"
-    			accessor << "}"
-  				accessor << "void setxy( SWSerLCDpa& s, int x, int y) {"
-  				accessor << "\treturn s.setxy( x, y );"
-  				accessor << "}"
-  				accessor << "void setxy( SWSerLCDpa& s, int x, int y, const char *str) {"
-  				accessor << "\treturn s.setxy( x, y, str );"
-    			accessor << "}"
-  				accessor << "void setxy( SWSerLCDpa& s, int x, int y, long n, int b) {"
-  				accessor << "\treturn s.setxy( x, y, n, b );"
-    			accessor << "}"
-  				accessor << "void setxy( SWSerLCDpa& s, int x, int y, int n) {"
-  				accessor << "\treturn s.setxy( x, y, n );"
-    			accessor << "}"
-  				accessor << "void setgeo( SWSerLCDpa& s, int g) {"
-  				accessor << "\treturn s.setgeo( g );"
-  				accessor << "}"
-  				accessor << "void setintensity( SWSerLCDpa& s, int i ) {"
-  				accessor << "\treturn s.setintensity( i );"
-  				accessor << "}"
-  				accessor << "void intoBignum(SWSerLCDpa& s) {"
-  				accessor << "\treturn s.intoBignum();"
-  				accessor << "}"
-  				accessor << "void outofBignum(SWSerLCDpa& s) {"
-  				accessor << "\treturn s.outofBignum();"
-  				accessor << "}"
- 			end
- 			
- 			@accessors << accessor.join( "\n" )
- 			
- 			@signatures << "SWSerLCDpa& #{opts[ :as ]}();"
- 
- 			@other_setup << "\t_#{opts[ :as ]}.begin(#{rate});"
- 			@other_setup << "\t_#{opts[ :as ]}.clearscr();"     if :clear_screen == :true
- 			
- 		end
- 	end 	
-
-
-
- 	def swser_LCDsf(tx, opts={})
-    raise ArgumentError, "can only define tx from Fixnum, got #{tx.class}" unless tx.is_a?(Fixnum)    
-
-    rate = opts[:rate] ? opts[:rate] : 9600
-    geometry = opts[:geometry] ? opts[:geometry] : 0
- 		if opts[:as] 
- 			@declarations << "SWSerLCDsf _#{opts[ :as ]} = SWSerLCDsf(#{tx}, #{geometry});"
- 			accessor = []
- 			$load_libraries << "SWSerLCDsf"
- 			accessor << "SWSerLCDsf& #{opts[ :as ]}() {"
- 			accessor << "\treturn _#{opts[ :as ]};"
- 			accessor << "}"
- 			@@slcdsf_inc ||= FALSE # assign only if nil
- 			if (@@slcdsf_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
- 				@@slcdsf_inc = TRUE
- 	 			accessor << "void print( SWSerLCDsf& s, uint8_t b ) {"
-	  			accessor << "\treturn s.print( b );"
- 	 			  accessor << "}"
- 	 			  accessor << "void print( SWSerLCDsf& s, const char *str ) {"
-  				accessor << "\treturn s.print( str );"
-  				accessor << "}"
-  				accessor << "void print( SWSerLCDsf& s, char c ) {"
-  				accessor << "\treturn s.print( c );"
-  				accessor << "}"
-  				accessor << "void print( SWSerLCDsf& s, int i ) {"
-  				accessor << "\treturn s.print( i );"
-  				accessor << "}"
-  				accessor << "void print( SWSerLCDsf& s, unsigned int i ) {"
-  				accessor << "\treturn s.print( i );"
-  				accessor << "}"
-  				accessor << "void print( SWSerLCDsf& s, long i ) {"
-  				accessor << "\treturn s.print( i );"
-  				accessor << "}"
-  				accessor << "void print( SWSerLCDsf& s, unsigned long i ) {"
-  				accessor << "\treturn s.print( i );"
-  				accessor << "}"
-  				accessor << "void print( SWSerLCDsf& s, long i, int b ) {"
-  				accessor << "\treturn s.print( i, b );"
-  				accessor << "}"
-          # ------------------ Spark Fun Specific  Functions ---------------------------------
-   				accessor << "void clearscr(SWSerLCDsf& s) {"
- 	 			  accessor << "\treturn s.clearscr();"
-  				accessor << "}"
-  				accessor << "void clearscr(SWSerLCDsf& s, const char *str) {"
- 	 			  accessor << "\treturn s.clearscr(str);"
-  				accessor << "}"
-  				accessor << "void clearscr(SWSerLCDsf& s, int n) {"
- 	 			  accessor << "\treturn s.clearscr(n);"
-  				accessor << "}"
-  				accessor << "void clearscr(SWSerLCDsf& s, long n, int b) {"
- 	 			  accessor << "\treturn s.clearscr(n, b);"
-  				accessor << "}"
-  				accessor << "void home( SWSerLCDsf& s) {"
-  				accessor << "\treturn s.home();"
-  				accessor << "}"
-  				accessor << "void home( SWSerLCDsf& s, const char *str) {"
-  				accessor << "\treturn s.home( str );"
-    			accessor << "}"
-  				accessor << "void home( SWSerLCDsf& s, int n) {"
-  				accessor << "\treturn s.home( n );"
-    			accessor << "}"
-  				accessor << "void home( SWSerLCDsf& s, long n, int b) {"
-  				accessor << "\treturn s.home( n, b );"
-    			accessor << "}"
-  				accessor << "void setxy( SWSerLCDsf& s, int x, int y) {"
-  				accessor << "\treturn s.setxy( x, y );"
-  				accessor << "}"
-  				accessor << "void setxy( SWSerLCDsf& s, int x, int y, const char *str) {"
-  				accessor << "\treturn s.setxy( x, y, str );"
-  				accessor << "}"
-  				accessor << "void setxy( SWSerLCDsf& s, int x, int y, int n) {"
-  				accessor << "\treturn s.setxy( x, y, n );"
-  				accessor << "}"
-  				accessor << "void setxy( SWSerLCDsf& s, int x, int y, long n, int b) {"
-  				accessor << "\treturn s.setxy( x, y, n, b );"
-    			accessor << "}"
-  				accessor << "void setgeo( SWSerLCDsf& s, int g) {"
-  				accessor << "\treturn s.setgeo( g );"
-  				accessor << "}"
-  				accessor << "void setintensity( SWSerLCDsf& s, int i ) {"
-  				accessor << "\treturn s.setintensity( i );"
-  				accessor << "}"
-  				accessor << "void setcmd( SWSerLCDsf& s, uint8_t a, uint8_t b) {"
-  				accessor << "\treturn s.setcmd( a, b );"
-  				accessor << "}"
-  			end
- 			@accessors << accessor.join( "\n" )
- 			
- 			@signatures << "SWSerLCDsf& #{opts[ :as ]}();"
- 
- 			@other_setup << "\t_#{opts[ :as ]}.begin(#{rate});"
- 			@other_setup << "\t_#{opts[ :as ]}.clearscr();"     if :clear_screen == :true
-
- 		end
- 	end 	
-
-
-  def loop_timer(opts={}) # loop timer methods #
-        
-   		if opts[:as]
- 			@declarations << "LoopTimer _#{opts[ :as ]} = LoopTimer();"
- 			accessor = []
- 			$load_libraries << "LoopTimer"
- 			accessor << "LoopTimer& #{opts[ :as ]}() {"
- 			accessor << "\treturn _#{opts[ :as ]};"
- 			accessor << "}"
-      @@loptim_inc ||= FALSE
- 			if (@@loptim_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
- 				@@limtim_inc = TRUE
- 				accessor << "void track( LoopTimer& s ) {"
- 				accessor << "\treturn s.track();"
- 				accessor << "}"
- 				accessor << "unsigned long get_total( LoopTimer& s ) {"
-	 			accessor << "\treturn s.get_total();"
- 				accessor << "}"
- 			end
- 			
- 			@accessors << accessor.join( "\n" )
- 			
- 			@signatures << "LoopTimer& #{opts[ :as ]}();"
-
- 		end
- 	end 
-
-
-
-  def twowire_stepper(pin1, pin2, opts={}) # servo motor routines #
-    raise ArgumentError, "can only define pin1 from Fixnum, got #{pin1.class}" unless pin1.is_a?(Fixnum)
-    raise ArgumentError, "can only define pin2 from Fixnum, got #{pin2.class}" unless pin2.is_a?(Fixnum)
-        
-    st_speed = opts[:speed] ? opts[:speed] : 30
-    st_steps = opts[:steps] ? opts[:steps] : 100
-    
-   		if opts[:as]
- 			@declarations << "Stepper _#{opts[ :as ]} = Stepper(#{st_steps},#{pin1},#{pin2});"
- 			accessor = []
- 			$load_libraries << "Stepper"
- 			accessor << "Stepper& #{opts[ :as ]}() {"
- 			accessor << "\treturn _#{opts[ :as ]};"
- 			accessor << "}"
-      @@stepr_inc ||= FALSE
- 			if (@@stepr_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
- 				@@stepr_inc = TRUE
- 				accessor << "void set_speed( Stepper& s, long sp ) {"
- 				accessor << "\treturn s.set_speed( sp );"
- 				accessor << "}"
- 				accessor << "void set_steps( Stepper& s, int b ) {"
-	 			accessor << "\treturn s.set_steps( b );"
- 				accessor << "}"
- 				accessor << "int version( Stepper& s ) {"
- 				accessor << "\treturn s.version();"
- 				accessor << "}"
-			end
- 			
- 			@accessors << accessor.join( "\n" )
- 			
- 			@signatures << "Stepper& #{opts[ :as ]}();"
-
- 			@other_setup << "\t_#{opts[ :as ]}.set_speed(#{st_speed});" if opts[:speed]
-
- 		end
- 	end 
- 	
-
-  def fourwire_stepper( pin1, pin2, pin3, pin4, opts={}) # servo motor routines #
-    raise ArgumentError, "can only define pin1 from Fixnum, got #{pin1.class}" unless pin1.is_a?(Fixnum)
-    raise ArgumentError, "can only define pin2 from Fixnum, got #{pin2.class}" unless pin2.is_a?(Fixnum)
-    raise ArgumentError, "can only define pin3 from Fixnum, got #{pin3.class}" unless pin3.is_a?(Fixnum)
-    raise ArgumentError, "can only define pin4 from Fixnum, got #{pin4.class}" unless pin4.is_a?(Fixnum)
-        
-    st_speed = opts[:speed] ? opts[:speed] : 30
-    st_steps = opts[:steps] ? opts[:steps] : 100
-    
-   		if opts[:as]
- 			@declarations << "Stepper _#{opts[ :as ]} = Stepper(#{st_steps},#{pin1},#{pin2},#{pin3},#{pin4});"
- 			accessor = []
- 			$load_libraries << "Stepper"
- 			accessor << "Stepper& #{opts[ :as ]}() {"
- 			accessor << "\treturn _#{opts[ :as ]};"
- 			accessor << "}"
-      @@stepr_inc ||= FALSE
- 			if (@@stepr_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
- 				@@stepr_inc = TRUE
- 				accessor << "void set_speed( Stepper& s, long sp ) {"
- 				accessor << "\treturn s.set_speed( sp );"
- 				accessor << "}"
- 				accessor << "void set_steps( Stepper& s, int b ) {"
-	 			accessor << "\treturn s.set_steps( b );"
- 				accessor << "}"
- 				accessor << "int version( Stepper& s ) {"
- 				accessor << "\treturn s.version();"
- 				accessor << "}"
-			end
- 			
- 			@accessors << accessor.join( "\n" )
- 			
- 			@signatures << "Stepper& #{opts[ :as ]}();"
-
- 			@other_setup << "\t_#{opts[ :as ]}.set_speed(#{st_speed});" if opts[:speed]
-
- 		end
- 	end 
-
-
-  def servo(pin, opts={}) # servo motor routines #
-    raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
-        
-    minp = opts[:min] ? opts[:min] : 544
-    maxp = opts[:max] ? opts[:max] : 2400
-
-   		if opts[:as]
- 			@declarations << "Servo _#{opts[ :as ]} = Servo();"
- 			accessor = []
- 			$load_libraries << "Servo"
- 			accessor << "Servo& #{opts[ :as ]}() {"
- 			accessor << "\treturn _#{opts[ :as ]};"
- 			accessor << "}"
-      @@servo_inc ||= FALSE
- 			if (@@servo_inc == FALSE)	# on second instance this stuff can't be repeated - BBR
- 				@@servo_inc = TRUE
- 				accessor << "uint8_t attach( Servo& s, int p ) {"
- 				accessor << "\treturn s.attach(p);"
- 				accessor << "}"
- 				accessor << "uint8_t attach( Servo& s, int p, int pos ) {"
- 				accessor << "\treturn s.attach(p, pos );"
- 				accessor << "}"
- 				accessor << "uint8_t attach( Servo& s, int p, uint16_t mn, uint16_t mx ) {"
- 				accessor << "\treturn s.attach(p, mn, mx);"
- 				accessor << "}"
- 				accessor << "uint8_t attach( Servo& s, int p, int pos, uint16_t mn, uint16_t mx ) {"
- 				accessor << "\treturn s.attach(p, pos, mn, mx);"
- 				accessor << "}"
- 				accessor << "void detach( Servo& s ) {"
- 				accessor << "\treturn s.detach();"
- 				accessor << "}"
- 				accessor << "void position( Servo& s, int b ) {"
-	 			accessor << "\treturn s.position( b );"
- 				accessor << "}"
- 				accessor << "void speed( Servo& s, int b ) {"
- 				accessor << "\treturn s.speed( b );"
- 				accessor << "}"
- 				accessor << "uint8_t read( Servo& s ) {"
- 				accessor << "\treturn s.read();"
- 				accessor << "}"
- 				accessor << "uint8_t attached( Servo& s ) {"
- 				accessor << "\treturn s.attached();"
- 				accessor << "}"
- 				accessor << "static void refresh( Servo& s ) {"
- 				accessor << "\treturn s.refresh();"
- 				accessor << "}"
- 			end
- 			
- 			@accessors << accessor.join( "\n" )
- 			
- 			@signatures << "Servo& #{opts[ :as ]}();"
-
- 			@other_setup << "\t_#{opts[ :as ]}.attach(#{pin}, #{opts[:position]}, #{minp}, #{maxp});" if opts[:position]
- 			@other_setup << "\t_#{opts[ :as ]}.attach(#{pin}, #{minp}, #{maxp});" unless opts[:position]
-
- 		end
- 	end 
- 	
- 	def frequency_timer(pin, opts={}) # frequency timer routines
-
-    @@frequency_inc ||= FALSE
-    raise ArgumentError, "there can be only one instance of Frequency Timer2" if @@frequency_inc == TRUE
-    @@frequency_inc = TRUE
-    
-    raise ArgumentError, "can only define pin from Fixnum, got #{pin.class}" unless pin.is_a?(Fixnum)
-    raise ArgumentError, "only pin 11 may be used for freq_out, got #{pin}" unless pin == 11
-    
-    if opts[:enable]
-      raise ArgumentError, "enable option must include the frequency or period option" unless opts[:frequency] || opts[:period]
-    end
-    if opts[:frequency]
-      raise ArgumentError, "the frequency option must be an integer, got #{opts[:frequency].class}" unless opts[:frequency].is_a?(Fixnum)
-    end
-    if opts[:period]
-      raise ArgumentError, "the frequency option must be an integer, got #{opts[:period].class}" unless opts[:period].is_a?(Fixnum) 
-    end
-    # refer to: http://www.arduino.cc/playground/Code/FrequencyTimer2
-
-   		if opts[:as]
-   		   
-   		  @declarations << "FrequencyTimer2 _#{opts[ :as ]} = FrequencyTimer2();"
-   			accessor = []
-   			$load_libraries << "FrequencyTimer2"	
-   			accessor << "FrequencyTimer2& #{opts[ :as ]}() {"
-   			accessor << "\treturn _#{opts[ :as ]};"
-   			accessor << "}"
-   			accessor << "void set_frequency( FrequencyTimer2& s, int b ) {"
-   			accessor << "\treturn s.setPeriod( 1000000L/b );"
-   			accessor << "}"
-   			accessor << "void set_period( FrequencyTimer2& s, int b ) {"
-  	 		accessor << "\treturn s.setPeriod( b );"
-   			accessor << "}"
-   			accessor << "void enable( FrequencyTimer2& s ) {"
-   			accessor << "\treturn s.enable();"
-   			accessor << "}"
-   			accessor << "void disable( FrequencyTimer2& s ) {"
-   			accessor << "\treturn s.disable();"
-   			accessor << "}"
-
-   			@accessors << accessor.join( "\n" )
-
-   			@signatures << "FrequencyTimer2& #{opts[ :as ]}();"
-	
-		    @other_setup << "\tFrequencyTimer2::setPeriod(0L);" unless opts[:frequency] || opts[:period]
- 			  @other_setup << "\tFrequencyTimer2::setPeriod(1000000L/#{opts[:frequency]});" if opts[:frequency]
- 			  @other_setup << "\tFrequencyTimer2::setPeriod(#{opts[:period]});" if opts[:period]
- 			  @other_setup << "\tFrequencyTimer2::enable();" if opts[:enable] == :true
- 		end
- 	end	
-
 
 
   def compose_setup #:nodoc: also composes headers and signatures

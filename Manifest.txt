@@ -3,6 +3,8 @@ License.txt
 Manifest.txt
 README.rdoc
 Rakefile
+bin/hello_world_test/Makefile
+bin/hello_world_test/hello_world.cpp
 bin/rad
 lib/examples/add_hysteresis.rb
 lib/examples/basic_blink.rb
@@ -37,6 +39,7 @@ lib/examples/motor_knob.rb
 lib/examples/servo_buttons.rb
 lib/examples/servo_calibrate_continuous.rb
 lib/examples/servo_throttle.rb
+lib/examples/software_serial.rb
 lib/examples/sparkfun_lcd.rb
 lib/examples/spectra_soft_pot.rb
 lib/examples/times_method.rb
@@ -104,6 +107,7 @@ lib/rad/generators/makefile/makefile.erb
 lib/rad/generators/makefile/makefile.rb
 lib/rad/hardware_library.rb
 lib/rad/init.rb
+lib/rad/progressbar.rb
 lib/rad/rad_processor.rb
 lib/rad/rad_rewriter.rb
 lib/rad/rad_type_checker.rb

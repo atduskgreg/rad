@@ -1,3 +1,8 @@
+== 0.3.0 2008-09-22
+* Pushing to rubyforge.. 
+	- added rad install arduino
+	- added rad test arduino
+
 == 0.2.5 2008-07-21
 * 1ish large post Bastille Day update:
 	- added i2c capability

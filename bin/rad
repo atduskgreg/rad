@@ -176,6 +176,14 @@ else
   FileUtils.mkdir_p "#{sketch_name}/vendor/libraries"
   puts "Successfully created your libraries directory."
   
+  FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/AF_XPort/.", "#{sketch_name}/vendor/libraries/AF_XPort"
+  puts "Installed AF_XPort into #{sketch_name}/vendor/libraries"
+  puts
+
+  FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/AFSoftSerial/.", "#{sketch_name}/vendor/libraries/AFSoftSerial"
+  puts "Installed AFSoftSerial into #{sketch_name}/vendor/libraries"
+  puts
+  
   FileUtils.cp_r "#{File.dirname(__FILE__)}/../lib/libraries/DS1307/.", "#{sketch_name}/vendor/libraries/DS1307"
   puts "Installed DS1307 into #{sketch_name}/vendor/libraries"
   puts

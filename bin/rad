@@ -127,7 +127,7 @@ elsif ARGV[0] == "test"
   
   `cd #{test_dir}; make upload`
   
-  # find the USB port and 
+  # find the USB port to make sure the Arduino's actually plugged in
   options, parser = OptionParser.parse(ARGV)
   usb_port = options["hardware"]["serial_port"]
   port_name = usb_port.split("/").last

@@ -115,7 +115,7 @@ if ARGV[0] == "install"
   `rm /Applications/arduino-0012.zip`
   puts "installed Arduino here: /Applications/arduino-0012"
 elsif ARGV[0] == "test"
-  test_dir = File.expand_path(File.dirname(__FILE__)) + "/../bin/hello_world_test"
+  test_dir = File.expand_path(File.dirname(__FILE__)) + "/../test/hello_world_test"
   puts "Compiling hello_world.cpp to test your Arduino."
   puts "cd #{test_dir}; make depend; make;"
   `cd #{test_dir}; make depend; make;`

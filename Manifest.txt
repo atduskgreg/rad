@@ -3,8 +3,6 @@ License.txt
 Manifest.txt
 README.rdoc
 Rakefile
-bin/hello_world_test/Makefile
-bin/hello_world_test/hello_world.cpp
 bin/rad
 lib/examples/add_hysteresis.rb
 lib/examples/basic_blink.rb
@@ -127,6 +125,8 @@ spec/models/sketch_compiler_spec.rb
 spec/models/spec_helper.rb
 spec/sim/hello_world_spec.rb
 spec/spec.opts
+test/hello_world_test/Makefile
+test/hello_world_test/hello_world.cpp
 test/test_array_processing.rb
 test/test_plugin_loading.rb
 test/test_translation_post_processing.rb

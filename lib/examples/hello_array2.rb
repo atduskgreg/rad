@@ -24,7 +24,12 @@ class HelloArray2 < ArduinoSketch
  array "int pizzas[] = {1,2,3,4}"
  array "byte buffer[20] = {'A', 'B', 'Z', 'C', 'Y', 'D', 'W', 'E', '%', 'H', '*', '!', ')', '=', 'P', '-', '+', 'R', 'I', 'K'}"
  
- output_pin 14, :as => :my_lcd, :device => :pa_lcd, :rate => 19200, :clear_screen => :true
+ ## multidimensional arrays
+ array 'int @my_numbers[3][4] = {{1,2,3,4},{5,6,7,8},{9,10,11,12}}'
+ array 'char* @pizzas[2][4] = {{"margherita","funghi","napoletana","prosciutto cotto"},{"veggie","pepperoni","cheese","kitchen sink"}}'
+ 
+ 
+ output_pin 5, :as => :my_lcd, :device => :pa_lcd, :rate => 19200, :clear_screen => :true
  
  
  def setup
@@ -56,12 +61,40 @@ class HelloArray2 < ArduinoSketch
    
    delay 3000
    
+
+   
    my_lcd.clearline 1, @names[2]
    my_lcd.print " [ "
    my_lcd.print pizzas[1]
    my_lcd.print " ]"
    
    delay 2000
+   
+   my_lcd.clearscr "Multidimensional ?n"
+   
+   0.upto(2) do |f|
+     0.upto(3) do |s|
+       my_lcd.print @my_numbers[f][s]
+       my_lcd.print ", "
+       delay 500
+     end
+   end
+   
+   delay 1000
+   
+   my_lcd.clearscr
+
+    0.upto(1) do |f|
+      0.upto(3) do |s|
+        my_lcd.print @pizzas[f][s]
+        my_lcd.print ", "
+        delay 500
+      end
+    end
+
+
+
+    delay 2000
    
    my_lcd.clearscr "Array Load?n"
    1.upto(20) do |x|

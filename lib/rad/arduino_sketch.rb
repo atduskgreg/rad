@@ -204,6 +204,7 @@ class ArduinoSketch
   def array(arg)
     if arg
         arg = arg.chomp.rstrip.lstrip
+        arg.sub!("@","__")
         name = arg.scan(/\s*(\w*)\[\d*\]?/).first.first
         # help rad_processor do a better job with array types
         types = ["int", "long", "char*", "unsigned int", "unsigned long", "byte", "bool", "float" ]

@@ -14,6 +14,8 @@ require 'readline'
 
 require File.expand_path(File.dirname(__FILE__)) + "/../lib/rad/version.rb"
 require File.expand_path(File.dirname(__FILE__)) + "/../lib/rad/progressbar.rb"
+require File.expand_path(File.dirname(__FILE__)) + "/../lib/rad/linux_installer.rb"
+require File.expand_path(File.dirname(__FILE__)) + "/../lib/rad/darwin_installer.rb"
 
 class OptionParser #:nodoc:
     
@@ -94,26 +96,16 @@ end
 
 
 if ARGV[0] == "install"
-  raise "Sorry. Can only install Arduino on Mac OS X. See here for Linux instructions: http://www.arduino.cc/playground/Learning/Linux" unless RUBY_PLATFORM =~ /darwin/
-  puts "Downloading arduino-0012 for Mac from Arduino.cc"
-  File.open("/Applications/arduino-0012.zip", "w") do |file|
-    pbar = nil
-    file << open("http://www.arduino.cc/files/arduino-0012-mac.zip",
-    :content_length_proc => lambda {|t|
-      if t && 0 < t
-        pbar = ProgressBar.new(" Progress", t)
-        pbar.file_transfer_mode
-      end
-    },
-    :progress_proc => lambda {|s|
-      pbar.set s if pbar
-    }).read
-    pbar.finish
+  
+  case RUBY_PLATFORM
+  when /linux/
+    LinuxInstaller.install!
+  when /darwin/
+    DarwinInstaller.install!
+  else
+    raise "Sorry. Can only install Arduino on Mac OS X. See here for Linux instructions: http://www.arduino.cc/playground/Learning/Linux"
   end
-  puts "Unzipping..."
-  `cd /Applications; unzip arduino-0012.zip`
-  `rm /Applications/arduino-0012.zip`
-  puts "installed Arduino here: /Applications/arduino-0012"
+
 elsif ARGV[0] == "test"
   test_dir = File.expand_path(File.dirname(__FILE__)) + "/../test/hello_world_test"
   puts "Compiling hello_world.cpp to test your Arduino."

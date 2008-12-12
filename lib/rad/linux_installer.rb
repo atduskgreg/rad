@@ -1,15 +1,4 @@
 class LinuxInstaller
-
-  DESKTOP_ICON = %{
-  [Desktop Entry]
-  Encoding=UTF-8
-  Version=1.0
-  Type=Application
-  Terminal=false
-  Name[en_US]=arduino
-  Exec=/usr/local/arduino-0012/arduino
-  Name=arduino
-  }
   
   # this is the thing we actually run to make something happen
   def self.install!

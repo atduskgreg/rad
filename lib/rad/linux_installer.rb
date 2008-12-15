@@ -79,7 +79,7 @@ class LinuxInstaller
   
   	# check if usb device recognized by system
   	puts "Please plug in your arduino to your usb port... [hit enter to continue]"
-  	gets # we patiently wait
+  	STDIN.gets # we patiently wait
   
   	usb = %x{dmesg | tail | grep "FTDI USB Serial" | grep -c "now attached"}
   

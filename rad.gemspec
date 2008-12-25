@@ -1,7 +1,6 @@
 Gem::Specification.new do |s|
   s.name = %q{rad}
   s.version = "0.3.0.1"
-  
   s.date = %q{2008-08-18}
   s.default_executable = %q{rad}
   s.summary = "RAD: Ruby Arduino Development - 0.3.0.2"

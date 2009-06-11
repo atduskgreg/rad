@@ -50,6 +50,14 @@ Attach your Arduino and use rake to complile and upload your sketch:
 
  $ rake make:upload
 
+==Installing the Arduino Software
+
+Installing RAD and the Arduino software on Linux can be a little more difficult than on OS X. Thankfully, the RAD command line tool can help. Run:
+
+    $ rad install arduino
+
+And RAD will do its best to get the Arduino software installed on your system.
+
 ==Get Involved
 
 Cheers? Jeers? Wanna help out? Contact Greg Borenstein: greg [dot] borenstein [at] gmail [dot] com

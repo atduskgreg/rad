@@ -66,6 +66,7 @@ And RAD will do its best to get the Arduino software installed on your system.
 ##Cheers?  Jeers?  Questions?  Comments?  
 
 Contact Greg Borenstein - greg [dot] borenstein [at] gmail [dot] com
+
 Matthew Williams - matthew [dot] williams [at] gmail [dot] com
 
 Also, please don't hesitate to submit issues!

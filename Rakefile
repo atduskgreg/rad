@@ -7,9 +7,16 @@ require 'rake/gempackagetask'
 require 'rake/rdoctask'
 require 'rake/contrib/rubyforgepublisher'
 require 'fileutils'
-require 'hoe'
 
 RAD_ROOT = File.expand_path(File.dirname(__FILE__))
+
+begin
+  require 'hoe'
+rescue LoadError
+  puts 'To use Hoe as a rake/rubygems helper for project Rakefiles, you must install the hoe gem:'
+  puts '$ sudo gem install hoe'
+  exit
+end
 
 begin
   require 'spec/rake/spectask'

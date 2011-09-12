@@ -4,11 +4,19 @@ require 'rake/clean'
 require 'rake/testtask'
 require 'rake/packagetask'
 require 'rake/gempackagetask'
-require 'rake/rdoctask'
 require 'rake/contrib/rubyforgepublisher'
 require 'fileutils'
 
 RAD_ROOT = File.expand_path(File.dirname(__FILE__))
+
+begin
+  require 'rdoc'
+  require 'rdoc/task'
+rescue LoadError
+  puts 'To use RDoc to produce HTML and command-line documentation, you must install the rdoc gem:'
+  puts '$ sudo gem install rdoc'
+  exit
+end
 
 begin
   require 'hoe'

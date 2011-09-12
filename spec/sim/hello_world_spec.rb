@@ -1,14 +1,14 @@
-require File.dirname(__FILE__) + './models/spec_helper.rb'
+require File.dirname(__FILE__) + '/../models/spec_helper.rb'
 require File.expand_path(File.dirname(__FILE__) + "/../../lib/rad/sim/arduino_sketch.rb")
 require File.expand_path(File.dirname(__FILE__) + "/../examples/hello_world.rb" )
 
-context "ArduinoSketch running HelloWorld example" do
+describe "ArduinoSketch running HelloWorld example" do
   it "should successfully make an instance" do
     lambda{HelloWorld.new}.should_not raise_error
   end
 end
 
-context "HelloWorld#led" do
+describe "HelloWorld#led" do
   it "should return a correctly configured Pin" do
     p = HelloWorld.new.led
     p.type.should == :output
@@ -17,8 +17,8 @@ context "HelloWorld#led" do
   end
 end
 
-context "HelloWorld#digitalWrite" do
-  setup do
+describe "HelloWorld#digitalWrite" do
+  before(:each) do
     @h = HelloWorld.new
   end 
 
@@ -33,10 +33,10 @@ context "HelloWorld#digitalWrite" do
   end
 end
 
-context "HelloWorld#delay" do
+describe "HelloWorld#delay" do
   it "should maybe keep track of the time in some way?"
 end
 
-context "HelloWorld#loop" do
+describe "HelloWorld#loop" do
   it "should execute the loop in the context of the instance"
 end

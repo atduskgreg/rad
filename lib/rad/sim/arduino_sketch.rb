@@ -3,7 +3,7 @@ OFF = !ON
 HIGH = ON
 LOW = !HIGH
 
-class ArduinoSketch
+class ArduinoSketchSim
   attr_accessor :pins  
    
   def initialize

@@ -3,7 +3,7 @@ require 'rake'
 require 'rake/clean'
 require 'rake/testtask'
 require 'rake/packagetask'
-require 'rake/gempackagetask'
+require "rubygems/package_task"
 require 'rake/contrib/rubyforgepublisher'
 require 'fileutils'
 

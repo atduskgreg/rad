@@ -1,21 +1,68 @@
-require 'rubygems'
-require 'rake'
-require 'rake/clean'
-require 'rake/testtask'
-require 'rake/packagetask'
-require 'rake/gempackagetask'
-require 'rake/rdoctask'
-require 'rake/contrib/rubyforgepublisher'
+require 'rubygems'  # >= 1.8.10
+require "rubygems/package_task"
 require 'fileutils'
-require 'hoe'
 
 RAD_ROOT = File.expand_path(File.dirname(__FILE__))
 
+  
+
 begin
-  require 'spec/rake/spectask'
+  gem 'rake', '>= 0.9.2'
+  require 'rake'
+  require 'rake/clean'
+  require 'rake/testtask'
+  require 'rake/packagetask'
+  require 'rake/contrib/rubyforgepublisher'
+rescue LoadError
+  puts 'To build Rad, you must install the rake gem:'
+  puts '$ sudo gem install rake'
+  exit
+end
+
+
+begin
+  gem 'rdoc', '>= 3.9.4'
+  require 'rdoc'
+  require 'rdoc/task'
+rescue LoadError
+  puts 'To use RDoc to produce HTML and command-line documentation, you must install the rdoc gem:'
+  puts '$ sudo gem install rdoc'
+  exit
+end
+
+begin
+  gem 'hoe', '>= 2.12.3'
+  require 'hoe'
+rescue LoadError
+  puts 'To use Hoe as a rake/rubygems helper for project Rakefiles, you must install the hoe gem:'
+  puts '$ sudo gem install hoe'
+  exit
+end
+
+begin
+  gem 'rspec', '>= 2.6.0'
+  require 'rspec'
 rescue LoadError
   puts 'To use rspec for testing you must install rspec gem:'
   puts '$ sudo gem install rspec'
+  exit
+end
+
+begin
+  gem 'syntax', '>= 1.0.0'
+  require 'Syntax'
+rescue LoadError
+  puts 'To use Syntax for performing simple syntax highlighting for the website files, you must install the syntax gem:'
+  puts '$ sudo gem install syntax'
+  exit
+end
+
+begin
+  require 'RedCloth'
+  gem 'RedCloth', '>= 4.2.8'
+rescue LoadError
+  puts 'To use RedCloth as a Textile parser for the website files, you must install the RedCloth gem:'
+  puts '$ sudo gem install RedCloth'
   exit
 end
 
@@ -70,7 +117,7 @@ end
 
 # Generate all the Rake tasks
 # Run 'rake -T' to see list of generated tasks (from gem root directory)
-hoe = Hoe.new(GEM_NAME, VERS) do |p|
+hoe = Hoe.spec(GEM_NAME) do |p|
   p.author = AUTHOR 
   p.description = DESCRIPTION
   p.email = EMAIL
@@ -78,10 +125,11 @@ hoe = Hoe.new(GEM_NAME, VERS) do |p|
   p.url = HOMEPATH
   p.rubyforge_name = RUBYFORGE_PROJECT if RUBYFORGE_PROJECT
   p.test_globs = ["test/**/test_*.rb"]
+  p.version = VERS
   p.clean_globs |= CLEAN  #An array of file patterns to delete on clean.
   
   # == Optional
-  p.changes = p.paragraphs_of("History.txt", 0..1).join("\n\n")
+  p.changes = p.paragraphs_of("History.txt", 0..1).join("\n\n")  
   p.extra_deps =  [ ['RubyToC', '>= 1.0.0'] ]
   #p.spec_extras = {}    # A hash of extra values to set in the gemspec.
 end
@@ -132,9 +180,8 @@ task :check_version do
 end
 
 desc "Run the specs under spec/models"
-Spec::Rake::SpecTask.new do |t|
-  t.spec_opts = ['--options', "spec/spec.opts"]
-  t.spec_files = FileList['spec/models/*_spec.rb']
+RSpec::Core::RakeTask.new do |t|
+  t.rspec_opts = ['--options', "spec/spec.opts"]
 end
 
 desc "Default task is to run specs"

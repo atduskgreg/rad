@@ -1,6 +1,6 @@
 # Hardware: LED connected on pin 7
 
-class HelloWorld < ArduinoSketch
+class HelloWorld < ArduinoSketchSim
   output_pin 7, :as => :led
   def loop
     digitalWrite led, ON
